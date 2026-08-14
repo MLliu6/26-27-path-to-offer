@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-14T17:02:08Z",
+  "generated_at": "2026-08-14T17:06:22Z",
   "sources": [
     {
       "name": "offerjack",
       "label": "OfferJack · 公开页面",
       "url": "https://www.offerjack.cn/",
       "ok": true,
-      "count": 21,
+      "count": 20,
       "error": "",
       "diagnostics": {
         "renderer": "google-chrome",
@@ -16,7 +16,146 @@
         "json_responses": 3,
         "json_response_hosts": [
           "www.offerjack.cn"
-        ]
+        ],
+        "json_shapes": [
+          {
+            "path": "/api/category/list",
+            "shape": {
+              "type": "object",
+              "keys": [
+                "code",
+                "msg",
+                "data"
+              ],
+              "first_container": {
+                "key": "data",
+                "shape": {
+                  "type": "array",
+                  "length": 3,
+                  "item": {
+                    "type": "object",
+                    "keys": [
+                      "id",
+                      "categoryName",
+                      "categoryCode",
+                      "sortOrder",
+                      "createTime",
+                      "updateTime"
+                    ],
+                    "first_container": null
+                  }
+                }
+              }
+            }
+          },
+          {
+            "path": "/api/offer/page",
+            "shape": {
+              "type": "object",
+              "keys": [
+                "code",
+                "msg",
+                "data"
+              ],
+              "first_container": {
+                "key": "data",
+                "shape": {
+                  "type": "object",
+                  "keys": [
+                    "records",
+                    "total",
+                    "size",
+                    "current",
+                    "pages"
+                  ],
+                  "first_container": {
+                    "key": "records",
+                    "shape": {
+                      "type": "array",
+                      "length": 20,
+                      "item": {
+                        "type": "object",
+                        "keys": [
+                          "id",
+                          "serialNumber",
+                          "categoryId",
+                          "recruitmentBatch",
+                          "enterpriseNature",
+                          "industry",
+                          "workLocation",
+                          "position",
+                          "enterpriseName",
+                          "graduationYear",
+                          "announcementLink",
+                          "deliveryAddress",
+                          "deadline",
+                          "createTime",
+                          "updateTime"
+                        ],
+                        "first_container": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "path": "/api/offer/page",
+            "shape": {
+              "type": "object",
+              "keys": [
+                "code",
+                "msg",
+                "data"
+              ],
+              "first_container": {
+                "key": "data",
+                "shape": {
+                  "type": "object",
+                  "keys": [
+                    "records",
+                    "total",
+                    "size",
+                    "current",
+                    "pages"
+                  ],
+                  "first_container": {
+                    "key": "records",
+                    "shape": {
+                      "type": "array",
+                      "length": 20,
+                      "item": {
+                        "type": "object",
+                        "keys": [
+                          "id",
+                          "serialNumber",
+                          "categoryId",
+                          "recruitmentBatch",
+                          "enterpriseNature",
+                          "industry",
+                          "workLocation",
+                          "position",
+                          "enterpriseName",
+                          "graduationYear",
+                          "announcementLink",
+                          "deliveryAddress",
+                          "deadline",
+                          "createTime",
+                          "updateTime"
+                        ],
+                        "first_container": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "dom_pages_collected": 1,
+        "dom_records_before_dedupe": 20,
+        "pagination_cap": 600
       }
     }
   ]
