@@ -1,0 +1,35 @@
+name: static-checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check app.js
+      - name: Check required application anchors
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          html = Path('index.html').read_text(encoding='utf-8')
+          css = Path('styles.css').read_text(encoding='utf-8')
+          js = Path('app.js').read_text(encoding='utf-8')
+          required_ids = ['dashboardView','pipelineView','discoverView','libraryView','reviewsView','jobDrawer','jobForm','reviewImport']
+          missing = [x for x in required_ids if f'id="{x}"' not in html]
+          assert not missing, f'Missing HTML anchors: {missing}'
+          for token in ['--accent','prefers-reduced-motion','.kanban','.drawer']:
+              assert token in css, f'Missing CSS token: {token}'
+          for token in ['localStorage','renderPipeline','importReview','exportData','applyTheme']:
+              assert token in js, f'Missing JS capability: {token}'
+          print('Static integrity checks passed.')
+          PY
