@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Path to Offer — local-first 秋招全流程追踪与面经复盘系统" />
+  <title>Path to Offer</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect rx=%2216%22 width=%2264%22 height=%2264%22 fill=%22%2397B4A7%22/><path d=%22M18 20h28M18 32h20M18 44h14%22 stroke=%22white%22 stroke-width=%225%22 stroke-linecap=%22round%22/></svg>">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Path to Offer 首页">
+        <span class="brand-mark">P</span>
+        <span><strong>Path to Offer</strong><small>candidate operating system</small></span>
+      </a>
+      <nav class="main-nav" aria-label="主导航">
+        <button class="nav-item active" data-view="dashboard">总览</button>
+        <button class="nav-item" data-view="pipeline">流程</button>
+        <button class="nav-item" data-view="discover">发现岗位</button>
+        <button class="nav-item" data-view="library">准备资料</button>
+        <button class="nav-item" data-view="reviews">面经</button>
+      </nav>
+      <div class="top-actions">
+        <button class="icon-btn" id="themeBtn" title="主题色" aria-label="切换主题色">◐</button>
+        <button class="btn ghost" id="exportBtn">导出</button>
+        <button class="btn primary" id="addJobBtn">＋ 新岗位</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="view active" id="dashboardView">
+        <div class="page-head">
+          <div><p class="eyebrow">2026–2027 recruiting cockpit</p><h1>你的秋招，应该是一条可观测的路径。</h1><p>把岗位、投递、面试准备、状态变化和复盘连成同一条时间线。</p></div>
+          <div class="privacy-pill"><span></span> Local-first · 数据默认只在本机浏览器</div>
+        </div>
+        <div class="metric-grid" id="metricGrid"></div>
+        <div class="dashboard-grid">
+          <article class="panel span-2">
+            <div class="panel-head"><div><p class="eyebrow">PIPELINE</p><h2>当前流程</h2></div><button class="text-btn" data-go="pipeline">展开看板 →</button></div>
+            <div class="mini-pipeline" id="miniPipeline"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><p class="eyebrow">NEXT ACTION</p><h2>近期动作</h2></div></div>
+            <div id="nextActions" class="activity-list"></div>
+          </article>
+          <article class="panel span-2">
+            <div class="panel-head"><div><p class="eyebrow">MOMENTUM</p><h2>求职漏斗</h2></div><span class="muted">自动按状态统计</span></div>
+            <div id="funnel" class="funnel"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><p class="eyebrow">LEARNING LOOP</p><h2>复盘积累</h2></div></div>
+            <div id="learningLoop" class="learning-loop"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="pipelineView">
+        <div class="page-head compact"><div><p class="eyebrow">APPLICATION PIPELINE</p><h1>投递流程</h1><p>拖动卡片或直接修改状态；每一次变化都会进入岗位时间线。</p></div><div class="view-switch"><button class="seg active" data-pipeline-mode="board">看板</button><button class="seg" data-pipeline-mode="table">表格</button></div></div>
+        <div class="filter-row"><input id="searchInput" class="search" placeholder="搜索公司 / 岗位 / 城市…"><select id="priorityFilter"><option value="all">全部优先级</option><option value="A">A · 必投</option><option value="B">B · 重点</option><option value="C">C · 观察</option></select><select id="directionFilter"><option value="all">全部方向</option></select></div>
+        <div id="kanban" class="kanban"></div>
+        <div id="jobTableWrap" class="table-wrap hidden"></div>
+      </section>
+
+      <section class="view" id="discoverView">
+        <div class="page-head compact"><div><p class="eyebrow">JOB DISCOVERY</p><h1>发现岗位</h1><p>聚合公开职位来源、手工收藏与简历匹配线索。公开网络刷新器保留为可插拔数据源。</p></div><button class="btn primary" id="openOfferJack">打开 OfferJack ↗</button></div>
+        <div class="discovery-grid">
+          <article class="panel source-panel"><div class="panel-head"><div><p class="eyebrow">SOURCES</p><h2>岗位源</h2></div><span class="status-dot">每 2 小时架构</span></div><div class="source-list"><div><strong>OfferJack</strong><small>公开聚合入口 · 外部打开</small></div><div><strong>企业招聘官网</strong><small>建议优先接入公开 RSS / JSON / 页面适配器</small></div><div><strong>招聘平台</strong><small>仅在平台许可范围内接入，不绕过登录或反爬</small></div></div></article>
+          <article class="panel span-2"><div class="panel-head"><div><p class="eyebrow">DISCOVERY INBOX</p><h2>待判断岗位</h2></div><button class="text-btn" id="pasteJobBtn">从链接/文本添加 +</button></div><div id="discoveryList" class="discovery-list"></div></article>
+        </div>
+      </section>
+
+      <section class="view" id="libraryView">
+        <div class="page-head compact"><div><p class="eyebrow">PREPARATION LIBRARY</p><h1>简历与面试准备</h1><p>将每一次投递使用的简历版本和对应准备资产绑定到岗位，而不是散落在文件夹里。</p></div><button class="btn ghost" id="addAssetBtn">＋ 添加资料链接</button></div>
+        <div class="library-grid"><article class="panel"><p class="eyebrow">RESUME VERSIONS</p><h2>简历版本</h2><div id="resumeList" class="asset-list"></div></article><article class="panel span-2"><p class="eyebrow">INTERVIEW ASSETS</p><h2>面试知识库</h2><div class="repo-callout"><div><strong>26-27-interview</strong><p>可将 GitHub 中的讲稿、Q&A、项目证据映射等链接绑定到具体岗位。</p></div><a href="https://github.com/MLliu6/26-27-interview" target="_blank" rel="noopener">打开仓库 ↗</a></div><div id="assetList" class="asset-list"></div></article></div>
+      </section>
+
+      <section class="view" id="reviewsView">
+        <div class="page-head compact"><div><p class="eyebrow">INTERVIEW MEMORY</p><h1>面经与复盘</h1><p>把一次面试沉淀成可检索的题目、回答、失误、改进和下一轮准备。</p></div><label class="btn primary file-label">导入 TXT / DOCX<input id="reviewImport" type="file" accept=".txt,.docx" hidden></label></div>
+        <div class="review-layout"><div id="reviewList" class="review-list"></div><article class="panel review-editor"><div class="empty-state" id="reviewEmpty"><strong>选择一条面经</strong><p>或导入 TXT / DOCX，系统会保存在当前浏览器中。</p></div><div id="reviewContent" class="hidden"></div></article></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="drawer" id="jobDrawer" aria-hidden="true">
+    <div class="drawer-head"><div><p class="eyebrow">JOB RECORD</p><h2 id="drawerTitle">岗位详情</h2></div><button class="icon-btn" id="closeDrawer" aria-label="关闭">×</button></div>
+    <form id="jobForm" class="job-form">
+      <input type="hidden" name="id"><div class="form-grid"><label><span>公司</span><input name="company" required></label><label><span>部门 / 团队</span><input name="department"></label><label class="wide"><span>岗位</span><input name="role" required></label><label><span>城市</span><input name="location"></label><label><span>薪资</span><input name="salary" placeholder="如 30–45k × 16"></label><label><span>方向</span><input name="direction" placeholder="AI Infra / 推理系统…"></label><label><span>优先级</span><select name="priority"><option>A</option><option>B</option><option>C</option></select></label><label><span>状态</span><select name="status" id="statusSelect"></select></label><label><span>状态日期</span><input type="date" name="statusDate"></label><label class="wide"><span>岗位链接</span><input name="url" type="url"></label><label class="wide"><span>JD</span><textarea name="jd" rows="7"></textarea></label><label class="wide"><span>投递简历版本</span><input name="resumeVersion" placeholder="如 私企版 v7.1 / AI Infra 定制版"></label><label class="wide"><span>准备资料链接</span><input name="prepUrl" type="url" placeholder="GitHub / Notion / 文档链接"></label><label class="wide"><span>备注 / 下一步</span><textarea name="notes" rows="4"></textarea></label></div>
+      <div class="timeline-box"><div class="panel-head"><h3>状态时间线</h3><span class="muted">自动记录</span></div><div id="statusTimeline" class="timeline"></div></div>
+      <div class="drawer-actions"><button type="button" class="btn danger ghost" id="deleteJobBtn">删除岗位</button><div><button type="button" class="btn ghost" id="cancelJobBtn">取消</button><button type="submit" class="btn primary">保存</button></div></div>
+    </form>
+  </aside>
+
+  <div class="modal-backdrop" id="modalBackdrop"></div>
+  <div class="modal" id="quickModal" role="dialog" aria-modal="true" aria-hidden="true"><div class="modal-head"><h2 id="modalTitle">添加</h2><button class="icon-btn" id="closeModal">×</button></div><div id="modalBody"></div></div>
+
+  <div class="theme-popover" id="themePopover"><p>主题色</p><div class="swatches" id="swatches"></div><small>选择会保存在本机</small></div>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
