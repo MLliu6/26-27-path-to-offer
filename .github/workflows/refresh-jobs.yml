@@ -2,6 +2,12 @@ name: refresh-public-jobs
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/aggregate_jobs.py'
+      - 'sources/**'
+      - '.github/workflows/refresh-jobs.yml'
   schedule:
     - cron: '17 */2 * * *'
 
