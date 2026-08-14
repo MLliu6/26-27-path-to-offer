@@ -18,10 +18,13 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - name: Install crawler test dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
       - name: Check JavaScript and Python syntax
         run: |
           node --check app.js
           python -m py_compile scripts/aggregate_jobs.py
+          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs
       - name: Check product invariants
         run: |
           python - <<'PY'
