@@ -35,7 +35,7 @@ jobs:
       - name: Aggregate public job sources
         run: |
           python scripts/aggregate_jobs.py
-          python scripts/render_offerjack.py
+          PYTHONPATH=. python scripts/render_offerjack.py
       - name: Commit refreshed feed when changed
         run: |
           if git diff --quiet -- data/jobs.json data/source_status.json; then
