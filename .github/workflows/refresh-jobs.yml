@@ -7,6 +7,7 @@ on:
     paths:
       - 'scripts/aggregate_jobs.py'
       - 'scripts/render_offerjack.py'
+      - 'scripts/offerjack_public_api.py'
       - 'sources/**'
       - '.github/workflows/refresh-jobs.yml'
   schedule:
@@ -36,6 +37,7 @@ jobs:
         run: |
           python scripts/aggregate_jobs.py
           PYTHONPATH=. python scripts/render_offerjack.py
+          PYTHONPATH=. python scripts/offerjack_public_api.py
       - name: Commit refreshed feed when changed
         run: |
           if git diff --quiet -- data/jobs.json data/source_status.json; then

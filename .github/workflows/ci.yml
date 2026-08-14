@@ -23,7 +23,7 @@ jobs:
       - name: Check JavaScript and Python syntax
         run: |
           node --check app.js
-          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py
+          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py
           PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs
       - name: Check product invariants
         run: |
@@ -34,6 +34,7 @@ jobs:
           css=Path('styles.css').read_text(encoding='utf-8')
           crawler=Path('scripts/aggregate_jobs.py').read_text(encoding='utf-8')
           renderer=Path('scripts/render_offerjack.py').read_text(encoding='utf-8')
+          public_api=Path('scripts/offerjack_public_api.py').read_text(encoding='utf-8')
           for token in ['resumeImport','jobMarketCards','githubLoginBtn','pipelineView','reviewImport']:
               assert f'id="{token}"' in html, token
           for token in ['extractResumeText','scoreJob','loadFeeds','promoteMarketJob','localStorage']:
@@ -44,5 +45,6 @@ jobs:
               assert forbidden not in js+html, f'mock data leaked: {forbidden}'
           assert 'no bypass' in crawler.lower() or 'no captcha' in crawler.lower()
           assert 'does not' in renderer.lower() and 'captcha' in renderer.lower()
+          assert 'does not' in public_api.lower() and 'captcha' in public_api.lower()
           print('Path to Offer v0.2 static checks passed.')
           PY
