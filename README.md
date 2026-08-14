@@ -1,55 +1,125 @@
 # Path to Offer
 
-A local-first, open-source candidate operating system for the complete recruiting journey: **discover → prepare → apply → interview → review → offer → sign**.
+**Resume-first job discovery + application pipeline + interview memory.**
 
-当前版本是面向 2026–2027 秋招的可用 MVP，同时按“未来可开放给更多 candidates 使用”的方向设计。
+Path to Offer is an open-source candidate operating system for the complete recruiting journey:
 
-## What works now
+`resume → discover → shortlist → prepare → apply → assessment → interview → review → offer → sign`
 
-- 五个扁平主视图：总览、流程、发现岗位、准备资料、面经。
-- 12 个中国校招常见状态：发现、待投递、准备中、已投递、测评、一面、二面、三面/终面、HR 面、Offer、已签约、结束。
-- Kanban 拖拽更新状态；每次变化自动记录日期并进入岗位时间线。
-- 表格视图、关键词搜索、优先级与岗位方向筛选。
-- 岗位详情包含公司、部门、JD、薪资、地点、链接、简历版本、准备资料和下一步。
-- 面经导入支持 `.txt` / `.docx`（DOCX 使用 Mammoth 浏览器端解析）。
-- 准备资料可绑定 GitHub / 文档链接；默认提供 `MLliu6/26-27-interview` 入口。
-- 10 套浅色莫兰迪主题，选择保存在本机。
-- JSON 数据导出备份。
-- 响应式桌面/移动端界面，支持 reduced-motion。
+The product starts empty. It does not ship fake companies, fake applications, fake match scores, or demo interview records.
 
-## Privacy model
+## v0.2: discovery before application
 
-个人求职数据默认只保存在浏览器 `localStorage`。仓库和 GitHub Pages 只发布应用代码与虚构示例数据，不会自动把你的真实投递、JD、面经或简历公开到 GitHub。
+The major change in v0.2 is moving the product center of gravity earlier in the recruiting funnel.
 
-这意味着 v0.1 在不同设备之间不会自动同步个人数据。可以通过“导出”保存 JSON；跨设备加密同步列在 v0.2 路线中。
+1. Upload a PDF / DOCX / TXT resume.
+2. The browser parses it locally and extracts explainable signals: skills, likely directions, degree/year signals and keywords.
+3. `data/jobs.json` is refreshed by GitHub Actions from public, unauthenticated job sources every two hours.
+4. Each real job is scored against the active resume with an explainable local matcher.
+5. The user decides whether to hide it or move it into the application pipeline.
+6. Only then does the normal status timeline begin.
+
+## Job discovery UI
+
+The embedded job market is independently implemented after black-box review of public recruiting aggregators. It supports:
+
+- company / role / skill / city search;
+- location, company type and recruiting batch filters;
+- resume-match threshold;
+- freshness, degree and graduation-year controls;
+- match / freshness / company sorting;
+- card and dense table views;
+- source attribution and refresh health;
+- job-detail drawer with announcement/apply links;
+- one-click promotion into the user's pipeline;
+- explicit “not suitable” feedback stored locally.
+
+## Resume parsing
+
+Resume files are parsed in the browser:
+
+- PDF: PDF.js
+- DOCX: Mammoth
+- TXT: native File API
+
+The original file is not uploaded to this public repository. Parsed text and signals are stored in browser `localStorage` unless the user deletes them. The user can delete raw parsed text while retaining derived signals.
+
+The v0.2 matcher is deliberately **explainable**, not branded as semantic AI: skill overlap, direction fit, optional target city, degree/year compatibility, and recency. A later version can add local embeddings or a user-configured inference endpoint without changing the data model.
+
+## Public job aggregation
+
+`.github/workflows/refresh-jobs.yml` runs every two hours and executes `scripts/aggregate_jobs.py`.
+
+Current source architecture:
+
+- `OfferJackAdapter`: compatibility parser for OfferJack's publicly rendered/indexable job table, with a generic embedded-JSON fallback.
+- `CustomJsonFeedAdapter`: plug-in JSON feeds configured in `sources/custom_urls.json`.
+- deterministic normalization and deduplication;
+- source-health output in `data/source_status.json`;
+- previous-feed retention when a temporary source outage occurs.
+
+Crawler rules are intentionally strict: public unauthenticated pages only, robots check when available, no login/CAPTCHA/anti-bot bypass, no hidden credentials, no attempt to copy non-public application source code.
+
+## Application tracking
+
+The application pipeline supports:
+
+`发现 → 待投递 → 准备中 → 已投递 → 测评 → 一面 → 二面 → 三面/终面 → HR 面 → Offer → 已签约 → 结束`
+
+Dragging a card between columns records a dated timeline event. A job can retain the resume version and initial match score used when it entered the pipeline, enabling later match-to-interview analytics.
+
+## Interview preparation and memory
+
+- Multiple resume versions.
+- User-added GitHub / Notion / document assets.
+- Direct link to the `MLliu6/26-27-interview` knowledge base.
+- TXT / DOCX interview-review import.
+- Review records linked to job history.
+- Analytics intentionally stay blank until enough real samples exist.
+
+## GitHub Pages
+
+The repository contains `.github/workflows/pages.yml` for GitHub Pages deployment. The intended public URL is:
+
+`https://mlliu6.github.io/26-27-path-to-offer/`
+
+GitHub requires Pages to be enabled once for the repository with **Settings → Pages → Source: GitHub Actions**. After that, pushes to `main` deploy automatically.
+
+## GitHub login and cross-device sync
+
+The UI now includes a GitHub login entry and a production auth interface in `config.js`, but the repository does **not** put an OAuth client secret or user access token into public JavaScript.
+
+A secure production flow is:
+
+`github.io frontend → GitHub OAuth → small server-side token-exchange proxy → encrypted user storage`
+
+Configure `githubClientId` and `githubOAuthProxy` in `config.js` after provisioning the OAuth/GitHub App backend. Until then, the site remains fully usable in Local-first mode without login.
+
+See `docs/AUTH_AND_SYNC.md`.
 
 ## Run locally
-
-这是纯静态站点，无构建步骤：
 
 ```bash
 python -m http.server 8000
 ```
 
-然后打开 `http://localhost:8000`。
+Open `http://localhost:8000`.
 
-## Publish with GitHub Pages
+For crawler development:
 
-合并到 `main` 后，在仓库 `Settings → Pages` 中选择 `Deploy from a branch`，Branch 选择 `main`、目录选择 `/ (root)`。之后站点即可通过 GitHub Pages URL 在任意设备打开。
-
-> GitHub Connector 当前不能替你切换仓库 Pages 设置，因此这是首次发布唯一需要在 GitHub UI 中手动完成的一步。
-
-## Product direction
-
-见 [`docs/PRODUCT.md`](docs/PRODUCT.md) 与 [`docs/REVIEW.md`](docs/REVIEW.md)。核心差异化不是再造一个 Kanban，而是把“岗位状态 + 具体日期 + 投递简历 + 面试准备资产 + 面经复盘”连成可追溯、可统计、可持续学习的一条路径。
-
-## Job discovery boundary
-
-计划中的“每 2 小时岗位刷新”采用可插拔公开数据源适配器。只接入允许自动访问的公开页面、RSS、JSON/API 等来源；不会绕过登录、验证码、反爬机制或网站访问控制。OfferJack 当前作为公开聚合入口外部打开，后续若存在稳定且允许的接口再接入自动归一化。
+```bash
+python -m pip install requests==2.32.5 beautifulsoup4==4.13.4
+python scripts/aggregate_jobs.py
+```
 
 ## Design
 
-视觉基调为 Georgia + 中文 serif fallback、浅背景、低嵌套、低动效密度。交互从用户提供的 Vibe Coding 术语手册中选取 Drawer、Modal、Kanban Drag、Active State、Focus Highlight、Toast、Theme Accent Switch、Hover Lift 与轻量 Page Transition 等模式。
+- Georgia for English/numerals with Chinese serif fallbacks.
+- Light, low-contrast Morandi palette; ten accent themes.
+- Five flat product views rather than deep admin navigation.
+- Hover Lift, Active State, Drawer, Modal, Toast, Kanban Drag, Theme Accent Switch and restrained page transitions.
+- `prefers-reduced-motion` support.
+- Mobile bottom navigation and single-column job cards.
 
 ## License
 

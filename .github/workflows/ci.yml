@@ -11,25 +11,36 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: '22'
-      - name: Check JavaScript syntax
-        run: node --check app.js
-      - name: Check required application anchors
+          node-version: '24'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install crawler test dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
+      - name: Check JavaScript and Python syntax
+        run: |
+          node --check app.js
+          python -m py_compile scripts/aggregate_jobs.py
+          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs
+      - name: Check product invariants
         run: |
           python - <<'PY'
           from pathlib import Path
-          html = Path('index.html').read_text(encoding='utf-8')
-          css = Path('styles.css').read_text(encoding='utf-8')
-          js = Path('app.js').read_text(encoding='utf-8')
-          required_ids = ['dashboardView','pipelineView','discoverView','libraryView','reviewsView','jobDrawer','jobForm','reviewImport']
-          missing = [x for x in required_ids if f'id="{x}"' not in html]
-          assert not missing, f'Missing HTML anchors: {missing}'
-          for token in ['--accent','prefers-reduced-motion','.kanban','.drawer']:
-              assert token in css, f'Missing CSS token: {token}'
-          for token in ['localStorage','renderPipeline','importReview','exportData','applyTheme']:
-              assert token in js, f'Missing JS capability: {token}'
-          print('Static integrity checks passed.')
+          html=Path('index.html').read_text(encoding='utf-8')
+          js=Path('app.js').read_text(encoding='utf-8')
+          css=Path('styles.css').read_text(encoding='utf-8')
+          crawler=Path('scripts/aggregate_jobs.py').read_text(encoding='utf-8')
+          for token in ['resumeImport','jobMarketCards','githubLoginBtn','pipelineView','reviewImport']:
+              assert f'id="{token}"' in html, token
+          for token in ['extractResumeText','scoreJob','loadFeeds','promoteMarketJob','localStorage']:
+              assert token in js, token
+          for token in ['Georgia','prefers-reduced-motion','market-card','drawer','--accent']:
+              assert token in css, token
+          for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
+              assert forbidden not in js+html, f'mock data leaked: {forbidden}'
+          assert 'no bypass' in crawler.lower() or 'no captcha' in crawler.lower()
+          print('Path to Offer v0.2 static checks passed.')
           PY
