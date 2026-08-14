@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T17:11:22Z",
+  "generated_at": "2026-08-14T17:17:38Z",
   "sources": [
     {
       "name": "offerjack",
@@ -9,23 +9,28 @@
       "count": 20,
       "error": "",
       "diagnostics": {
-        "adapter": "observed-public-api",
+        "adapter": "same-origin-browser-replay",
         "renderer": "google-chrome",
         "observed_path": "/api/offer/page",
         "method": "GET",
         "initial_total": 15521,
         "initial_size": 20,
         "initial_pages": 777,
-        "request_body_kind": "none",
-        "query_keys": [
-          "pageNum",
-          "pageSize"
-        ],
-        "body_keys": [],
+        "page_size_probe_status": 200,
+        "page_size_probe_preview": "{\"code\":401,\"msg\":\"未登录用户每页最多查看20条数据，请登录后查看更多\",\"data\":null}",
         "effective_size": 20,
         "effective_pages": 777,
         "page_cap": 1000,
-        "stopped_reason": "page 2 no longer matched public job schema",
+        "stopped_page": 2,
+        "stopped_status": 200,
+        "stopped_preview": "{\"code\":401,\"msg\":\"未登录用户只能查看第一页数据，请登录后查看更多\",\"data\":null}",
+        "stopped_payload_keys": [
+          "code",
+          "msg",
+          "data"
+        ],
+        "stopped_msg": "未登录用户只能查看第一页数据，请登录后查看更多",
+        "last_page": 1,
         "records_collected": 20,
         "coverage_ratio": 0.0013
       }
