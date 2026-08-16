@@ -1,14 +1,16 @@
 # GitHub Pages, login and sync architecture
 
-## What is already possible
+## What is already live
 
-The application is a static site and can be hosted at:
+The public application entry is:
 
 `https://mlliu6.github.io/26-27-path-to-offer/`
 
-Once GitHub Pages is enabled with GitHub Actions as the source, every push to `main` can deploy the site through `.github/workflows/pages.yml`.
+The repository is configured in GitHub Pages as:
 
-Access to the public site does not require an account.
+`Deploy from a branch → main → / (root)`
+
+The old Actions-based Pages workflow has been removed so there is only one deployment path. Access to the public site does not require an account.
 
 ## Why a real GitHub login is not implemented with a secret in `config.js`
 
@@ -32,7 +34,7 @@ OAuth proxy / backend
 session + encrypted user store
 ```
 
-`config.js` already exposes `githubClientId` and `githubOAuthProxy` integration points. When a backend is provisioned, the existing `GitHub 登录` button will redirect into that flow.
+`config.js` already exposes `githubClientId` and `githubOAuthProxy` integration points. When a backend is provisioned, the existing `GitHub 登录` button can redirect into that flow.
 
 ## Recommended production identity design
 
@@ -44,6 +46,10 @@ The product should support three tiers rather than force everyone into a server:
 
 1. **Local-first** — current default. Resume and job decisions stay in browser storage.
 2. **Encrypted cloud sync** — login-based, cross-device encrypted records.
-3. **User-owned GitHub sync** — advanced mode writing an encrypted data blob to a private user-controlled repository or gist-like storage, with explicit permission.
+3. **User-owned GitHub sync** — advanced mode writing an encrypted data blob to a private user-controlled repository or similar storage, with explicit permission.
 
 Resume source files should not be committed to the public application repository.
+
+## Current product truth
+
+The public GitHub.io URL is live and usable today. The `GitHub 登录` button represents the intended identity boundary, but **cross-device account sync is not yet implemented**. Until a server-side OAuth/token-exchange and encrypted persistence layer is provisioned, the application must continue to describe itself as Local-first rather than implying that signing into GitHub already restores personal data on another device.
