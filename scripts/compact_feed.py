@@ -19,7 +19,9 @@ from typing import Any
 
 from scripts.aggregate_jobs import JOBS_PATH, STATUS_PATH, clean
 
-MAX_PREVIEW = max(160, int(os.getenv("PTO_BROWSER_JD_CHARS", "360")))
+# 220 chars was selected from a live 60k acceptance run: 360-char previews still
+# produced a ~40.9 MB payload. The official apply URL remains the full JD source.
+MAX_PREVIEW = max(160, int(os.getenv("PTO_BROWSER_JD_CHARS", "220")))
 
 # Transport schema v4. Keep this map mirrored by market-v06.js.
 FIELDS = [
