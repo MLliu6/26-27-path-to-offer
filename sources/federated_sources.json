@@ -1,16 +1,14 @@
 {
-  "max_discovered_boards": 700,
+  "max_discovered_boards": 900,
   "ats_discovery_documents": [
-    {
-      "name": "SpeedyApply 2027 SWE",
-      "url": "https://raw.githubusercontent.com/speedyapply/2027-SWE-College-Jobs/main/README.md",
-      "usage": "board-discovery-only"
-    },
-    {
-      "name": "SpeedyApply 2027 AI",
-      "url": "https://raw.githubusercontent.com/speedyapply/2027-AI-College-Jobs/main/README.md",
-      "usage": "board-discovery-only"
-    }
+    {"name":"SpeedyApply SWE · Intern USA","url":"https://raw.githubusercontent.com/speedyapply/2027-SWE-College-Jobs/main/README.md","usage":"board-discovery-only"},
+    {"name":"SpeedyApply SWE · New Grad USA","url":"https://raw.githubusercontent.com/speedyapply/2027-SWE-College-Jobs/main/NEW_GRAD_USA.md","usage":"board-discovery-only"},
+    {"name":"SpeedyApply SWE · Intern Intl","url":"https://raw.githubusercontent.com/speedyapply/2027-SWE-College-Jobs/main/INTERN_INTL.md","usage":"board-discovery-only"},
+    {"name":"SpeedyApply SWE · New Grad Intl","url":"https://raw.githubusercontent.com/speedyapply/2027-SWE-College-Jobs/main/NEW_GRAD_INTL.md","usage":"board-discovery-only"},
+    {"name":"SpeedyApply AI · Intern USA","url":"https://raw.githubusercontent.com/speedyapply/2027-AI-College-Jobs/main/README.md","usage":"board-discovery-only"},
+    {"name":"SpeedyApply AI · New Grad USA","url":"https://raw.githubusercontent.com/speedyapply/2027-AI-College-Jobs/main/NEW_GRAD_USA.md","usage":"board-discovery-only"},
+    {"name":"SpeedyApply AI · Intern Intl","url":"https://raw.githubusercontent.com/speedyapply/2027-AI-College-Jobs/main/INTERN_INTL.md","usage":"board-discovery-only"},
+    {"name":"SpeedyApply AI · New Grad Intl","url":"https://raw.githubusercontent.com/speedyapply/2027-AI-College-Jobs/main/NEW_GRAD_INTL.md","usage":"board-discovery-only"}
   ],
   "upstream_adapters": {
     "repository": "https://github.com/simonlin1212/Hiring-Radar",
@@ -30,8 +28,6 @@
       "official-company-api",
       "public-remote-board"
     ],
-    "excluded_families": [
-      "moka-encrypted-payload"
-    ]
+    "excluded_families": ["moka-encrypted-payload"]
   }
 }
