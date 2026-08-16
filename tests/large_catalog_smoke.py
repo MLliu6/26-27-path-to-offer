@@ -41,7 +41,10 @@ def main():
             else:route.continue_()
         page.route('**/*',route)
         start=time.perf_counter();page.goto(BASE,wait_until='domcontentloaded')
-        page.wait_for_function(f"window.marketJobs && window.marketJobs.length === {COUNT}",timeout=30000)
+        # `marketJobs` is a top-level lexical `let`, intentionally not a window
+        # global. Wait on the user-visible result count to prove the real 60k
+        # feed passed through the post-enhancement renderer.
+        page.wait_for_function(f"document.querySelector('#marketCount') && document.querySelector('#marketCount').textContent.replace(/,/g,'') === '{COUNT}'",timeout=35000)
         page.wait_for_selector('#marketPager',timeout=15000)
         elapsed=time.perf_counter()-start
         cards=page.locator('.market-card')
