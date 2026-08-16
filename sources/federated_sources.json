@@ -1,0 +1,37 @@
+{
+  "max_discovered_boards": 700,
+  "ats_discovery_documents": [
+    {
+      "name": "SpeedyApply 2027 SWE",
+      "url": "https://raw.githubusercontent.com/speedyapply/2027-SWE-College-Jobs/main/README.md",
+      "usage": "board-discovery-only"
+    },
+    {
+      "name": "SpeedyApply 2027 AI",
+      "url": "https://raw.githubusercontent.com/speedyapply/2027-AI-College-Jobs/main/README.md",
+      "usage": "board-discovery-only"
+    }
+  ],
+  "upstream_adapters": {
+    "repository": "https://github.com/simonlin1212/Hiring-Radar",
+    "commit": "f49ec607e4cb89091a9447c9f527e43d0afdc6a4",
+    "license": "MIT",
+    "allowed_families": [
+      "greenhouse",
+      "ashby",
+      "lever",
+      "smartrecruiters",
+      "recruitee",
+      "breezy",
+      "bamboohr",
+      "personio",
+      "feishu",
+      "beisen",
+      "official-company-api",
+      "public-remote-board"
+    ],
+    "excluded_families": [
+      "moka-encrypted-payload"
+    ]
+  }
+}
