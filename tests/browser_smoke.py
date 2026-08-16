@@ -75,7 +75,6 @@ def main() -> int:
             elif "/data/source_status.json" in url:
                 route.fulfill(status=200, content_type="application/json", body=json.dumps(STATUS, ensure_ascii=False))
             elif url.startswith("https://cdn.jsdelivr.net/"):
-                # Paste-text flow does not need PDF/DOCX libraries; avoid making CI depend on CDN uptime.
                 route.abort()
             else:
                 route.continue_()
@@ -84,7 +83,7 @@ def main() -> int:
         page.goto(BASE, wait_until="domcontentloaded")
         page.wait_for_selector("#searchPolicy", timeout=12_000)
 
-        # 1. Search is usable before a resume exists and exact retrieval ignores recommendation controls.
+        # 1. Direct search works before a resume and ignores recommendation controls.
         page.locator("#scoreThreshold").evaluate("el => { el.value='95'; el.dispatchEvent(new Event('input',{bubbles:true})); }")
         page.locator("#freshOnly").check()
         page.locator("#jobSearch").fill("京东")
@@ -92,7 +91,7 @@ def main() -> int:
         jd_card.wait_for()
         assert "京东" in jd_card.inner_text()
 
-        # 2. Build a real v4 candidate profile through the UI's paste-resume path.
+        # 2. Create a v4 profile through the real paste-resume UI.
         page.locator("#jobSearch").fill("")
         page.locator("#pasteResumeBtn").click()
         resume = "2027届硕士。LLM serving，大模型推理系统，vLLM、PagedAttention、KV Cache、prefill、decode、continuous batching、NCCL、CUDA，做过显存管理与调度优化。"
@@ -104,21 +103,21 @@ def main() -> int:
         assert "AI Infra / 大模型推理系统" in profile_text
         assert "vllm" in profile_text.lower()
 
-        # 3. The enhanced profile inspector handler must be the v4 one, not the pre-load handler.
+        # 3. Enhanced profile inspector is actually bound after the dynamic patch loads.
         page.locator("#inspectProfileBtn").click()
         page.wait_for_selector(".profile-inspector")
         assert "画像引擎 v4" in page.locator(".profile-inspector").inner_text()
         assert "DIRECTION EVIDENCE" in page.locator(".profile-inspector").inner_text()
         page.locator("#closeModal").click()
 
-        # 4. Repeat the user's concrete failure after profile creation at impossible recommendation settings.
+        # 4. Repeat the user-reported 京东 failure after profile creation.
         page.locator("#scoreThreshold").evaluate("el => { el.value='95'; el.dispatchEvent(new Event('input',{bubbles:true})); }")
         page.locator("#freshOnly").check()
         page.locator("#jobSearch").fill("京东")
         page.locator('.market-card[data-market-id="jd-old"]').wait_for()
 
-        # 5. Shortlist -> pipeline; preserve inferred direction and resume version.
-        page.locator('[data-save-job="jd-old"]').click()
+        # 5. Shortlist -> pipeline; use the visible card action, not the hidden table duplicate.
+        page.locator('.market-card[data-market-id="jd-old"] [data-save-job="jd-old"]').click()
         page.locator('button.nav-item[data-view="pipeline"]').click()
         page.wait_for_selector(".job-card")
         card = page.locator(".job-card").first
@@ -132,7 +131,7 @@ def main() -> int:
         page.wait_for_selector('.kanban-col[data-stage="applied"] .job-card')
         assert "京东" in page.locator('.kanban-col[data-stage="applied"] .job-card').inner_text()
 
-        # 7. Resume library retained the actual parsed version.
+        # 7. Resume library retained the parsed version.
         page.locator('button.nav-item[data-view="library"]').click()
         assert "AI Infra QA" in page.locator("#resumeList").inner_text()
 
@@ -146,12 +145,12 @@ def main() -> int:
         page.wait_for_selector(".review-card")
         assert "jd-interview" in page.locator(".review-card").first.inner_text()
 
-        # 9. Insights reflect only the records generated through this walkthrough.
+        # 9. Insights reflect only records created by this walkthrough.
         page.locator('button.nav-item[data-view="insights"]').click()
         metric = page.locator("#metricGrid").inner_text()
         assert "已选择" in metric and "1" in metric
 
-        # 10. Export path and theme control are live.
+        # 10. Export and theme controls are live.
         with page.expect_download(timeout=5_000) as dl:
             page.locator("#exportBtn").click()
         assert dl.value.suggested_filename.startswith("path-to-offer-")
@@ -161,13 +160,13 @@ def main() -> int:
         accent = page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()")
         assert accent.lower() == "#9db4c5"
 
-        # Source-health panel is still accessible after the journey.
+        # Source-health panel remains accessible.
         page.locator('button.nav-item[data-view="discover"]').click()
         page.locator("#openSourcePanel").click()
         page.wait_for_selector(".source-modal")
         assert "Browser QA" in page.locator(".source-modal").inner_text()
 
-        # Basic mobile sanity: no interaction should depend on hover.
+        # Mobile sanity: critical action does not depend on hover.
         mobile = context.new_page()
         mobile.set_viewport_size({"width": 390, "height": 844})
         mobile.route("**/*", route_handler)
@@ -175,7 +174,7 @@ def main() -> int:
         mobile.wait_for_selector("#searchPolicy", timeout=12_000)
         mobile.locator("#jobSearch").fill("京东")
         mobile.locator('.market-card[data-market-id="jd-old"]').wait_for()
-        assert mobile.locator('[data-save-job="jd-old"]').is_visible()
+        assert mobile.locator('.market-card[data-market-id="jd-old"] [data-save-job="jd-old"]').is_visible()
         mobile.close()
 
         context.close(); browser.close()
