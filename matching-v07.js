@@ -47,6 +47,10 @@
   const CHINA_CITIES=['北京','上海','深圳','广州','杭州','南京','苏州','成都','武汉','西安','天津','重庆','长沙','合肥','无锡','厦门','青岛','济南','宁波','东莞','珠海','佛山','大连','沈阳','郑州','福州'];
   const TIER1=['北京','上海','深圳','广州','杭州'];
   const FOREIGN=/(?:United States|USA|\bUS\b|Canada|United Kingdom|\bUK\b|Germany|France|Netherlands|Poland|Spain|Italy|Sweden|Norway|Finland|Denmark|Switzerland|Australia|New Zealand|Japan|Korea|Singapore|India|Brazil|Mexico|Israel|Ireland|Portugal)/i;
+  // Seniority in the *title* outranks campus boilerplate elsewhere in the row.
+  // A company may accidentally attach “校园招聘” metadata to an expert/lead role;
+  // graduates still should not see it as a high-confidence recommendation.
+  const SENIOR_TITLE=/(?:资深|高级专家|首席|总监|负责人|架构师|技术专家|研究专家|主任|\b(?:senior|staff|principal|lead|director|head|architect|distinguished)\b)/i;
 
   function text(v){return CORE.cleanText(v||'');}
   function classifyJob(job){
@@ -55,12 +59,9 @@
     const titleFamilies=[];
     for(const [family,re] of FAMILIES)if(re.test(title))titleFamilies.push(family);
     if(titleFamilies.length)return {primary:titleFamilies[0],families:titleFamilies,confidence:'title'};
-    // Department may disambiguate generic titles such as “软件研发工程师”.
     const deptFamilies=[];
     for(const [family,re] of FAMILIES)if(re.test(dept))deptFamilies.push(family);
     if(deptFamilies.length)return {primary:deptFamilies[0],families:deptFamilies,confidence:'department'};
-    // JD is a weak fallback only. Require a direction-specific term and never
-    // classify generic corporate/product families from body boilerplate.
     const body=text(job.jd||job.description).slice(0,900);
     const bodyFamilies=[];
     for(const [family,re] of FAMILIES){
@@ -120,7 +121,9 @@
     const fit=familyFit(family,profile);
     const geo=geoSignal(job,opts);
     const sourceTrust=sourceSignal(job);
-    const career=CORE.careerSignal?CORE.careerSignal(job):{level:'unknown',delta:0,label:''};
+    const seniorTitle=SENIOR_TITLE.test(text(job.role||job.title));
+    const upstreamCareer=CORE.careerSignal?CORE.careerSignal(job):{level:'unknown',delta:0,label:''};
+    const career=seniorTitle?{level:'senior',delta:-35,label:'资历要求偏高'}:upstreamCareer;
 
     // Generic body keyword overlap is deliberately compressed. Precision comes
     // first from title/department role family, then skills/evidence, then locale.
@@ -138,6 +141,7 @@
     if(geo.label&&!geo.foreign)reasons.push(geo.label);
     if(sourceTrust.official)reasons.push(sourceTrust.label);
     if(career.level==='early')reasons.push('校招 / 初阶');
+    if(career.level==='senior')reasons.push('资历要求偏高');
     for(const r of base.reasons||[])if(!reasons.includes(r))reasons.push(r);
     return {
       ...base,score,reasons:reasons.slice(0,6),family,geo,sourceTrust,career,roleFit:fit,
