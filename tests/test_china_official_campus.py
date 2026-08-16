@@ -3,52 +3,59 @@ from __future__ import annotations
 import unittest
 
 from scripts.china_official_campus import (
-    adapter_family,
-    career_kind,
-    company_hint,
-    eligible,
+    company_name,
     geo_kind,
-    portal_for,
-    sort_key,
-    source_is_company_official,
+    normalize_position,
+    old_v07_job,
+    parse_json_stdout,
+    rank,
+    source_key,
+    source_url,
 )
 
 
 class ChinaOfficialCampusTests(unittest.TestCase):
-    def test_adapter_families_and_public_company_portals(self):
-        feishu={"args":["parsers/feishu.py","zhipu-ai.jobs.feishu.cn","智谱AI","{keyword}"]}
-        moka={"args":["parsers/moka.py","cambricon","44201","寒武纪","{keyword}"]}
-        beisen={"args":["parsers/beisen.py","boe","京东方","{keyword}"]}
-        self.assertEqual(adapter_family(feishu),"feishu")
-        self.assertEqual(company_hint("zhipu",feishu),"智谱AI")
-        self.assertEqual(portal_for("zhipu",feishu),"https://zhipu-ai.jobs.feishu.cn")
-        self.assertEqual(adapter_family(moka),"moka")
-        self.assertEqual(company_hint("cambricon",moka),"寒武纪")
-        self.assertEqual(portal_for("cambricon",moka),"https://app.mokahr.com/social-recruitment/cambricon/44201")
-        self.assertEqual(adapter_family(beisen),"beisen")
-        self.assertEqual(portal_for("boe",beisen),"https://boe.zhiye.com")
+    def setUp(self):
+        self.jd={"key":"jd","family":"Bespoke","source":"campus.jd.com","label":"JD / 京东"}
 
-    def test_domestic_campus_survives_foreign_and_senior_do_not(self):
-        campus={"company":"京东","role":"大模型推理系统工程师","location":"北京","batch":"2027校园招聘","jd":"vLLM CUDA"}
-        foreign={**campus,"company":"Foreign","location":"Singapore"}
-        senior={**campus,"role":"资深大模型推理架构师","batch":"社会招聘"}
-        self.assertEqual(geo_kind(campus["location"]),"china")
-        self.assertEqual(career_kind(campus),"early")
-        self.assertTrue(eligible(campus,official=True)[0])
-        self.assertFalse(eligible(foreign,official=True)[0])
-        self.assertFalse(eligible(senior,official=True)[0])
+    def test_directory_identity_and_portal_are_company_official(self):
+        self.assertEqual(company_name(self.jd),"京东")
+        self.assertEqual(source_url(self.jd),"https://campus.jd.com")
+        zhipu={"key":"zhipu","family":"Feishu","source":"zhipu-ai.jobs.feishu.cn","label":"Zhipu / 智谱AI"}
+        self.assertEqual(company_name(zhipu),"智谱AI")
+        self.assertEqual(source_url(zhipu),"https://zhipu-ai.jobs.feishu.cn")
 
-    def test_unknown_company_official_role_can_survive(self):
-        # Chinese company portals often omit a per-row “校招” literal even when
-        # the surrounding portal is a campus/early-career surface.
-        job={"company":"智谱AI","role":"系统研发工程师","location":"北京","batch":"","jd":"CUDA 推理"}
-        self.assertTrue(eligible(job,official=True)[0])
+    def test_scope_campus_provenance_is_explicit_in_normalized_row(self):
+        row=normalize_position(self.jd,{
+            "post_id":"123","title":"大模型推理系统工程师","project":"2027校园招聘","recruit_label":"技术",
+            "bgs":"基础架构","work_cities":"北京","apply_url":"https://campus.jd.com/job/123"
+        })
+        self.assertIsNotNone(row)
+        self.assertEqual(row["company"],"京东")
+        self.assertTrue(row["source"].startswith("china-campus:jobpro:jd"))
+        self.assertIn("校园招聘",row["batch"])
+        self.assertIn("企业官网",row["tags"])
+        self.assertEqual(row["apply_url"],"https://campus.jd.com/job/123")
+        self.assertEqual(source_key(row),"jd")
+        self.assertTrue(old_v07_job(row))
 
-    def test_beijing_official_priority_and_source_detection(self):
-        bj={"company":"智谱AI","role":"AI Infra工程师","location":"北京","batch":"校招","source":"china-company:feishu:zhipu","source_label":"公司官网 · 智谱AI","apply_url":"https://zhipu-ai.jobs.feishu.cn/x","updated_at":"2026-08-17"}
-        sh={**bj,"location":"上海"}
-        self.assertTrue(source_is_company_official(bj))
-        self.assertGreater(sort_key(bj),sort_key(sh))
+    def test_foreign_only_and_senior_rows_are_rejected(self):
+        foreign=normalize_position(self.jd,{"post_id":"1","title":"LLM Engineer","work_cities":"Singapore","apply_url":"https://campus.jd.com/1"})
+        senior=normalize_position(self.jd,{"post_id":"2","title":"资深大模型推理架构师","work_cities":"北京","apply_url":"https://campus.jd.com/2"})
+        self.assertIsNone(foreign)
+        self.assertIsNone(senior)
+        self.assertEqual(geo_kind("北京 / 上海"),"china")
+        self.assertEqual(geo_kind("Singapore"),"foreign")
+
+    def test_beijing_priority(self):
+        bj=normalize_position(self.jd,{"post_id":"1","title":"CUDA算子工程师","work_cities":"北京","apply_url":"https://campus.jd.com/1"})
+        sh=normalize_position(self.jd,{"post_id":"2","title":"CUDA算子工程师","work_cities":"上海","apply_url":"https://campus.jd.com/2"})
+        self.assertGreater(rank(bj),rank(sh))
+
+    def test_cli_json_parser_tolerates_package_manager_noise(self):
+        payload=parse_json_stdout("npm notice cache\n{\"ok\":true,\"positions\":[]}\n")
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["positions"],[])
 
 
 if __name__=="__main__":
