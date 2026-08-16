@@ -1,5 +1,5 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.5.0',
+  version: '0.6.0',
   jobsFeed: './data/jobs.json',
   sourceStatusFeed: './data/source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
@@ -71,6 +71,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('profile-core-v05.js');
     await loadPtoScript('enhancements-v04.js');
     await loadPtoScript('enhancements-v05.js');
+    await loadPtoScript('enhancements-v06.js');
   } catch (err) {
     console.warn('Path to Offer enhancement load failed; base app remains usable.', err);
   }
