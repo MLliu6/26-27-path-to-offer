@@ -5,13 +5,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'scripts/aggregate_jobs.py'
-      - 'scripts/render_offerjack.py'
-      - 'scripts/offerjack_public_api.py'
-      - 'scripts/offerjack_browser_replay.py'
       - 'scripts/merge_public_tables.py'
-      - 'scripts/gank_browser_search.py'
       - 'scripts/federated_harvester.py'
+      - 'scripts/compact_feed.py'
       - 'sources/**'
       - '.github/workflows/refresh-jobs.yml'
   schedule:
@@ -27,14 +23,13 @@ concurrency:
 jobs:
   aggregate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 42
+    timeout-minutes: 32
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
       PTO_FEDERATED_WORKERS: '12'
-      # The frontend only needs enough JD text for ranking/explanations; the
-      # canonical official URL retains the complete current job description.
       PTO_CATALOG_JD_CHARS: '600'
+      PTO_BROWSER_JD_CHARS: '220'
       PTO_MAX_CATALOG: '60000'
     steps:
       - uses: actions/checkout@v6
@@ -44,22 +39,21 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install crawler dependencies
-        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
       - name: Fetch pinned MIT public ATS adapters
         run: |
           rm -rf "$PTO_HIRING_RADAR_DIR"
           git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
           git -C "$PTO_HIRING_RADAR_DIR" checkout --quiet "$PTO_HIRING_RADAR_COMMIT"
           test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
-      - name: Aggregate public job sources
+      - name: Aggregate public official sources
         run: |
-          python scripts/aggregate_jobs.py
-          PYTHONPATH=. python scripts/render_offerjack.py
-          PYTHONPATH=. python scripts/offerjack_public_api.py
-          PYTHONPATH=. python scripts/offerjack_browser_replay.py
+          # Public campus/state tables provide a small China/央国企 supplement.
           PYTHONPATH=. python scripts/merge_public_tables.py
-          PYTHONPATH=. python scripts/gank_browser_search.py
+          # The primary catalogue comes from official China sources + official ATS boards.
           PYTHONPATH=. python scripts/federated_harvester.py
+          # Convert verbose crawler records to the compact browser transport schema.
+          PYTHONPATH=. python scripts/compact_feed.py
       - name: Validate catalogue output
         run: |
           python - <<'PY'
@@ -70,12 +64,13 @@ jobs:
           status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
           jobs=feed.get('jobs',[])
           size=path.stat().st_size
+          assert feed.get('schema_version') == 4
           assert isinstance(jobs,list)
           assert status.get('catalog_count') == len(jobs)
-          assert all(j.get('company') and j.get('role') for j in jobs)
-          assert size < 90_000_000, f'catalogue payload too large for reliable GitHub publishing: {size}'
-          print('catalogue rows:',len(jobs),'bytes:',size)
-          print('federated counts:',[(s.get('name'),s.get('count')) for s in status.get('sources',[]) if 'federat' in str(s.get('name')) or 'ats' in str(s.get('name')) or 'china-official' in str(s.get('name'))])
+          assert all(j.get('c') and j.get('r') for j in jobs)
+          assert size < 35_000_000, f'compact catalogue exceeds browser budget: {size}'
+          print('catalogue rows:',len(jobs),'bytes:',size,'schema:',feed.get('schema_version'))
+          print('federated counts:',[(s.get('name'),s.get('count')) for s in status.get('sources',[]) if s.get('name') in {'china-official-federation','official-ats-discovery','public-remote-boards'}])
           PY
       - name: Commit refreshed feed when changed
         run: |
@@ -86,5 +81,5 @@ jobs:
           git config user.name "path-to-offer-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/jobs.json data/source_status.json
-          git commit -m "data: refresh federated public jobs"
+          git commit -m "data: refresh compact federated jobs"
           git push origin HEAD:main

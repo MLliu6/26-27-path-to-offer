@@ -2,6 +2,22 @@
   'use strict';
   if(typeof renderMarket!=='function'||typeof visibleMarketJobs!=='function')return;
 
+  // Feed schema v4 uses one-character transport keys to keep a 60k static
+  // catalogue practical on GitHub Pages. The rest of the app continues to use
+  // the stable descriptive in-memory model.
+  const baseNormalizeMarketJob=normalizeMarketJob;
+  normalizeMarketJob=function(j){
+    if(j&&j.c!==undefined&&j.r!==undefined){
+      return {
+        id:j.i||uid('feed'),source:'federated',sourceLabel:j.x||'公开招聘来源',sourceUrl:'',
+        company:j.c||'',department:j.m||'',role:j.r||'',location:j.l||'',salary:j.p||'',
+        batch:j.b||'',companyType:j.y||'',industry:j.h||'',graduation:j.g||'',education:j.e||'',
+        updatedAt:j.t||'',noticeUrl:j.n||'',applyUrl:j.u||j.n||'',jd:j.d||j.r||'',tags:[]
+      };
+    }
+    return baseNormalizeMarketJob(j);
+  };
+
   const PAGE_SIZE=60;
   let visibleLimit=PAGE_SIZE;
   let lastSignature='';
@@ -37,7 +53,7 @@
     `;document.head.appendChild(style);
   }
 
-  // Computing 120 select options from 60k rows on every state update is wasted
+  // Computing select options from 60k rows on every state update is wasted
   // work. Cache the values until the catalogue length changes.
   renderMarketFilters=function(){
     if(filterCache.len!==marketJobs.length){
