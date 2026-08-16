@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'scripts/federated_harvester.py'
+      - 'scripts/compact_feed.py'
+      - 'market-v06.js'
       - 'sources/federated_sources.json'
       - '.github/workflows/federation-live.yml'
   workflow_dispatch:
@@ -20,6 +22,7 @@ jobs:
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
       PTO_FEDERATED_WORKERS: '16'
       PTO_CATALOG_JD_CHARS: '600'
+      PTO_BROWSER_JD_CHARS: '360'
       PTO_MAX_CATALOG: '60000'
     steps:
       - uses: actions/checkout@v6
@@ -33,9 +36,11 @@ jobs:
           git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
           git -C "$PTO_HIRING_RADAR_DIR" checkout --quiet "$PTO_HIRING_RADAR_COMMIT"
           test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
-      - name: Run live federation
-        run: PYTHONPATH=. python scripts/federated_harvester.py
-      - name: Enforce discovery value gate
+      - name: Run live federation and compact transport
+        run: |
+          PYTHONPATH=. python scripts/federated_harvester.py
+          PYTHONPATH=. python scripts/compact_feed.py
+      - name: Enforce discovery value and browser payload gates
         run: |
           python - <<'PY'
           import json
@@ -45,15 +50,16 @@ jobs:
           status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
           jobs=feed.get('jobs',[])
           size=path.stat().st_size
-          print('LIVE_CATALOG_COUNT=',len(jobs),'PAYLOAD_BYTES=',size)
+          print('LIVE_CATALOG_COUNT=',len(jobs),'PAYLOAD_BYTES=',size,'SCHEMA=',feed.get('schema_version'))
           for s in status.get('sources',[]):
               if s.get('name') in {'china-official-federation','official-ats-discovery','public-remote-boards'}:
                   print(s.get('name'), 'count=',s.get('count'),'ok=',s.get('ok'),'diag=',s.get('diagnostics'))
-          names='\n'.join((j.get('company','')+' '+j.get('role','')) for j in jobs).lower()
+          names='\n'.join((j.get('c','')+' '+j.get('r','')) for j in jobs).lower()
           for q in ['京东','腾讯','字节']:
               print('query-presence',q,q.lower() in names)
+          assert feed.get('schema_version') == 4
           assert len(jobs) >= 10000, f'Federation value gate failed: {len(jobs)} < 10000 real normalized jobs'
-          assert size < 90_000_000, f'GitHub Pages catalogue too large: {size} bytes'
+          assert size < 35_000_000, f'Compact GitHub Pages catalogue too large: {size} bytes'
           assert '京东' in names, 'JD/京东 official jobs missing from live catalogue'
           assert '腾讯' in names, 'Tencent/腾讯 official jobs missing from live catalogue'
           assert '字节' in names, 'ByteDance/字节 official jobs missing from live catalogue'
