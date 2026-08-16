@@ -1,5 +1,5 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.6.3',
+  version: '0.7.0',
   jobsFeed: './data/jobs.json',
   sourceStatusFeed: './data/source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
@@ -10,11 +10,9 @@ window.PTO_CONFIG = Object.freeze({
   githubOAuthScopes: 'read:user user:email',
 });
 
-// The stable v0.2 shell calls loadFeeds() as soon as app.js executes. With a
-// 60k catalogue that legacy render path would attempt to materialize every card
-// before the v0.6 bounded renderer exists. Gate only the first jobs-feed fetch:
-// the shell boots against an empty catalogue, enhancements load, then we perform
-// the real fetch through the query-first / 60-row renderer.
+// The stable shell calls loadFeeds() as soon as app.js executes. Gate the first
+// jobs-feed fetch so enhancement layers can install the indexed/bounded renderer
+// before the real catalogue is loaded.
 window.PTO_ENHANCEMENTS_READY = false;
 const PTO_NATIVE_FETCH = window.fetch.bind(window);
 window.fetch = function ptoBootstrapFetch(input, init) {
@@ -82,20 +80,21 @@ function loadPtoScript(src) {
   });
 }
 
-// Matching/profile logic is layered over the stable application shell so the
-// tracker remains usable even if an enhancement bundle fails to load.
 window.addEventListener('load', async () => {
   try {
     await loadPtoScript('matching-core.js');
     await loadPtoScript('profile-core-v05.js');
     await loadPtoScript('enhancements-v04.js');
     await loadPtoScript('ranking-v06.js');
+    await loadPtoScript('matching-v07.js');
     await loadPtoScript('market-v06.js');
     await loadPtoScript('enhancements-v05.js');
     await loadPtoScript('enhancements-v06.js');
+    // Loaded last because it replaces the cross-cutting user journey: indexed
+    // retrieval, China/campus defaults, explicit detail/apply actions and the
+    // end-to-end resume → recommendation → official application flow.
+    await loadPtoScript('experience-v07.js');
     window.PTO_ENHANCEMENTS_READY = true;
-    // Re-fetch the real catalogue only after large-catalogue ranking/rendering
-    // has replaced the legacy path.
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
     window.PTO_ENHANCEMENTS_READY = true;
