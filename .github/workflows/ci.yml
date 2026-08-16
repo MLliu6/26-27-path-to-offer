@@ -77,11 +77,11 @@ jobs:
               assert token in experience, token
           for token in ['no reason to run semantic scoring','linear filters','rankedVisible']:
               assert token in performance, token
-          for token in ['RESUME STRUCTURE','分章节','profileVersion=5']:
+          for token in ['RESUME STRUCTURE','分章节','profileVersion=5','bindV5Inspector']:
               assert token in enhancement5, token
           for token in ['appearance-control','data-appearance','repairSwatches','dark']:
               assert token in enhancement6, token
-          for token in ['feishu','moka','beisen','china-campus-first','beijing_count','direct_link_ratio','company-official public career surfaces']:
+          for token in ['@ha7ch/job-pro','--scope campus','china-campus-official','excluded_third_party','beijing_count','direct_link_ratio','social scope']:
               assert token in china, token
           for token in ['schema_version": 4','("c", "company")','("r", "role")','feed_bytes']:
               assert token in compact, token
@@ -89,7 +89,7 @@ jobs:
               assert token in browser_test, token
           for token in ['appearance-control','backgroundColor','data-appearance-choice']:
               assert token in theme_test, token
-          for token in ['COUNT=60000','unbounded card render','京东']:
+          for token in ['COUNT=60000','unbounded card render','京东','search_elapsed<3']:
               assert token in large_test, token
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
               assert forbidden not in js+html+core+matching7+experience, f'mock data leaked: {forbidden}'
@@ -97,7 +97,7 @@ jobs:
           for token in ['matching-v07.js','experience-v07.js','performance-v07.js']:
               assert token in config, token
           assert 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
-          print('Path to Offer v0.7 China-first/precision/journey checks passed.')
+          print('Path to Offer v0.7 campus-official/precision/journey checks passed.')
           PY
       - name: Browser smoke tests
         run: |
