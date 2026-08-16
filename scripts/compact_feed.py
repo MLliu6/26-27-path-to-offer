@@ -23,6 +23,11 @@ from scripts.aggregate_jobs import JOBS_PATH, STATUS_PATH, clean
 # produced a ~40.9 MB payload. The official apply URL remains the full JD source.
 MAX_PREVIEW = max(160, int(os.getenv("PTO_BROWSER_JD_CHARS", "220")))
 
+# These experimental scrapers are no longer part of the production refresh once
+# the official federation is active. Keeping their stale failures in source health
+# would make a healthy 60k catalogue look broken.
+RETIRED_SOURCE_STATUS = {"offerjack", "gank-public-search"}
+
 # Transport schema v4. Keep this map mirrored by market-v06.js.
 FIELDS = [
     ("i", "id"), ("c", "company"), ("r", "role"), ("l", "location"),
@@ -71,6 +76,15 @@ def encode_job(job: dict[str, Any]) -> dict[str, Any] | None:
     return out
 
 
+def clean_status(status: dict[str, Any]) -> dict[str, Any]:
+    out = dict(status or {})
+    sources = out.get("sources", [])
+    if isinstance(sources, list):
+        out["sources"] = [s for s in sources if not isinstance(s, dict) or s.get("name") not in RETIRED_SOURCE_STATUS]
+    out["retired_sources"] = sorted(RETIRED_SOURCE_STATUS)
+    return out
+
+
 def main() -> int:
     payload = json.loads(JOBS_PATH.read_text(encoding="utf-8"))
     jobs = payload.get("jobs", []) if isinstance(payload, dict) else []
@@ -79,7 +93,8 @@ def main() -> int:
     output = {"schema_version": 4, "generated_at": generated, "jobs": encoded}
     JOBS_PATH.write_text(json.dumps(output, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
 
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8")) if STATUS_PATH.exists() else {}
+    raw_status = json.loads(STATUS_PATH.read_text(encoding="utf-8")) if STATUS_PATH.exists() else {}
+    status = clean_status(raw_status)
     status["catalog_count"] = len(encoded)
     status["feed_schema"] = 4
     status["browser_jd_chars"] = MAX_PREVIEW
