@@ -145,7 +145,7 @@ def main() -> int:
         page.locator('#freshOnly').uncheck()
         page.locator('#jobSearch').fill('')
         page.locator('[data-geo-mode="tier1"]').click()
-        page.wait_for_selector('.market-card[data-market-id="jd-ai"]')
+        page.wait_for_function("() => [...document.querySelectorAll('.market-card')].some(x => x.dataset.marketId === 'jd-ai') && [...document.querySelectorAll('.market-card')].some(x => x.dataset.marketId === 'tx-ai')")
         visible = page.locator('.market-card').all_inner_texts()
         joined = '\n'.join(visible)
         assert 'Singapore' not in joined and 'Foreign AI Corp' not in joined
@@ -154,7 +154,10 @@ def main() -> int:
 
         # 5. Beijing quick filter produces a coherent Beijing-only recommendation set.
         page.locator('[data-geo-mode="beijing"]').click()
-        page.wait_for_selector('.market-card[data-market-id="jd-ai"]')
+        # Geo changes are deliberately coalesced into the next animation frame;
+        # wait for the old Shenzhen card to be removed rather than merely waiting
+        # for a Beijing card that was already present before the click.
+        page.wait_for_function("() => [...document.querySelectorAll('.market-card')].length > 0 && [...document.querySelectorAll('.market-card')].every(x => x.innerText.includes('北京'))")
         assert all('北京' in text for text in page.locator('.market-card').all_inner_texts())
 
         # 6. Inspectable section-aware resume profile remains available.
