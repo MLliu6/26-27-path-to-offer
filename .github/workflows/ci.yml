@@ -58,14 +58,14 @@ jobs:
               assert token in browser_test, token
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
               assert forbidden not in js+html+core+enhancement, f'mock data leaked: {forbidden}'
-          assert "version: '0.4.0'" in config
+          assert "version: '0.4.1'" in config
           assert 'no bypass' in crawler or 'no captcha' in crawler
           assert 'no login' in multisource and 'robots' in multisource
           assert 'canonical_key' in multisource and 'source-independent' in multisource
           assert 'captcha' in renderer and ('does not' in renderer or 'no ' in renderer)
           assert 'captcha' in public_api and ('does not' in public_api or 'no ' in public_api)
           assert 'captcha' in browser_replay and ('no authentication' in browser_replay or 'does not' in browser_replay)
-          print('Path to Offer v0.4 reliability checks passed.')
+          print('Path to Offer v0.4.1 reliability checks passed.')
           PY
       - name: Browser smoke test
         run: |
