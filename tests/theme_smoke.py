@@ -45,7 +45,8 @@ def main():
         page.locator('[data-theme="3"]').click()
         assert "Lavender" in page.locator("#activeThemeName").inner_text()
         assert page.locator("#themePopover").evaluate("el => el.classList.contains('show')")
-        page.locator('[data-appearance-choice="dark"]').click()
+        dark_button=page.locator('button[data-appearance-choice="dark"]')
+        dark_button.click()
         assert page.locator("html").get_attribute("data-appearance")=="dark"
         bg=page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()")
         surface=page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()")
@@ -57,7 +58,7 @@ def main():
         page.wait_for_selector(".appearance-control",timeout=12000)
         assert page.locator("html").get_attribute("data-appearance")=="dark"
         page.locator("#themeBtn").click()
-        assert page.locator('[data-appearance-choice="dark"]').evaluate("el => el.classList.contains('active')")
+        assert page.locator('button[data-appearance-choice="dark"]').evaluate("el => el.classList.contains('active')")
         context.close();browser.close()
     print("Path to Offer theme smoke: PASS")
     return 0
