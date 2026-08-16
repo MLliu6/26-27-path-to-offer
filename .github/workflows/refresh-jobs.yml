@@ -5,6 +5,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'scripts/expand_feed.py'
       - 'scripts/merge_public_tables.py'
       - 'scripts/federated_harvester.py'
       - 'scripts/compact_feed.py'
@@ -48,11 +49,15 @@ jobs:
           test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
       - name: Aggregate public official sources
         run: |
-          # Public campus/state tables provide a small China/央国企 supplement.
-          PYTHONPATH=. python scripts/merge_public_tables.py
-          # The primary catalogue comes from official China sources + official ATS boards.
+          # Previous production data is a compact browser transport. Restore it
+          # first so a temporary upstream outage cannot erase a healthy cache.
+          PYTHONPATH=. python scripts/expand_feed.py
+          # Primary federation preserves the previous readable catalogue while
+          # adding fresh China official + global official ATS records.
           PYTHONPATH=. python scripts/federated_harvester.py
-          # Convert verbose crawler records to the compact browser transport schema.
+          # Public campus/state tables are an additive China/央国企 supplement.
+          PYTHONPATH=. python scripts/merge_public_tables.py
+          # Publish the merged result back to the compact browser schema.
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Validate catalogue output
         run: |
@@ -68,6 +73,7 @@ jobs:
           assert isinstance(jobs,list)
           assert status.get('catalog_count') == len(jobs)
           assert all(j.get('c') and j.get('r') for j in jobs)
+          assert len(jobs) >= 10_000, f'catalogue unexpectedly collapsed: {len(jobs)}'
           assert size < 35_000_000, f'compact catalogue exceeds browser budget: {size}'
           print('catalogue rows:',len(jobs),'bytes:',size,'schema:',feed.get('schema_version'))
           print('federated counts:',[(s.get('name'),s.get('count')) for s in status.get('sources',[]) if s.get('name') in {'china-official-federation','official-ats-discovery','public-remote-boards'}])

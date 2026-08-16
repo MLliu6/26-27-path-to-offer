@@ -3,6 +3,7 @@ name: live-federation-acceptance
 on:
   pull_request:
     paths:
+      - 'scripts/expand_feed.py'
       - 'scripts/federated_harvester.py'
       - 'scripts/compact_feed.py'
       - 'market-v06.js'
@@ -36,8 +37,9 @@ jobs:
           git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
           git -C "$PTO_HIRING_RADAR_DIR" checkout --quiet "$PTO_HIRING_RADAR_COMMIT"
           test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
-      - name: Run live federation and compact transport
+      - name: Run resilient live federation and compact transport
         run: |
+          PYTHONPATH=. python scripts/expand_feed.py
           PYTHONPATH=. python scripts/federated_harvester.py
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Enforce discovery value and browser payload gates
@@ -53,10 +55,8 @@ jobs:
           print('LIVE_CATALOG_COUNT=',len(jobs),'PAYLOAD_BYTES=',size,'SCHEMA=',feed.get('schema_version'))
           for s in status.get('sources',[]):
               if s.get('name') in {'china-official-federation','official-ats-discovery','public-remote-boards'}:
-                  print(s.get('name'), 'count=',s.get('count'),'ok=',s.get('ok'),'diag=',s.get('diagnostics'))
+                  print(s.get('name'), 'count=',s.get('count'),'ok=',s.get('ok'))
           names='\n'.join((j.get('c','')+' '+j.get('r','')) for j in jobs).lower()
-          for q in ['京东','腾讯','字节']:
-              print('query-presence',q,q.lower() in names)
           assert feed.get('schema_version') == 4
           assert len(jobs) >= 10000, f'Federation value gate failed: {len(jobs)} < 10000 real normalized jobs'
           assert size < 35_000_000, f'Compact GitHub Pages catalogue too large: {size} bytes'

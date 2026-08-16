@@ -32,8 +32,8 @@ jobs:
           node --check enhancements-v06.js
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py
-          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed
+          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py
+          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed
       - name: Check product invariants
         run: |
           python - <<'PY'
@@ -47,6 +47,7 @@ jobs:
           market=Path('market-v06.js').read_text(encoding='utf-8')
           enhancement5=Path('enhancements-v05.js').read_text(encoding='utf-8')
           enhancement6=Path('enhancements-v06.js').read_text(encoding='utf-8')
+          expand=Path('scripts/expand_feed.py').read_text(encoding='utf-8')
           compact=Path('scripts/compact_feed.py').read_text(encoding='utf-8')
           css=Path('styles.css').read_text(encoding='utf-8')
           federation=Path('scripts/federated_harvester.py').read_text(encoding='utf-8').lower()
@@ -75,6 +76,8 @@ jobs:
               assert token in enhancement6, token
           for token in ['schema_version": 4','("c", "company")','("r", "role")','feed_bytes']:
               assert token in compact, token
+          for token in ['schema_version": 3','previous-compact-cache','expand_payload']:
+              assert token in expand, token
           for token in ['greenhouse','ashby','lever','feishu','beisen','moka_skipped','board-discovery-only']:
               assert token in federation or token in federated_sources.lower(), token
           for token in ['Georgia','prefers-reduced-motion','market-card','drawer','--accent']:
@@ -90,7 +93,7 @@ jobs:
           assert "version: '0.6.3'" in config
           assert 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
           assert 'no account credentials' in federation and 'moka' in federation
-          print('Path to Offer v0.6.3 compact-feed checks passed.')
+          print('Path to Offer v0.6.4 refresh-resilience checks passed.')
           PY
       - name: Browser smoke tests
         run: |
