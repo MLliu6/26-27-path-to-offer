@@ -1,17 +1,39 @@
 {
-  "generated_at": "2026-08-16T07:50:41Z",
+  "generated_at": "2026-08-16T08:48:29Z",
   "catalog_count": 70,
   "sources": [
     {
       "name": "offerjack",
       "label": "OfferJack · 公开页面/API",
       "url": "https://www.offerjack.cn/",
-      "ok": false,
-      "count": 0,
-      "error": "same-origin replay could not observe the public job response",
+      "ok": true,
+      "count": 20,
+      "error": "",
       "diagnostics": {
         "adapter": "same-origin-browser-replay",
-        "renderer": "google-chrome"
+        "renderer": "google-chrome",
+        "observed_path": "/api/offer/page",
+        "method": "GET",
+        "initial_total": 15584,
+        "initial_size": 20,
+        "initial_pages": 780,
+        "page_size_probe_status": 200,
+        "page_size_probe_preview": "{\"code\":401,\"msg\":\"未登录用户每页最多查看20条数据，请登录后查看更多\",\"data\":null}",
+        "effective_size": 20,
+        "effective_pages": 780,
+        "page_cap": 1000,
+        "stopped_page": 2,
+        "stopped_status": 200,
+        "stopped_preview": "{\"code\":401,\"msg\":\"未登录用户只能查看第一页数据，请登录后查看更多\",\"data\":null}",
+        "stopped_payload_keys": [
+          "code",
+          "msg",
+          "data"
+        ],
+        "stopped_msg": "未登录用户只能查看第一页数据，请登录后查看更多",
+        "last_page": 1,
+        "records_collected": 20,
+        "coverage_ratio": 0.0013
       }
     },
     {
