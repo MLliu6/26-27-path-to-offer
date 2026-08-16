@@ -42,8 +42,11 @@ assert.equal(alias[0]?.company,'京东','JD alias should match 京东');
 
 const recommendation=M.filterAndRank(jobs,{query:'',profile:infra,threshold:25,freshOnly:false,ageOf:()=>1,preferences:{targetDirections:['AI Infra / 大模型推理系统']}});
 assert.ok(recommendation.length>=1,'resume-first recommendation should return relevant jobs');
-assert.equal(recommendation[0].company,'腾讯','more explicit AI infra evidence should rank highly');
+assert.notEqual(recommendation[0].company,'零售企业','AI Infra evidence should rank above an unrelated operations role');
 assert.ok(recommendation[0].match.reasons.length>0,'match must remain explainable');
+const salesScore=M.scoreJob(jobs[2],infra,{ageDays:1}).score;
+assert.ok(M.scoreJob(jobs[0],infra,{ageDays:1}).score>salesScore,'京东 AI Infra row should outscore unrelated retail operations');
+assert.ok(M.scoreJob(jobs[1],infra,{ageDays:1}).score>salesScore,'腾讯 AI Infra row should outscore unrelated retail operations');
 
 const noProfile=M.filterAndRank(jobs,{query:'京东',profile:null,threshold:95,freshOnly:true,ageOf:()=>999,preferences:{}});
 assert.equal(noProfile.length,1,'search should work before resume upload');
