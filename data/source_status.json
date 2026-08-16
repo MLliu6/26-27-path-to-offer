@@ -1,39 +1,17 @@
 {
-  "generated_at": "2026-08-16T07:35:18Z",
+  "generated_at": "2026-08-16T07:50:41Z",
   "catalog_count": 70,
   "sources": [
     {
       "name": "offerjack",
       "label": "OfferJack · 公开页面/API",
       "url": "https://www.offerjack.cn/",
-      "ok": true,
-      "count": 20,
-      "error": "",
+      "ok": false,
+      "count": 0,
+      "error": "same-origin replay could not observe the public job response",
       "diagnostics": {
         "adapter": "same-origin-browser-replay",
-        "renderer": "google-chrome",
-        "observed_path": "/api/offer/page",
-        "method": "GET",
-        "initial_total": 15584,
-        "initial_size": 20,
-        "initial_pages": 780,
-        "page_size_probe_status": 200,
-        "page_size_probe_preview": "{\"code\":401,\"msg\":\"未登录用户每页最多查看20条数据，请登录后查看更多\",\"data\":null}",
-        "effective_size": 20,
-        "effective_pages": 780,
-        "page_cap": 1000,
-        "stopped_page": 2,
-        "stopped_status": 200,
-        "stopped_preview": "{\"code\":401,\"msg\":\"未登录用户只能查看第一页数据，请登录后查看更多\",\"data\":null}",
-        "stopped_payload_keys": [
-          "code",
-          "msg",
-          "data"
-        ],
-        "stopped_msg": "未登录用户只能查看第一页数据，请登录后查看更多",
-        "last_page": 1,
-        "records_collected": 20,
-        "coverage_ratio": 0.0013
+        "renderer": "google-chrome"
       }
     },
     {
@@ -45,52 +23,81 @@
       "error": ""
     },
     {
-      "name": "gank-tech-internship",
-      "label": "Gank Interview · 科技/AI 2027实习",
-      "url": "https://www.gankinterview.cn/campus?industry=%E4%BA%92%E8%81%94%E7%BD%91%2F%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%2C%E4%BA%92%E8%81%94%E7%BD%91%2CIT%2F%E4%BA%92%E8%81%94%E7%BD%91&industryOp=contains&location=%E9%95%BF%E6%B2%99%2C%E6%B7%B1%E5%9C%B3%2C%E6%9D%AD%E5%B7%9E&locationOp=contains&order=asc&size=50&sort=type&tab=internship",
-      "ok": false,
-      "count": 0,
-      "error": "public page returned no compatible recruiting table"
-    },
-    {
-      "name": "gank-tech-latest",
-      "label": "Gank Interview · 互联网/AI/半导体",
-      "url": "https://www.gankinterview.cn/campus?industry=%E4%BA%92%E8%81%94%E7%BD%91%2C%E7%A7%91%E6%8A%80%2C%E7%94%B5%E5%AD%90%E6%8A%80%E6%9C%AF%2F%E5%8D%8A%E5%AF%BC%E4%BD%93%2C%E4%BA%92%E8%81%94%E7%BD%91%2F%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD&location=%E5%85%A8%E5%9B%BD&locationOp=contains&order=desc&size=50&sort=updated&tab=latest",
-      "ok": false,
-      "count": 0,
-      "error": "public page returned no compatible recruiting table"
-    },
-    {
-      "name": "gank-national-internship",
-      "label": "Gank Interview · 全国实习",
-      "url": "https://www.gankinterview.cn/campus?location=%E9%95%BF%E6%B2%99%2C%E5%85%A8%E5%9B%BD%2C%E9%87%8D%E5%BA%86%2C%E5%B9%BF%E5%B7%9E&locationOp=contains&order=desc&size=50&sort=updated&tab=internship",
-      "ok": false,
-      "count": 0,
-      "error": "public page returned no compatible recruiting table"
-    },
-    {
-      "name": "gank-public-sector",
-      "label": "Gank Interview · 国企/事业单位/能源",
-      "url": "https://www.gankinterview.cn/campus?industry=%E5%9B%BD%E4%BC%81%2C%E4%BA%8B%E4%B8%9A%E5%8D%95%E4%BD%8D%2C%E8%83%BD%E6%BA%90%2F%E7%94%B5%E5%8A%9B%2C%E6%9C%BA%E6%A2%B0%E8%A3%85%E5%A4%87%2F%E7%94%B5%E6%B0%94%E7%B3%BB%E7%BB%9F&industryOp=contains&order=desc&size=50&sort=updated&tab=latest",
-      "ok": false,
-      "count": 0,
-      "error": "public page returned no compatible recruiting table"
-    },
-    {
-      "name": "gank-finance-consumer",
-      "label": "Gank Interview · 金融/消费/专业服务",
-      "url": "https://www.gankinterview.cn/campus?industry=%E9%93%B6%E8%A1%8C%2F%E9%87%91%E8%9E%8D%2C%E9%87%91%E8%9E%8D%2F%E8%AF%81%E5%88%B8%2C%E6%B6%88%E8%B4%B9%2C%E4%B8%93%E4%B8%9A%E6%9C%8D%E5%8A%A1&industryOp=contains&order=desc&size=50&sort=updated&tab=latest",
-      "ok": false,
-      "count": 0,
-      "error": "public page returned no compatible recruiting table"
-    },
-    {
       "name": "codecv-jobs",
       "label": "CodeCV · 校招岗位",
       "url": "https://www.codecvcv.com/jobs",
       "ok": false,
       "count": 0,
       "error": "public page returned no compatible recruiting table"
+    },
+    {
+      "name": "gank-public-search",
+      "label": "Gank Interview · 公开搜索",
+      "url": "https://www.gankinterview.cn/campus",
+      "ok": false,
+      "count": 0,
+      "error": "腾讯: RuntimeError: public campus search input not found",
+      "diagnostics": {
+        "mode": "visible-public-search-ui",
+        "queries_configured": 37,
+        "query_counts": {
+          "京东": 0,
+          "腾讯": -1,
+          "字节跳动": 0,
+          "阿里": -1,
+          "美团": 0,
+          "百度": -1,
+          "华为": 0,
+          "小米": -1,
+          "快手": 0,
+          "拼多多": -1,
+          "蚂蚁集团": 0,
+          "OPPO": -1,
+          "vivo": 0,
+          "大疆": -1,
+          "地平线": 0,
+          "商汤": -1,
+          "科大讯飞": 0,
+          "寒武纪": -1,
+          "海光": 0,
+          "摩尔线程": -1,
+          "沐曦": 0,
+          "理想": -1,
+          "小鹏": 0,
+          "蔚来": -1,
+          "比亚迪": 0,
+          "中兴": -1,
+          "AI Infra": 0,
+          "大模型": -1,
+          "推理": 0,
+          "CUDA": -1,
+          "GPU": 0,
+          "量化": -1,
+          "多模态": 0,
+          "芯片": -1,
+          "编译器": 0,
+          "后端": -1,
+          "算法": 0
+        },
+        "resolved_url": "https://www.gankinterview.cn/campus",
+        "browser": "google-chrome",
+        "records_this_run": 0,
+        "unique_catalog_total": 70,
+        "failed_queries": [
+          "腾讯: RuntimeError: public campus search input not found",
+          "阿里: RuntimeError: public campus search input not found",
+          "百度: RuntimeError: public campus search input not found",
+          "小米: RuntimeError: public campus search input not found",
+          "拼多多: RuntimeError: public campus search input not found",
+          "OPPO: RuntimeError: public campus search input not found",
+          "大疆: RuntimeError: public campus search input not found",
+          "商汤: RuntimeError: public campus search input not found",
+          "寒武纪: RuntimeError: public campus search input not found",
+          "摩尔线程: RuntimeError: public campus search input not found",
+          "理想: RuntimeError: public campus search input not found",
+          "蔚来: RuntimeError: public campus search input not found"
+        ]
+      }
     }
   ]
 }
