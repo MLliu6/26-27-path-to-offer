@@ -111,7 +111,7 @@ The suite also locks the concrete regression that motivated v0.4:
 - search works before a resume is uploaded;
 - empty-query recommendation still uses resume fit and remains explainable.
 
-See `docs/UX_AUDIT_V0.4_DRAFT.md` for the adversarial product walkthrough and remediation matrix.
+See [`docs/UX_AUDIT_V0.4.md`](docs/UX_AUDIT_V0.4.md) for the adversarial product walkthrough and remediation matrix.
 
 ## GitHub Pages
 
