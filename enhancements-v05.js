@@ -83,5 +83,13 @@
     if(changed)saveState(false);
   }
 
-  ensureV5Style();migrate();renderAll();
+  // enhancements-v04 bound the visible button before this wrapper existed.
+  // Rebind it here so “查看解析结果” actually opens the section-aware v5
+  // inspector instead of a stale v4 function object captured by the old handler.
+  function bindV5Inspector(){
+    const button=document.querySelector('#inspectProfileBtn');
+    if(button)button.onclick=inspectProfile;
+  }
+
+  ensureV5Style();migrate();renderAll();bindV5Inspector();
 })();
