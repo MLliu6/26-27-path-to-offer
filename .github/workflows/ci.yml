@@ -23,7 +23,7 @@ jobs:
       - name: Check JavaScript and Python syntax
         run: |
           node --check app.js
-          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py scripts/offerjack_browser_replay.py
+          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py scripts/offerjack_browser_replay.py scripts/merge_public_tables.py
           PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs
       - name: Check product invariants
         run: |
@@ -33,6 +33,7 @@ jobs:
           js=Path('app.js').read_text(encoding='utf-8')
           css=Path('styles.css').read_text(encoding='utf-8')
           crawler=Path('scripts/aggregate_jobs.py').read_text(encoding='utf-8').lower()
+          multisource=Path('scripts/merge_public_tables.py').read_text(encoding='utf-8').lower()
           renderer=Path('scripts/render_offerjack.py').read_text(encoding='utf-8').lower()
           public_api=Path('scripts/offerjack_public_api.py').read_text(encoding='utf-8').lower()
           browser_replay=Path('scripts/offerjack_browser_replay.py').read_text(encoding='utf-8').lower()
@@ -45,8 +46,9 @@ jobs:
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
               assert forbidden not in js+html, f'mock data leaked: {forbidden}'
           assert 'no bypass' in crawler or 'no captcha' in crawler
+          assert 'no login' in multisource and 'robots' in multisource
           assert 'captcha' in renderer and ('does not' in renderer or 'no ' in renderer)
           assert 'captcha' in public_api and ('does not' in public_api or 'no ' in public_api)
           assert 'captcha' in browser_replay and ('no authentication' in browser_replay or 'does not' in browser_replay)
-          print('Path to Offer v0.2 static checks passed.')
+          print('Path to Offer multisource static checks passed.')
           PY
