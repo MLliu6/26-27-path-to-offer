@@ -1,5 +1,7 @@
 (function(){
   'use strict';
+  // v0.6 query-first ranking invariant: explicit retrieval filters the large
+  // catalogue before expensive resume scoring; recommendation uses profile fit.
   if(!window.PTO_MATCHING)return;
   const CORE=window.PTO_MATCHING;
   const baseScore=CORE.scoreJob;
