@@ -32,7 +32,9 @@ jobs:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
       PTO_FEDERATED_WORKERS: '12'
-      PTO_CATALOG_JD_CHARS: '1400'
+      # The frontend only needs enough JD text for ranking/explanations; the
+      # canonical official URL retains the complete current job description.
+      PTO_CATALOG_JD_CHARS: '600'
       PTO_MAX_CATALOG: '60000'
     steps:
       - uses: actions/checkout@v6
@@ -63,13 +65,16 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          feed=json.loads(Path('data/jobs.json').read_text(encoding='utf-8'))
+          path=Path('data/jobs.json')
+          feed=json.loads(path.read_text(encoding='utf-8'))
           status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
           jobs=feed.get('jobs',[])
+          size=path.stat().st_size
           assert isinstance(jobs,list)
           assert status.get('catalog_count') == len(jobs)
           assert all(j.get('company') and j.get('role') for j in jobs)
-          print('catalogue rows:',len(jobs))
+          assert size < 90_000_000, f'catalogue payload too large for reliable GitHub publishing: {size}'
+          print('catalogue rows:',len(jobs),'bytes:',size)
           print('federated counts:',[(s.get('name'),s.get('count')) for s in status.get('sources',[]) if 'federat' in str(s.get('name')) or 'ats' in str(s.get('name')) or 'china-official' in str(s.get('name'))])
           PY
       - name: Commit refreshed feed when changed
