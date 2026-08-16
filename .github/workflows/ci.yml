@@ -69,7 +69,7 @@ jobs:
               assert token in profile, token
           for token in ['careerSignal','graduateProfile','senior']:
               assert token.lower() in ranking.lower(), token
-          for token in ['classifyJob','title-first','geoSignal','岗位方向不匹配','企业官网']:
+          for token in ['classifyJob','Title-first','geoSignal','岗位方向不匹配','企业官网']:
               assert token in matching7, token
           for token in ['PAGE_SIZE=60','marketPager','slice(0,visibleLimit)','baseNormalizeMarketJob']:
               assert token in market, token
