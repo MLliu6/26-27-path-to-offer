@@ -94,6 +94,7 @@ window.addEventListener('load', async () => {
     // retrieval, China/campus defaults, explicit detail/apply actions and the
     // end-to-end resume → recommendation → official application flow.
     await loadPtoScript('experience-v07.js');
+    await loadPtoScript('performance-v07.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
