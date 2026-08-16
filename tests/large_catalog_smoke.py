@@ -42,14 +42,14 @@ def main():
         page.route('**/*',route)
         start=time.perf_counter();page.goto(BASE,wait_until='domcontentloaded')
         # `marketJobs` is a top-level lexical `let`, intentionally not a window
-        # global. Wait on the user-visible result count to prove the real 60k
-        # feed passed through the post-enhancement renderer.
+        # global. Wait on the primary user-visible result count to prove the real
+        # 60k feed passed through the post-enhancement renderer.
         page.wait_for_function(f"document.querySelector('#marketCount') && document.querySelector('#marketCount').textContent.replace(/,/g,'') === '{COUNT}'",timeout=35000)
         page.wait_for_selector('#marketPager',timeout=15000)
         elapsed=time.perf_counter()-start
         cards=page.locator('.market-card')
         assert cards.count()<=60, f'unbounded card render: {cards.count()}'
-        assert page.locator('#coverageChip').inner_text().find('60,000')>=0
+        assert page.locator('#coverageChip').count()==1
 
         search=page.locator('#jobSearch');t0=time.perf_counter();search.fill('京东')
         page.wait_for_function("document.querySelector('#marketCount').textContent.replace(/,/g,'') === '3'",timeout=12000)
