@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from scripts.compact_feed import encode_job, compact_text
+from scripts.compact_feed import encode_job, compact_text, clean_status
 
 
 class CompactFeedTests(unittest.TestCase):
@@ -29,6 +29,18 @@ class CompactFeedTests(unittest.TestCase):
 
     def test_preview_collapses_whitespace(self):
         self.assertEqual(compact_text('  CUDA\n\n GEMM   Tensor Core ',100),'CUDA GEMM Tensor Core')
+
+    def test_retired_scraper_health_is_removed(self):
+        status={'sources':[
+            {'name':'offerjack','ok':False},
+            {'name':'gank-public-search','ok':False},
+            {'name':'china-official-federation','ok':True},
+            {'name':'gankinterview-state','ok':True},
+        ]}
+        cleaned=clean_status(status)
+        names=[s['name'] for s in cleaned['sources']]
+        self.assertEqual(names,['china-official-federation','gankinterview-state'])
+        self.assertEqual(cleaned['retired_sources'],['gank-public-search','offerjack'])
 
 
 if __name__=='__main__':
