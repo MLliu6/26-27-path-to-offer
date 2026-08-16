@@ -1,5 +1,5 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.6.2',
+  version: '0.6.3',
   jobsFeed: './data/jobs.json',
   sourceStatusFeed: './data/source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
@@ -21,7 +21,7 @@ window.fetch = function ptoBootstrapFetch(input, init) {
   const url = typeof input === 'string' ? input : (input && input.url) || '';
   const jobsPath = String(window.PTO_CONFIG.jobsFeed || './data/jobs.json').replace(/^\.\//, '');
   if (!window.PTO_ENHANCEMENTS_READY && jobsPath && String(url).includes(jobsPath)) {
-    return Promise.resolve(new Response(JSON.stringify({schema_version:3, generated_at:null, jobs:[]}), {
+    return Promise.resolve(new Response(JSON.stringify({schema_version:4, generated_at:null, jobs:[]}), {
       status: 200,
       headers: {'Content-Type':'application/json'}
     }));
