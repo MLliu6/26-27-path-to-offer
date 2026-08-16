@@ -1,5 +1,5 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.4.0',
+  version: '0.4.1',
   jobsFeed: './data/jobs.json',
   sourceStatusFeed: './data/source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
@@ -63,13 +63,13 @@ function loadPtoScript(src) {
   });
 }
 
-// v0.4 is layered on top of the stable v0.2 shell so matching/search can evolve
+// v0.4+ is layered on top of the stable v0.2 shell so matching/search can evolve
 // independently while the application tracker remains backward compatible.
 window.addEventListener('load', async () => {
   try {
     await loadPtoScript('matching-core.js');
     await loadPtoScript('enhancements-v04.js');
   } catch (err) {
-    console.warn('Path to Offer v0.4 enhancement load failed; base app remains usable.', err);
+    console.warn('Path to Offer enhancement load failed; base app remains usable.', err);
   }
 });
