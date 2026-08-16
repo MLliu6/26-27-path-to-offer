@@ -1,0 +1,55 @@
+name: live-federation-acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/federated_harvester.py'
+      - 'sources/federated_sources.json'
+      - '.github/workflows/federation-live.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
+      PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
+      PTO_FEDERATED_WORKERS: '16'
+      PTO_CATALOG_JD_CHARS: '1000'
+      PTO_MAX_CATALOG: '60000'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
+      - name: Fetch pinned MIT adapter library
+        run: |
+          git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
+          git -C "$PTO_HIRING_RADAR_DIR" checkout --quiet "$PTO_HIRING_RADAR_COMMIT"
+          test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
+      - name: Run live federation
+        run: PYTHONPATH=. python scripts/federated_harvester.py
+      - name: Enforce discovery value gate
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          feed=json.loads(Path('data/jobs.json').read_text(encoding='utf-8'))
+          status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
+          jobs=feed.get('jobs',[])
+          print('LIVE_CATALOG_COUNT=',len(jobs))
+          for s in status.get('sources',[]):
+              if s.get('name') in {'china-official-federation','official-ats-discovery','public-remote-boards'}:
+                  print(s.get('name'), 'count=',s.get('count'),'ok=',s.get('ok'),'diag=',s.get('diagnostics'))
+          names='\n'.join((j.get('company','')+' '+j.get('role','')) for j in jobs).lower()
+          for q in ['京东','腾讯','字节']:
+              print('query-presence',q,q.lower() in names)
+          assert len(jobs) >= 10000, f'Federation value gate failed: {len(jobs)} < 10000 real normalized jobs'
+          assert '京东' in names, 'JD/京东 official jobs missing from live catalogue'
+          PY
