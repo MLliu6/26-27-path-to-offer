@@ -1,6 +1,7 @@
 {
-  "generated_at": "2026-08-16T09:42:37Z",
-  "catalog_count": 70,
+  "generated_at": "2026-08-16T10:36:07Z",
+  "catalog_count": 60000,
+  "catalog_target": 10000,
   "sources": [
     {
       "name": "offerjack",
@@ -40,6 +41,14 @@
       "name": "gankinterview-campus",
       "label": "Gank Interview · 最新校招",
       "url": "https://www.gankinterview.cn/campus",
+      "ok": true,
+      "count": 50,
+      "error": ""
+    },
+    {
+      "name": "gankinterview-state",
+      "label": "Gank Interview · 国央企校招",
+      "url": "https://www.gankinterview.cn/campus?tab=state",
       "ok": true,
       "count": 50,
       "error": ""
@@ -112,7 +121,7 @@
         "resolved_url": "https://www.gankinterview.cn/campus",
         "browser": "google-chrome",
         "records_this_run": 0,
-        "unique_catalog_total": 70,
+        "unique_catalog_total": 116,
         "failed_queries": [
           "腾讯: RuntimeError: public campus search input not found",
           "阿里: RuntimeError: public campus search input not found",
@@ -128,6 +137,226 @@
           "蔚来: RuntimeError: public campus search input not found"
         ]
       }
+    },
+    {
+      "name": "china-official-federation",
+      "label": "中国企业官方招聘 / Feishu / Beisen",
+      "url": "https://github.com/simonlin1212/Hiring-Radar",
+      "ok": true,
+      "count": 11685,
+      "error": "",
+      "diagnostics": {
+        "adapters_attempted": 89,
+        "companies_with_jobs": 84,
+        "companies_zero_or_failed": 5,
+        "top_companies": [
+          [
+            "腾讯",
+            600
+          ],
+          [
+            "安克创新",
+            400
+          ],
+          [
+            "波克城市",
+            400
+          ],
+          [
+            "懂车帝",
+            400
+          ],
+          [
+            "德赛西威",
+            400
+          ],
+          [
+            "奇瑞汽车",
+            400
+          ],
+          [
+            "追觅",
+            400
+          ],
+          [
+            "库洛游戏",
+            400
+          ],
+          [
+            "理想汽车",
+            400
+          ],
+          [
+            "零跑汽车",
+            400
+          ],
+          [
+            "蔚来",
+            400
+          ],
+          [
+            "小鹏",
+            400
+          ],
+          [
+            "拓竹",
+            387
+          ],
+          [
+            "智元机器人",
+            386
+          ],
+          [
+            "京东方",
+            381
+          ],
+          [
+            "元气森林",
+            302
+          ],
+          [
+            "京东",
+            300
+          ],
+          [
+            "网易",
+            300
+          ],
+          [
+            "Momenta",
+            235
+          ],
+          [
+            "智谱AI",
+            222
+          ]
+        ],
+        "failures_sample": [
+          "unitree: RuntimeError: local parser 退出码 1: Traceback (most recent call last): File \"/tmp/hiring-radar/parsers/unitree.py\", line 94, in <module>"
+        ],
+        "moka_skipped": true
+      }
+    },
+    {
+      "name": "official-ats-discovery",
+      "label": "全球官方 ATS 联邦",
+      "url": "https://github.com/speedyapply/2027-SWE-College-Jobs",
+      "ok": true,
+      "count": 57890,
+      "error": "",
+      "diagnostics": {
+        "boards_discovered": 417,
+        "boards_with_jobs": 416,
+        "top_boards": [
+          [
+            "smartrecruiters:BoschGroup",
+            4802
+          ],
+          [
+            "smartrecruiters:SGS",
+            4331
+          ],
+          [
+            "lever:jobgether",
+            3994
+          ],
+          [
+            "smartrecruiters:JobsForHumanity",
+            3145
+          ],
+          [
+            "smartrecruiters:VeoliaEnvironnementSA",
+            2908
+          ],
+          [
+            "greenhouse:andurilindustries",
+            2205
+          ],
+          [
+            "greenhouse:spacex",
+            2115
+          ],
+          [
+            "smartrecruiters:HMGroup",
+            1769
+          ],
+          [
+            "ashby:bjakcareer",
+            1626
+          ],
+          [
+            "smartrecruiters:RedBull",
+            1200
+          ],
+          [
+            "smartrecruiters:ALTEN",
+            1071
+          ],
+          [
+            "greenhouse:accenturefederalservices",
+            623
+          ],
+          [
+            "ashby:airwallex",
+            619
+          ],
+          [
+            "greenhouse:feverup",
+            570
+          ],
+          [
+            "smartrecruiters:SIXT",
+            537
+          ],
+          [
+            "lever:lyrahealth",
+            534
+          ],
+          [
+            "lever:getwingapp",
+            494
+          ],
+          [
+            "greenhouse:axon",
+            483
+          ],
+          [
+            "smartrecruiters:ServiceNow",
+            482
+          ],
+          [
+            "greenhouse:doordashusa",
+            469
+          ]
+        ],
+        "discovery_failures": [],
+        "fetch_failures_sample": [
+          "greenhouse:embed: HTTPError: HTTP Error 404: Not Found"
+        ],
+        "policy": "discovery documents provide only ATS identities; catalogue rows come from official ATS APIs"
+      }
+    },
+    {
+      "name": "public-remote-boards",
+      "label": "公开远程招聘板",
+      "url": "",
+      "ok": true,
+      "count": 264,
+      "error": "",
+      "diagnostics": {
+        "counts": {
+          "remoteok": 100,
+          "remotive": 16,
+          "weworkremotely": 100,
+          "workingnomads": 48
+        },
+        "failures": []
+      }
     }
-  ]
+  ],
+  "federation": {
+    "hiring_radar_commit": "f49ec607e4cb89091a9447c9f527e43d0afdc6a4",
+    "jd_chars_per_record": 600,
+    "catalog_cap": 60000
+  }
 }
