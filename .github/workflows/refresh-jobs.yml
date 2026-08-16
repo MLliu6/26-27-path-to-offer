@@ -7,7 +7,7 @@ on:
     paths:
       - 'scripts/expand_feed.py'
       - 'scripts/merge_public_tables.py'
-      - 'scripts/federated_harvester.py'
+      - 'scripts/china_official_campus.py'
       - 'scripts/compact_feed.py'
       - 'sources/**'
       - '.github/workflows/refresh-jobs.yml'
@@ -28,10 +28,10 @@ jobs:
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
-      PTO_FEDERATED_WORKERS: '12'
-      PTO_CATALOG_JD_CHARS: '600'
-      PTO_BROWSER_JD_CHARS: '220'
-      PTO_MAX_CATALOG: '60000'
+      PTO_CHINA_COMPANY_WORKERS: '18'
+      PTO_CHINA_MAX_CATALOG: '25000'
+      PTO_CATALOG_JD_CHARS: '700'
+      PTO_BROWSER_JD_CHARS: '260'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -40,26 +40,26 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install crawler dependencies
-        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
-      - name: Fetch pinned MIT public ATS adapters
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 pycryptodome==3.23.0
+      - name: Fetch pinned MIT public company adapters
         run: |
           rm -rf "$PTO_HIRING_RADAR_DIR"
           git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
           git -C "$PTO_HIRING_RADAR_DIR" checkout --quiet "$PTO_HIRING_RADAR_COMMIT"
           test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
-      - name: Aggregate public official sources
+      - name: Build China-first official campus catalogue
         run: |
-          # Previous production data is a compact browser transport. Restore it
-          # first so a temporary upstream outage cannot erase a healthy cache.
+          # The browser feed is compact. Restore readable fields before merging.
           PYTHONPATH=. python scripts/expand_feed.py
-          # Primary federation preserves the previous readable catalogue while
-          # adding fresh China official + global official ATS records.
-          PYTHONPATH=. python scripts/federated_harvester.py
-          # Public campus/state tables are an additive China/央国企 supplement.
+          # Curated public campus/state tables are only a supplement; they are
+          # never allowed to replace richer official-company job records.
           PYTHONPATH=. python scripts/merge_public_tables.py
-          # Publish the merged result back to the compact browser schema.
+          # Primary source of truth: each company's own public career surface
+          # (self-hosted API / Feishu Hire / Beisen / Moka public career portal).
+          PYTHONPATH=. python scripts/china_official_campus.py
+          # Publish a compact transport only after the China/campus filters run.
           PYTHONPATH=. python scripts/compact_feed.py
-      - name: Validate catalogue output
+      - name: Validate China-first catalogue output
         run: |
           python - <<'PY'
           import json
@@ -68,15 +68,22 @@ jobs:
           feed=json.loads(path.read_text(encoding='utf-8'))
           status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
           jobs=feed.get('jobs',[])
+          focus=status.get('china_focus') or {}
           size=path.stat().st_size
           assert feed.get('schema_version') == 4
-          assert isinstance(jobs,list)
+          assert status.get('catalog_mode') == 'china-campus-first'
+          assert isinstance(jobs,list) and all(j.get('c') and j.get('r') for j in jobs)
           assert status.get('catalog_count') == len(jobs)
-          assert all(j.get('c') and j.get('r') for j in jobs)
-          assert len(jobs) >= 10_000, f'catalogue unexpectedly collapsed: {len(jobs)}'
-          assert size < 35_000_000, f'compact catalogue exceeds browser budget: {size}'
+          assert 2_000 <= len(jobs) <= 25_000, f'China catalogue size outside safety band: {len(jobs)}'
+          assert int(focus.get('beijing_count') or 0) >= 100, focus
+          assert float(focus.get('direct_link_ratio') or 0) >= 0.85, focus
+          assert size < 20_000_000, f'China-first browser feed too large: {size}'
+          names='\n'.join((j.get('c','')+' '+j.get('r','')) for j in jobs).lower()
+          for q in ['京东','腾讯','字节']:
+              assert q.lower() in names, f'missing flagship China company: {q}'
           print('catalogue rows:',len(jobs),'bytes:',size,'schema:',feed.get('schema_version'))
-          print('federated counts:',[(s.get('name'),s.get('count')) for s in status.get('sources',[]) if s.get('name') in {'china-official-federation','official-ats-discovery','public-remote-boards'}])
+          print('china focus:',focus)
+          print('sources:',[(s.get('name'),s.get('count'),s.get('ok')) for s in status.get('sources',[])])
           PY
       - name: Commit refreshed feed when changed
         run: |
@@ -87,5 +94,5 @@ jobs:
           git config user.name "path-to-offer-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/jobs.json data/source_status.json
-          git commit -m "data: refresh compact federated jobs"
+          git commit -m "data: refresh China official campus jobs"
           git push origin HEAD:main
