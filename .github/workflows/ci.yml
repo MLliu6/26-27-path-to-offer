@@ -29,8 +29,8 @@ jobs:
           node --check enhancements-v05.js
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py scripts/offerjack_browser_replay.py scripts/merge_public_tables.py scripts/gank_browser_search.py tests/browser_smoke.py
-          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs
+          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py scripts/offerjack_browser_replay.py scripts/merge_public_tables.py scripts/gank_browser_search.py tests/browser_smoke.py tests/test_public_tables.py
+          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables
       - name: Check product invariants
         run: |
           python - <<'PY'
