@@ -52,12 +52,15 @@ def main():
         assert page.locator('#coverageChip').count()==1
 
         search=page.locator('#jobSearch');t0=time.perf_counter();search.fill('京东')
-        page.wait_for_function("document.querySelector('#marketCount').textContent.replace(/,/g,'') === '3'",timeout=12000)
+        page.wait_for_function("document.querySelector('#marketCount').textContent.replace(/,/g,'') === '3'",timeout=5000)
         search_elapsed=time.perf_counter()-t0
         assert page.locator('.market-card').count()==3
         assert all('京东' in page.locator('.market-card').nth(i).inner_text() for i in range(3))
-        assert elapsed<25, f'60k initial load too slow in CI: {elapsed:.2f}s'
-        assert search_elapsed<8, f'60k exact search too slow in CI: {search_elapsed:.2f}s'
+        # v0.7's precomputed retrieval index measured 0.89 s on this 60k Chrome
+        # fixture in GitHub Actions. Keep generous CI headroom while preventing a
+        # regression back to the old ~4.5 s exact-search path.
+        assert elapsed<10, f'60k initial load too slow in CI: {elapsed:.2f}s'
+        assert search_elapsed<3, f'60k exact search too slow in CI: {search_elapsed:.2f}s'
         context.close();browser.close()
     print(f'Path to Offer 60k smoke: PASS load={elapsed:.2f}s search={search_elapsed:.2f}s payload={len(payload)} bytes')
     return 0
