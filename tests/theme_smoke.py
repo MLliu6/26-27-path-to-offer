@@ -40,9 +40,11 @@ def main():
         assert len(set(colors))>=8, colors
         assert all(c not in {"rgba(0, 0, 0, 0)","transparent"} for c in colors)
 
+        # Accent previews intentionally keep the palette open so the user can
+        # compare several colors without repeatedly reopening the popover.
         page.locator('[data-theme="3"]').click()
         assert "Lavender" in page.locator("#activeThemeName").inner_text()
-        page.locator("#themeBtn").click()
+        assert page.locator("#themePopover").evaluate("el => el.classList.contains('show')")
         page.locator('[data-appearance-choice="dark"]').click()
         assert page.locator("html").get_attribute("data-appearance")=="dark"
         bg=page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()")
