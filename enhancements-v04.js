@@ -116,9 +116,20 @@
     const toolbar=document.querySelector('.discovery-toolbar');if(toolbar&&!document.querySelector('#searchPolicy')){const p=document.createElement('div');p.id='searchPolicy';p.className='search-policy';p.innerHTML='<b>搜索优先：</b>输入明确关键词时不受最低匹配度和“30 天内”限制；空搜索才按简历画像自动推荐。';toolbar.insertAdjacentElement('afterend',p);}
     const head=document.querySelector('.market-head h2'); if(head&&!document.querySelector('#coverageChip')){const chip=document.createElement('span');chip.id='coverageChip';chip.className='coverage-chip';chip.textContent=`缓存 ${marketJobs.length} 条`;head.appendChild(chip);}
   }
+  function rebindEnhancedHandlers(){
+    // app.js attached some handlers before v0.4 is dynamically loaded. Rebind the
+    // handlers whose behavior was intentionally replaced rather than relying on
+    // function-name lookup inside an old callback closure.
+    const inspect=document.querySelector('#inspectProfileBtn'); if(inspect)inspect.onclick=inspectProfile;
+    const search=document.querySelector('#jobSearch');
+    if(search&&!search.dataset.v4SearchBound){
+      search.dataset.v4SearchBound='1';
+      search.addEventListener('input',()=>setTimeout(()=>renderMarket(),0));
+    }
+  }
   const oldLoadFeeds=loadFeeds;
   loadFeeds=async function(){await oldLoadFeeds();const chip=document.querySelector('#coverageChip');if(chip)chip.textContent=`缓存 ${marketJobs.length} 条`;};
 
-  injectStyles(); migrateProfiles(); improveControls(); renderAll();
-  setTimeout(()=>{improveControls();renderAll();},0);
+  injectStyles(); migrateProfiles(); improveControls(); rebindEnhancedHandlers(); renderAll();
+  setTimeout(()=>{improveControls();rebindEnhancedHandlers();renderAll();},0);
 })();
