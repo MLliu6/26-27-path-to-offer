@@ -1,5 +1,5 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.4.1',
+  version: '0.5.0',
   jobsFeed: './data/jobs.json',
   sourceStatusFeed: './data/source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
@@ -63,12 +63,14 @@ function loadPtoScript(src) {
   });
 }
 
-// v0.4+ is layered on top of the stable v0.2 shell so matching/search can evolve
-// independently while the application tracker remains backward compatible.
+// Matching/profile logic is layered over the stable application shell so the
+// tracker remains usable even if an enhancement bundle fails to load.
 window.addEventListener('load', async () => {
   try {
     await loadPtoScript('matching-core.js');
+    await loadPtoScript('profile-core-v05.js');
     await loadPtoScript('enhancements-v04.js');
+    await loadPtoScript('enhancements-v05.js');
   } catch (err) {
     console.warn('Path to Offer enhancement load failed; base app remains usable.', err);
   }
