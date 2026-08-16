@@ -19,13 +19,13 @@ class CompactFeedTests(unittest.TestCase):
         self.assertEqual(row['x'],'中国企业官方招聘')
         self.assertIn('u',row)
         self.assertNotIn('company',row)
-        self.assertLessEqual(len(row['d']),361)
+        self.assertLessEqual(len(row['d']),221)
 
     def test_compact_encoding_is_idempotent(self):
         row={'i':'1','c':'腾讯','r':'后台开发','d':'Python '*200,'x':'中国企业官方招聘'}
         encoded=encode_job(row)
         self.assertEqual(encoded['c'],'腾讯')
-        self.assertLessEqual(len(encoded['d']),361)
+        self.assertLessEqual(len(encoded['d']),221)
 
     def test_preview_collapses_whitespace(self):
         self.assertEqual(compact_text('  CUDA\n\n GEMM   Tensor Core ',100),'CUDA GEMM Tensor Core')
