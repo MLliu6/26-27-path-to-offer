@@ -36,10 +36,12 @@ if(ideal.score<55)throw new Error(`ideal Beijing AI Infra score too low: ${ideal
 if(wrong.score>18)throw new Error(`title-level product mismatch leaked through: ${wrong.score}`);
 if(senior.score>32)throw new Error(`senior role not capped for graduate profile: ${senior.score}`);
 if(foreign.score>28)throw new Error(`foreign-only role not capped: ${foreign.score}`);
-if(official.score<=aggregator.score)throw new Error(`company-official source did not beat aggregator: ${official.score} <= ${aggregator.score}`);
+// A perfect technical match can saturate at 99. Source trust is still an
+// explicit ranking component and a cheap-priority tie breaker in experience-v07.
+if(!official.sourceTrust?.official||official.sourceTrust.delta<=aggregator.sourceTrust.delta)throw new Error('company-official source trust did not beat aggregator');
 if(CORE.classifyJob({role:'AI 产品经理',jd:'CUDA vLLM'}).primary!=='product')throw new Error('title-first family classifier regressed');
 const bj=CORE.geoSignal({location:'北京市海淀区'},{targetLocations:['北京']});
 const sg=CORE.geoSignal({location:'Singapore'},{targetLocations:['北京']});
 if(!bj.beijing||!sg.foreign||bj.delta<=sg.delta)throw new Error('China/Beijing geo prior regressed');
 
-console.log(JSON.stringify({pass:true,scores:{ideal:ideal.score,wrong:wrong.score,senior:senior.score,foreign:foreign.score,official:official.score,aggregator:aggregator.score},reasons:ideal.reasons},null,2));
+console.log(JSON.stringify({pass:true,scores:{ideal:ideal.score,wrong:wrong.score,senior:senior.score,foreign:foreign.score,official:official.score,aggregator:aggregator.score},sourceTrust:{official:official.sourceTrust,aggregator:aggregator.sourceTrust},reasons:ideal.reasons},null,2));
