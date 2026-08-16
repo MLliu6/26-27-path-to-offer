@@ -1,5 +1,5 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.6.0',
+  version: '0.6.1',
   jobsFeed: './data/jobs.json',
   sourceStatusFeed: './data/source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
@@ -70,6 +70,8 @@ window.addEventListener('load', async () => {
     await loadPtoScript('matching-core.js');
     await loadPtoScript('profile-core-v05.js');
     await loadPtoScript('enhancements-v04.js');
+    await loadPtoScript('ranking-v06.js');
+    await loadPtoScript('market-v06.js');
     await loadPtoScript('enhancements-v05.js');
     await loadPtoScript('enhancements-v06.js');
   } catch (err) {
