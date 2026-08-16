@@ -26,11 +26,14 @@ jobs:
           node --check matching-core.js
           node --check profile-core-v05.js
           node --check enhancements-v04.js
+          node --check ranking-v06.js
+          node --check market-v06.js
           node --check enhancements-v05.js
+          node --check enhancements-v06.js
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py scripts/offerjack_browser_replay.py scripts/merge_public_tables.py scripts/gank_browser_search.py tests/browser_smoke.py tests/test_public_tables.py
-          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables
+          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py scripts/offerjack_browser_replay.py scripts/merge_public_tables.py scripts/gank_browser_search.py scripts/federated_harvester.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py
+          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester
       - name: Check product invariants
         run: |
           python - <<'PY'
@@ -40,18 +43,25 @@ jobs:
           core=Path('matching-core.js').read_text(encoding='utf-8')
           profile=Path('profile-core-v05.js').read_text(encoding='utf-8')
           enhancement=Path('enhancements-v04.js').read_text(encoding='utf-8')
+          ranking=Path('ranking-v06.js').read_text(encoding='utf-8')
+          market=Path('market-v06.js').read_text(encoding='utf-8')
           enhancement5=Path('enhancements-v05.js').read_text(encoding='utf-8')
+          enhancement6=Path('enhancements-v06.js').read_text(encoding='utf-8')
           css=Path('styles.css').read_text(encoding='utf-8')
           crawler=Path('scripts/aggregate_jobs.py').read_text(encoding='utf-8').lower()
           multisource=Path('scripts/merge_public_tables.py').read_text(encoding='utf-8').lower()
+          federation=Path('scripts/federated_harvester.py').read_text(encoding='utf-8').lower()
           gank_search=Path('scripts/gank_browser_search.py').read_text(encoding='utf-8').lower()
           renderer=Path('scripts/render_offerjack.py').read_text(encoding='utf-8').lower()
           public_api=Path('scripts/offerjack_public_api.py').read_text(encoding='utf-8').lower()
           browser_replay=Path('scripts/offerjack_browser_replay.py').read_text(encoding='utf-8').lower()
           config=Path('config.js').read_text(encoding='utf-8')
           browser_test=Path('tests/browser_smoke.py').read_text(encoding='utf-8')
+          theme_test=Path('tests/theme_smoke.py').read_text(encoding='utf-8')
+          large_test=Path('tests/large_catalog_smoke.py').read_text(encoding='utf-8')
           priority_queries=Path('sources/gank_priority_queries.json').read_text(encoding='utf-8')
           public_pages=Path('sources/public_pages.json').read_text(encoding='utf-8')
+          federated_sources=Path('sources/federated_sources.json').read_text(encoding='utf-8')
           for token in ['resumeImport','jobMarketCards','githubLoginBtn','pipelineView','reviewImport']:
               assert f'id="{token}"' in html, token
           for token in ['extractResumeText','loadFeeds','promoteMarketJob','localStorage']:
@@ -62,32 +72,48 @@ jobs:
               assert token in profile, token
           for token in ['profile-intelligence','搜索优先','画像引擎 v4','portalFor','rebindEnhancedHandlers']:
               assert token in enhancement, token
+          for token in ['careerSignal','query-first','graduateProfile','senior']:
+              assert token.lower() in ranking.lower(), token
+          for token in ['PAGE_SIZE=60','marketPager','slice(0,visibleLimit)','排序']:
+              assert token in market, token
           for token in ['RESUME STRUCTURE','分章节','profileVersion=5','roleSearch']:
               assert token in enhancement5, token
+          for token in ['appearance-control','data-appearance','repairSwatches','岗位池','dark']:
+              assert token in enhancement6, token
+          for token in ['greenhouse','ashby','lever','feishu','beisen','moka_skipped','board-discovery-only']:
+              assert token in federation or token in federated_sources.lower(), token
           for token in ['Georgia','prefers-reduced-motion','market-card','drawer','--accent']:
               assert token in css, token
           for token in ['jd-old','profileIntelligence','reviewImport','expect_download']:
               assert token in browser_test, token
+          for token in ['appearance-control','backgroundColor','data-appearance-choice']:
+              assert token in theme_test, token
+          for token in ['COUNT=60000','unbounded card render','京东']:
+              assert token in large_test, token
           for token in ['visible search box','does not call private endpoints','no bypass','public search']:
               assert token in gank_search, token
           for token in ['京东','腾讯','AI Infra','CUDA']:
               assert token in priority_queries, token
           assert 'job.playoffer.cn' in public_pages
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
-              assert forbidden not in js+html+core+enhancement+enhancement5, f'mock data leaked: {forbidden}'
-          assert "version: '0.5.0'" in config
+              assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6, f'mock data leaked: {forbidden}'
+          assert "version: '0.6.2'" in config
+          assert 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
           assert 'no bypass' in crawler or 'no captcha' in crawler
           assert 'no login' in multisource and 'robots' in multisource
           assert 'canonical_key' in multisource and 'source-independent' in multisource
+          assert 'no account credentials' in federation and 'moka' in federation
           assert 'captcha' in renderer and ('does not' in renderer or 'no ' in renderer)
           assert 'captcha' in public_api and ('does not' in public_api or 'no ' in public_api)
           assert 'captcha' in browser_replay and ('no authentication' in browser_replay or 'does not' in browser_replay)
-          print('Path to Offer v0.5 reliability checks passed.')
+          print('Path to Offer v0.6.2 federation/theme/large-catalog checks passed.')
           PY
-      - name: Browser smoke test
+      - name: Browser smoke tests
         run: |
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/path-to-offer-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           sleep 1
           python tests/browser_smoke.py
+          python tests/theme_smoke.py
+          python tests/large_catalog_smoke.py
