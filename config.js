@@ -1,5 +1,5 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.6.1',
+  version: '0.6.2',
   jobsFeed: './data/jobs.json',
   sourceStatusFeed: './data/source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
@@ -9,6 +9,25 @@ window.PTO_CONFIG = Object.freeze({
   githubClientId: '',
   githubOAuthScopes: 'read:user user:email',
 });
+
+// The stable v0.2 shell calls loadFeeds() as soon as app.js executes. With a
+// 60k catalogue that legacy render path would attempt to materialize every card
+// before the v0.6 bounded renderer exists. Gate only the first jobs-feed fetch:
+// the shell boots against an empty catalogue, enhancements load, then we perform
+// the real fetch through the query-first / 60-row renderer.
+window.PTO_ENHANCEMENTS_READY = false;
+const PTO_NATIVE_FETCH = window.fetch.bind(window);
+window.fetch = function ptoBootstrapFetch(input, init) {
+  const url = typeof input === 'string' ? input : (input && input.url) || '';
+  const jobsPath = String(window.PTO_CONFIG.jobsFeed || './data/jobs.json').replace(/^\.\//, '');
+  if (!window.PTO_ENHANCEMENTS_READY && jobsPath && String(url).includes(jobsPath)) {
+    return Promise.resolve(new Response(JSON.stringify({schema_version:3, generated_at:null, jobs:[]}), {
+      status: 200,
+      headers: {'Content-Type':'application/json'}
+    }));
+  }
+  return PTO_NATIVE_FETCH(input, init);
+};
 
 // Compatibility guard for named-form access across browsers.
 window.addEventListener('load', () => {
@@ -74,7 +93,12 @@ window.addEventListener('load', async () => {
     await loadPtoScript('market-v06.js');
     await loadPtoScript('enhancements-v05.js');
     await loadPtoScript('enhancements-v06.js');
+    window.PTO_ENHANCEMENTS_READY = true;
+    // Re-fetch the real catalogue only after large-catalogue ranking/rendering
+    // has replaced the legacy path.
+    if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
+    window.PTO_ENHANCEMENTS_READY = true;
     console.warn('Path to Offer enhancement load failed; base app remains usable.', err);
   }
 });
