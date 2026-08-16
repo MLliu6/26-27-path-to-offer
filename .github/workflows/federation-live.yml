@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - 'scripts/expand_feed.py'
-      - 'scripts/merge_public_tables.py'
       - 'scripts/china_official_campus.py'
       - 'scripts/compact_feed.py'
       - 'matching-v07.js'
@@ -23,33 +22,33 @@ concurrency:
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 42
     env:
-      PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
-      PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
-      PTO_CHINA_COMPANY_WORKERS: '20'
+      PTO_JOBPRO_BIN: job-pro
+      PTO_JOBPRO_VERSION: '1.2.1'
+      PTO_JOBPRO_WORKERS: '6'
+      PTO_JOBPRO_TIMEOUT: '75'
+      PTO_JOBPRO_MAX_PAGES: '60'
       PTO_CHINA_MAX_CATALOG: '25000'
-      PTO_CATALOG_JD_CHARS: '700'
-      PTO_BROWSER_JD_CHARS: '260'
+      PTO_BROWSER_JD_CHARS: '300'
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Install dependencies
-        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 pycryptodome==3.23.0
-      - name: Fetch pinned MIT company adapter library
+      - name: Install pinned employer campus adapter library
         run: |
-          git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
-          git -C "$PTO_HIRING_RADAR_DIR" checkout --quiet "$PTO_HIRING_RADAR_COMMIT"
-          test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
-      - name: Run live China company-official cycle
+          npm install --global --no-audit --no-fund @ha7ch/job-pro@1.2.1
+          test "$(job-pro --version)" = "1.2.1"
+      - name: Run live campus-official federation cycle
         run: |
           PYTHONPATH=. python scripts/expand_feed.py
-          PYTHONPATH=. python scripts/merge_public_tables.py
           PYTHONPATH=. python scripts/china_official_campus.py
           PYTHONPATH=. python scripts/compact_feed.py
-      - name: Enforce China/campus value and browser payload gates
+      - name: Enforce campus provenance, China focus and payload gates
         run: |
           python - <<'PY'
           import json
@@ -62,16 +61,21 @@ jobs:
           size=path.stat().st_size
           print('LIVE_CATALOG_COUNT=',len(jobs),'PAYLOAD_BYTES=',size,'SCHEMA=',feed.get('schema_version'))
           print('CHINA_FOCUS=',focus)
+          print('ADAPTER=',status.get('adapter_library'))
           for s in status.get('sources',[]):
               print('SOURCE',s.get('name'),'count=',s.get('count'),'ok=',s.get('ok'),'diag=',s.get('diagnostics'))
           names='\n'.join((j.get('c','')+' '+j.get('r','')) for j in jobs).lower()
           assert feed.get('schema_version') == 4
-          assert status.get('catalog_mode') == 'china-campus-first'
-          assert 2_000 <= len(jobs) <= 25_000, len(jobs)
+          assert status.get('catalog_mode') == 'china-campus-official'
+          assert (status.get('adapter_library') or {}).get('version') == '1.2.1'
+          assert 1_000 <= len(jobs) <= 25_000, len(jobs)
+          assert int(focus.get('campus_proven_count') or 0) == len(jobs), focus
+          assert int(focus.get('company_official_count') or 0) == len(jobs), focus
+          assert int(focus.get('foreign_count') or 0) == 0, focus
           assert int(focus.get('beijing_count') or 0) >= 100, focus
-          assert int(focus.get('company_official_count') or 0) >= 1_000, focus
-          assert float(focus.get('direct_link_ratio') or 0) >= 0.85, focus
+          assert int(focus.get('companies_in_catalog') or 0) >= 10, focus
+          assert float(focus.get('direct_link_ratio') or 0) >= 0.95, focus
           assert size < 20_000_000, size
-          for q in ['京东','腾讯','字节']:
+          for q in ['京东','腾讯','字节','百度']:
               assert q.lower() in names, q
           PY
