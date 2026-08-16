@@ -1,143 +1,7 @@
 {
-  "generated_at": "2026-08-16T10:51:07Z",
+  "generated_at": "2026-08-16T10:58:35Z",
   "catalog_count": 60000,
-  "catalog_target": 10000,
   "sources": [
-    {
-      "name": "offerjack",
-      "label": "OfferJack · 公开页面/API",
-      "url": "https://www.offerjack.cn/",
-      "ok": true,
-      "count": 20,
-      "error": "",
-      "diagnostics": {
-        "adapter": "same-origin-browser-replay",
-        "renderer": "google-chrome",
-        "observed_path": "/api/offer/page",
-        "method": "GET",
-        "initial_total": 15584,
-        "initial_size": 20,
-        "initial_pages": 780,
-        "page_size_probe_status": 200,
-        "page_size_probe_preview": "{\"code\":401,\"msg\":\"未登录用户每页最多查看20条数据，请登录后查看更多\",\"data\":null}",
-        "effective_size": 20,
-        "effective_pages": 780,
-        "page_cap": 1000,
-        "stopped_page": 2,
-        "stopped_status": 200,
-        "stopped_preview": "{\"code\":401,\"msg\":\"未登录用户只能查看第一页数据，请登录后查看更多\",\"data\":null}",
-        "stopped_payload_keys": [
-          "code",
-          "msg",
-          "data"
-        ],
-        "stopped_msg": "未登录用户只能查看第一页数据，请登录后查看更多",
-        "last_page": 1,
-        "records_collected": 20,
-        "coverage_ratio": 0.0013
-      }
-    },
-    {
-      "name": "gank-public-search",
-      "label": "Gank Interview · 公开搜索",
-      "url": "https://www.gankinterview.cn/campus",
-      "ok": false,
-      "count": 0,
-      "error": "腾讯: RuntimeError: public campus search input not found",
-      "diagnostics": {
-        "mode": "visible-public-search-ui",
-        "queries_configured": 37,
-        "query_counts": {
-          "京东": 0,
-          "腾讯": -1,
-          "字节跳动": 0,
-          "阿里": -1,
-          "美团": 0,
-          "百度": -1,
-          "华为": 0,
-          "小米": -1,
-          "快手": 0,
-          "拼多多": -1,
-          "蚂蚁集团": 0,
-          "OPPO": -1,
-          "vivo": 0,
-          "大疆": -1,
-          "地平线": 0,
-          "商汤": -1,
-          "科大讯飞": 0,
-          "寒武纪": -1,
-          "海光": 0,
-          "摩尔线程": -1,
-          "沐曦": 0,
-          "理想": -1,
-          "小鹏": 0,
-          "蔚来": -1,
-          "比亚迪": 0,
-          "中兴": -1,
-          "AI Infra": 0,
-          "大模型": -1,
-          "推理": 0,
-          "CUDA": -1,
-          "GPU": 0,
-          "量化": -1,
-          "多模态": 0,
-          "芯片": -1,
-          "编译器": 0,
-          "后端": -1,
-          "算法": 0
-        },
-        "resolved_url": "https://www.gankinterview.cn/campus",
-        "browser": "google-chrome",
-        "records_this_run": 0,
-        "unique_catalog_total": 60000,
-        "failed_queries": [
-          "腾讯: RuntimeError: public campus search input not found",
-          "阿里: RuntimeError: public campus search input not found",
-          "百度: RuntimeError: public campus search input not found",
-          "小米: RuntimeError: public campus search input not found",
-          "拼多多: RuntimeError: public campus search input not found",
-          "OPPO: RuntimeError: public campus search input not found",
-          "大疆: RuntimeError: public campus search input not found",
-          "商汤: RuntimeError: public campus search input not found",
-          "寒武纪: RuntimeError: public campus search input not found",
-          "摩尔线程: RuntimeError: public campus search input not found",
-          "理想: RuntimeError: public campus search input not found",
-          "蔚来: RuntimeError: public campus search input not found"
-        ]
-      }
-    },
-    {
-      "name": "gankinterview-campus",
-      "label": "Gank Interview · 最新校招",
-      "url": "https://www.gankinterview.cn/campus",
-      "ok": true,
-      "count": 50,
-      "error": ""
-    },
-    {
-      "name": "gankinterview-state",
-      "label": "Gank Interview · 国央企校招",
-      "url": "https://www.gankinterview.cn/campus?tab=state",
-      "ok": true,
-      "count": 50,
-      "error": ""
-    },
-    {
-      "name": "playoffer-jobs",
-      "label": "Offer稳了 · 公开校招",
-      "url": "https://job.playoffer.cn/",
-      "ok": false,
-      "count": 0,
-      "error": "source presented a login/CAPTCHA gate; no bypass attempted"
-    },
-    {
-      "name": "codecv-jobs",
-      "label": "CodeCV · 校招岗位",
-      "url": "https://www.codecvcv.com/jobs",
-      "ok": false,
-      "count": 0,
-      "error": "public page returned no compatible recruiting table"
-    },
     {
       "name": "china-official-federation",
       "label": "中国企业官方招聘 / Feishu / Beisen",
@@ -163,15 +27,7 @@
             400
           ],
           [
-            "奇瑞汽车",
-            400
-          ],
-          [
             "懂车帝",
-            400
-          ],
-          [
-            "追觅",
             400
           ],
           [
@@ -179,15 +35,23 @@
             400
           ],
           [
+            "奇瑞汽车",
+            400
+          ],
+          [
+            "追觅",
+            400
+          ],
+          [
             "库洛游戏",
             400
           ],
           [
-            "零跑汽车",
+            "理想汽车",
             400
           ],
           [
-            "理想汽车",
+            "零跑汽车",
             400
           ],
           [
@@ -352,14 +216,46 @@
         },
         "failures": []
       }
+    },
+    {
+      "name": "gankinterview-campus",
+      "label": "Gank Interview · 最新校招",
+      "url": "https://www.gankinterview.cn/campus",
+      "ok": true,
+      "count": 50,
+      "error": ""
+    },
+    {
+      "name": "gankinterview-state",
+      "label": "Gank Interview · 国央企校招",
+      "url": "https://www.gankinterview.cn/campus?tab=state",
+      "ok": true,
+      "count": 50,
+      "error": ""
+    },
+    {
+      "name": "playoffer-jobs",
+      "label": "Offer稳了 · 公开校招",
+      "url": "https://job.playoffer.cn/",
+      "ok": false,
+      "count": 0,
+      "error": "source presented a login/CAPTCHA gate; no bypass attempted"
+    },
+    {
+      "name": "codecv-jobs",
+      "label": "CodeCV · 校招岗位",
+      "url": "https://www.codecvcv.com/jobs",
+      "ok": false,
+      "count": 0,
+      "error": "public page returned no compatible recruiting table"
     }
   ],
-  "federation": {
-    "hiring_radar_commit": "f49ec607e4cb89091a9447c9f527e43d0afdc6a4",
-    "jd_chars_per_record": 600,
-    "catalog_cap": 60000
-  },
+  "retired_sources": [
+    "gank-public-search",
+    "offerjack"
+  ],
   "feed_schema": 4,
   "browser_jd_chars": 220,
-  "feed_bytes": 34001229
+  "feed_bytes": 34001207,
+  "catalog_cap": 60000
 }
