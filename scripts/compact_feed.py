@@ -22,6 +22,7 @@ from scripts.aggregate_jobs import JOBS_PATH, STATUS_PATH, clean
 # 220 chars was selected from a live 60k acceptance run: 360-char previews still
 # produced a ~40.9 MB payload. The official apply URL remains the full JD source.
 MAX_PREVIEW = max(160, int(os.getenv("PTO_BROWSER_JD_CHARS", "220")))
+MAX_ROWS = max(1000, int(os.getenv("PTO_MAX_CATALOG", "60000")))
 
 # These experimental scrapers are no longer part of the production refresh once
 # the official federation is active. Keeping their stale failures in source health
@@ -76,6 +77,11 @@ def encode_job(job: dict[str, Any]) -> dict[str, Any] | None:
     return out
 
 
+def encode_jobs(jobs: list[Any], max_rows: int = MAX_ROWS) -> list[dict[str, Any]]:
+    encoded = [row for job in jobs if isinstance(job, dict) for row in [encode_job(job)] if row]
+    return encoded[:max_rows]
+
+
 def clean_status(status: dict[str, Any]) -> dict[str, Any]:
     out = dict(status or {})
     sources = out.get("sources", [])
@@ -88,7 +94,7 @@ def clean_status(status: dict[str, Any]) -> dict[str, Any]:
 def main() -> int:
     payload = json.loads(JOBS_PATH.read_text(encoding="utf-8"))
     jobs = payload.get("jobs", []) if isinstance(payload, dict) else []
-    encoded = [row for job in jobs if isinstance(job, dict) for row in [encode_job(job)] if row]
+    encoded = encode_jobs(jobs)
     generated = payload.get("generated_at") if isinstance(payload, dict) else None
     output = {"schema_version": 4, "generated_at": generated, "jobs": encoded}
     JOBS_PATH.write_text(json.dumps(output, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
@@ -99,8 +105,9 @@ def main() -> int:
     status["feed_schema"] = 4
     status["browser_jd_chars"] = MAX_PREVIEW
     status["feed_bytes"] = JOBS_PATH.stat().st_size
+    status["catalog_cap"] = MAX_ROWS
     STATUS_PATH.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"compact feed: rows={len(encoded)} bytes={JOBS_PATH.stat().st_size} jd_chars={MAX_PREVIEW}")
+    print(f"compact feed: rows={len(encoded)} bytes={JOBS_PATH.stat().st_size} jd_chars={MAX_PREVIEW} cap={MAX_ROWS}")
     return 0
 
 
