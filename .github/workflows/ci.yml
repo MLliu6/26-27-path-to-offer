@@ -24,10 +24,13 @@ jobs:
         run: |
           node --check app.js
           node --check matching-core.js
+          node --check profile-core-v05.js
           node --check enhancements-v04.js
+          node --check enhancements-v05.js
           node tests/persona_trials.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py scripts/offerjack_browser_replay.py scripts/merge_public_tables.py scripts/gank_browser_search.py tests/browser_smoke.py
-          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs
+          node tests/profile_sections.mjs
+          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py scripts/offerjack_browser_replay.py scripts/merge_public_tables.py scripts/gank_browser_search.py tests/browser_smoke.py tests/test_public_tables.py
+          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables
       - name: Check product invariants
         run: |
           python - <<'PY'
@@ -35,7 +38,9 @@ jobs:
           html=Path('index.html').read_text(encoding='utf-8')
           js=Path('app.js').read_text(encoding='utf-8')
           core=Path('matching-core.js').read_text(encoding='utf-8')
+          profile=Path('profile-core-v05.js').read_text(encoding='utf-8')
           enhancement=Path('enhancements-v04.js').read_text(encoding='utf-8')
+          enhancement5=Path('enhancements-v05.js').read_text(encoding='utf-8')
           css=Path('styles.css').read_text(encoding='utf-8')
           crawler=Path('scripts/aggregate_jobs.py').read_text(encoding='utf-8').lower()
           multisource=Path('scripts/merge_public_tables.py').read_text(encoding='utf-8').lower()
@@ -46,14 +51,19 @@ jobs:
           config=Path('config.js').read_text(encoding='utf-8')
           browser_test=Path('tests/browser_smoke.py').read_text(encoding='utf-8')
           priority_queries=Path('sources/gank_priority_queries.json').read_text(encoding='utf-8')
+          public_pages=Path('sources/public_pages.json').read_text(encoding='utf-8')
           for token in ['resumeImport','jobMarketCards','githubLoginBtn','pipelineView','reviewImport']:
               assert f'id="{token}"' in html, token
           for token in ['extractResumeText','loadFeeds','promoteMarketJob','localStorage']:
               assert token in js, token
           for token in ['filterAndRank','searchMatch','directionScores','recommendedRoles','京东']:
               assert token in core, token
+          for token in ['splitSections','enrichProfile','sectionSummary','profileQuality']:
+              assert token in profile, token
           for token in ['profile-intelligence','搜索优先','画像引擎 v4','portalFor','rebindEnhancedHandlers']:
               assert token in enhancement, token
+          for token in ['RESUME STRUCTURE','分章节','profileVersion=5','roleSearch']:
+              assert token in enhancement5, token
           for token in ['Georgia','prefers-reduced-motion','market-card','drawer','--accent']:
               assert token in css, token
           for token in ['jd-old','profileIntelligence','reviewImport','expect_download']:
@@ -62,16 +72,17 @@ jobs:
               assert token in gank_search, token
           for token in ['京东','腾讯','AI Infra','CUDA']:
               assert token in priority_queries, token
+          assert 'job.playoffer.cn' in public_pages
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
-              assert forbidden not in js+html+core+enhancement, f'mock data leaked: {forbidden}'
-          assert "version: '0.4.1'" in config
+              assert forbidden not in js+html+core+enhancement+enhancement5, f'mock data leaked: {forbidden}'
+          assert "version: '0.5.0'" in config
           assert 'no bypass' in crawler or 'no captcha' in crawler
           assert 'no login' in multisource and 'robots' in multisource
           assert 'canonical_key' in multisource and 'source-independent' in multisource
           assert 'captcha' in renderer and ('does not' in renderer or 'no ' in renderer)
           assert 'captcha' in public_api and ('does not' in public_api or 'no ' in public_api)
           assert 'captcha' in browser_replay and ('no authentication' in browser_replay or 'does not' in browser_replay)
-          print('Path to Offer v0.4.1 reliability checks passed.')
+          print('Path to Offer v0.5 reliability checks passed.')
           PY
       - name: Browser smoke test
         run: |
