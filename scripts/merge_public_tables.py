@@ -8,8 +8,9 @@ This adapter is intentionally conservative:
 - no login, CAPTCHA, anti-bot, hidden endpoint, or pagination bypass;
 - failure of one source never erases previously collected jobs.
 
-It exists to broaden discovery beyond a single aggregator while keeping the source
-boundary auditable and replaceable.
+Multiple curated public slices may overlap. The final catalog therefore performs a
+source-independent canonical dedupe by company + role + location and preserves all
+observed source labels/URLs as provenance.
 """
 from __future__ import annotations
 
@@ -28,7 +29,6 @@ from scripts.aggregate_jobs import (
     STATUS_PATH,
     SourceResult,
     clean,
-    dedupe,
     fetch_public,
     map_headers,
     stable_id,
@@ -114,6 +114,52 @@ def load_json(path: Path, fallback: Any) -> Any:
         return fallback
 
 
+def canonical_text(value: Any) -> str:
+    return clean(value).lower().replace("集团", "").replace("股份有限公司", "").replace("有限公司", "")
+
+
+def canonical_key(job: dict[str, Any]) -> str:
+    """Cross-source identity: do not include source name or source-specific URL."""
+    return stable_id(
+        canonical_text(job.get("company")),
+        canonical_text(job.get("role")),
+        canonical_text(job.get("location")),
+    )
+
+
+def merge_catalog(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    chosen: dict[str, dict[str, Any]] = {}
+    for raw in jobs:
+        if not isinstance(raw, dict) or not clean(raw.get("company")) or not clean(raw.get("role")):
+            continue
+        job = dict(raw)
+        key = canonical_key(job)
+        label = clean(job.get("source_label") or job.get("source"))
+        url = clean(job.get("source_url"))
+        old = chosen.get(key)
+        if old is None:
+            job["id"] = key
+            job["source_labels"] = [label] if label else []
+            job["source_urls"] = [url] if url else []
+            chosen[key] = job
+            continue
+        labels = list(dict.fromkeys([*(old.get("source_labels") or []), label]))
+        urls = list(dict.fromkeys([*(old.get("source_urls") or []), url]))
+        old["source_labels"] = [x for x in labels if x]
+        old["source_urls"] = [x for x in urls if x]
+        # Prefer the richer record while filling any missing canonical fields.
+        richer = job if len(clean(job.get("jd"))) > len(clean(old.get("jd"))) else old
+        poorer = old if richer is job else job
+        if richer is job:
+            saved_labels, saved_urls = old["source_labels"], old["source_urls"]
+            old.clear(); old.update(job); old["id"] = key
+            old["source_labels"], old["source_urls"] = saved_labels, saved_urls
+        for field in ("updated_at", "department", "salary", "batch", "company_type", "industry", "graduation", "education", "notice_url", "apply_url", "jd"):
+            if not clean(old.get(field)) and clean(poorer.get(field)):
+                old[field] = poorer[field]
+    return list(chosen.values())
+
+
 def main() -> int:
     if not CONFIG.exists():
         print("no public page source config")
@@ -145,17 +191,17 @@ def main() -> int:
             sr.error = clean(exc)[:260]
         new_statuses.append(sr)
 
-    merged = dedupe(all_jobs)
+    merged = merge_catalog(all_jobs)
     merged.sort(key=lambda j: (clean(j.get("updated_at")), clean(j.get("company")), clean(j.get("role"))), reverse=True)
     now = utc_now()
     DATA.mkdir(parents=True, exist_ok=True)
-    JOBS_PATH.write_text(json.dumps({"schema_version": 1, "generated_at": now, "jobs": merged}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    JOBS_PATH.write_text(json.dumps({"schema_version": 2, "generated_at": now, "jobs": merged}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     old_sources = [s for s in status.get("sources", []) if isinstance(s, dict)]
     replace_names = {s.name for s in new_statuses}
     old_sources = [s for s in old_sources if s.get("name") not in replace_names]
-    STATUS_PATH.write_text(json.dumps({"generated_at": now, "sources": old_sources + [asdict(s) for s in new_statuses]}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print("public table merge:", ", ".join(f"{s.name}:{'ok' if s.ok else 'fail'}:{s.count}" for s in new_statuses), f"total={len(merged)}")
+    STATUS_PATH.write_text(json.dumps({"generated_at": now, "catalog_count": len(merged), "sources": old_sources + [asdict(s) for s in new_statuses]}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print("public table merge:", ", ".join(f"{s.name}:{'ok' if s.ok else 'fail'}:{s.count}" for s in new_statuses), f"canonical_total={len(merged)}")
     return 0
 
 

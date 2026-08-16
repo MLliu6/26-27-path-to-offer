@@ -1,5 +1,5 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.2.0',
+  version: '0.4.0',
   jobsFeed: './data/jobs.json',
   sourceStatusFeed: './data/source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
@@ -10,9 +10,7 @@ window.PTO_CONFIG = Object.freeze({
   githubOAuthScopes: 'read:user user:email',
 });
 
-// v0.2 compatibility guard. This runs after app.js and fixes named-form access
-// consistently across browsers where `form.id` is the element id string rather
-// than the hidden input named `id`. It can be removed once app.js is bundled.
+// Compatibility guard for named-form access across browsers.
 window.addEventListener('load', () => {
   if (typeof openJob !== 'function') return;
   openJob = function fixedOpenJob(id = null) {
@@ -53,4 +51,25 @@ window.addEventListener('load', () => {
     closeDrawer();
     toast('岗位已删除');
   };
+});
+
+function loadPtoScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = `${src}?v=${encodeURIComponent(window.PTO_CONFIG.version)}`;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`failed to load ${src}`));
+    document.head.appendChild(s);
+  });
+}
+
+// v0.4 is layered on top of the stable v0.2 shell so matching/search can evolve
+// independently while the application tracker remains backward compatible.
+window.addEventListener('load', async () => {
+  try {
+    await loadPtoScript('matching-core.js');
+    await loadPtoScript('enhancements-v04.js');
+  } catch (err) {
+    console.warn('Path to Offer v0.4 enhancement load failed; base app remains usable.', err);
+  }
 });
