@@ -4,88 +4,136 @@
 
 Path to Offer is an open-source candidate operating system for the complete recruiting journey:
 
-`resume → discover → shortlist → prepare → apply → assessment → interview → review → offer → sign`
+`resume → profile → discover → shortlist → prepare → apply → assessment → interview → review → offer → sign`
+
+Live site: **https://mlliu6.github.io/26-27-path-to-offer/**
 
 The product starts empty. It does not ship fake companies, fake applications, fake match scores, or demo interview records.
 
-## Discovery before application
+## v0.4 — search and candidate-profile reliability
 
-The product center of gravity is intentionally placed before the application itself.
+The product center of gravity is intentionally before application. v0.4 fixes two important failure modes discovered through real use: an exact company search could previously be hidden by the resume-match threshold/freshness filter, and resume direction inference was too dependent on a small list of literal keywords.
+
+The new flow is:
 
 1. Upload a PDF / DOCX / TXT resume.
-2. The browser parses it locally and extracts explainable signals: skills, likely directions, degree/year signals and keywords.
-3. `data/jobs.json` is refreshed by GitHub Actions from public, unauthenticated job sources every two hours.
-4. Each real job is scored against the active resume with an explainable local matcher.
-5. The user decides whether to hide it or move it into the application pipeline.
-6. Only then does the normal status timeline begin.
+2. Parse the document locally in the browser.
+3. Build an explainable candidate profile with weighted direction evidence, confidence, core skills, graduation/degree signals and recommended role-search terms.
+4. Read the normalized public job catalog refreshed by GitHub Actions every two hours.
+5. With an empty search box, rank jobs by resume fit and user preferences.
+6. With an explicit query such as `京东`, perform retrieval first: exact company/role searches are **not** suppressed by the match threshold or the “30 days” switch.
+7. Inspect why a job matched, then explicitly move it into the application pipeline.
+8. Keep the resume version, initial match score, dated pipeline events and interview review connected.
+
+`matching-core.js` contains the deterministic profile/search/matching engine so it can be regression-tested independently of the UI. `enhancements-v04.js` layers the richer profile/search experience over the stable application shell.
+
+## Candidate profile
+
+The browser currently infers weighted evidence across broad candidate directions including:
+
+- AI Infra / large-model inference systems
+- CUDA / GPU kernel optimization
+- LLM / VLM quantization and compression
+- VLM / VLA / multimodal
+- AI-chip software / compiler
+- HPC / distributed computing
+- LLM / NLP algorithms
+- computer vision / multimedia
+- backend / distributed systems
+- frontend / client
+- embedded / robotics
+- chip / EDA / hardware
+- data / recommendation / search
+- testing / SRE / security
+- product / operations / business
+- finance / quantitative research
+
+The profile UI exposes direction confidence, supporting evidence, core skills and recommended role-search terms. Users can override target directions and cities; the inferred profile is evidence, not an irreversible label.
+
+PDF parsing uses PDF.js, DOCX uses Mammoth, and TXT uses the native File API. The original resume file is not committed to this public repository. Parsed text and derived signals remain in browser storage unless the user deletes them.
 
 ## Embedded job market
 
-The job market is independently implemented after black-box review of public recruiting aggregators. It supports company / role / skill / city search, location/company-type/batch filtering, resume-match thresholds, freshness and education controls, match/freshness/company sorting, card and table views, source attribution, job-detail drawers, one-click promotion into the pipeline, and explicit “not suitable” feedback stored locally.
+The job market is an independent UI, not an iframe wrapper. Public source records are normalized into Path to Offer's data model and rendered with:
 
-The UI is not an iframe wrapper around another service. It normalizes public source records into Path to Offer's own data model and renders them inside the application.
+- company / role / skill / city search;
+- location, company type and recruiting-batch filters;
+- resume-match threshold and freshness control;
+- match / freshness / company sorting;
+- card and dense-table views;
+- source attribution and source-health diagnostics;
+- match reasons and candidate-profile evidence;
+- one-click promotion into the personal pipeline;
+- local “not suitable” feedback.
 
-## Resume parsing and matching
-
-Resume files are parsed in the browser:
-
-- PDF: PDF.js
-- DOCX: Mammoth
-- TXT: native File API
-
-The original file is not uploaded to this public repository. Parsed text and signals are stored in browser `localStorage` unless the user deletes them. The matcher is deliberately explainable rather than pretending to be a black-box AI score: skill overlap, direction fit, optional target city, degree/year compatibility, and recency are exposed as match reasons.
+For well-known companies, a direct search can also expose the official recruiting portal as a fallback when the public catalog currently lacks a usable apply URL. A portal fallback is clearly treated as a portal, not fabricated as a job record.
 
 ## Public job aggregation
 
 `.github/workflows/refresh-jobs.yml` runs every two hours.
 
-Current source architecture:
+The current architecture combines:
 
-- `OfferJack` public-surface compatibility adapters: rendered table, embedded JSON, headless-browser observation of the same unauthenticated XHR/fetch request used by the page, and same-origin replay of only pagination parameters already observed in that public request.
-- `Public HTML table adapters`: auditable sources listed in `sources/public_pages.json`. The current list includes Gank Interview's public campus page and CodeCV's public jobs page. Each source is fetched only if robots/public access allows it; incompatible or gated pages fail closed and are surfaced in `data/source_status.json`.
-- `CustomJsonFeedAdapter`: plug-in JSON feeds configured in `sources/custom_urls.json`.
-- deterministic normalization and deduplication across sources;
-- source-health output in `data/source_status.json`;
-- previous-feed retention when a temporary source outage occurs.
+- **OfferJack public surface** — public rendered/API records only. Its anonymous interface currently limits deeper pagination, so Path to Offer stops at that boundary rather than bypassing login.
+- **Gank Interview public recruiting tables** — several auditable slices for latest campus jobs, 2027 internship/technology roles, public-sector/energy and finance/consumer coverage.
+- **CodeCV public page adapter** — retained as an independent source; source-health makes parser failures visible rather than silently inventing data.
+- **Custom JSON feeds** — optional normalized public feeds in `sources/custom_urls.json`.
 
-Crawler rules are strict: public unauthenticated surfaces only, robots check when available, no login/CAPTCHA/anti-bot bypass, no hidden credentials, and no copying of non-public source code. When a service restricts unauthenticated users, the crawler stops at that boundary and broadens coverage through other public sources instead.
+The final catalog performs source-independent canonical deduplication by company + role + location and preserves multi-source provenance. A failing source does not erase the previous catalog.
+
+Crawler rules remain strict: public unauthenticated surfaces only, robots checks where available, no login/CAPTCHA/anti-bot bypass, no privileged credentials and no copying non-public source code.
 
 ## Application tracking
 
-The application pipeline supports:
+The pipeline supports:
 
 `发现 → 待投递 → 准备中 → 已投递 → 测评 → 一面 → 二面 → 三面/终面 → HR 面 → Offer → 已签约 → 结束`
 
-Dragging a card between columns records a dated timeline event. A job can retain the resume version and initial match score used when it entered the pipeline, enabling later match-to-interview analytics.
+Dragging between stages records dated timeline events. A selected job retains the resume version and initial match score/direction so later analytics can compare “recommended” with actual interview conversion.
 
 ## Interview preparation and memory
 
-- Multiple resume versions.
+- Multiple resume versions and active-profile switching.
 - User-added GitHub / Notion / document assets.
-- Direct link to the `MLliu6/26-27-interview` knowledge base.
+- Direct link to `MLliu6/26-27-interview` for interview preparation material.
 - TXT / DOCX interview-review import.
-- Review records linked to job history.
-- Analytics stay blank until enough real samples exist.
+- Reviews linked to job history.
+- Analytics remain explicit about insufficient sample size.
+
+## Reliability tests
+
+`tests/persona_trials.mjs` runs ten deliberately different candidate profiles, from marketing and backend candidates to AI Infra, VLM/PTQ, chip/compiler, HPC, robotics, frontend, quant and EDA users.
+
+The suite also locks the concrete regression that motivated v0.4:
+
+- searching `京东` must return a cached 京东 record even when its match score is below a hypothetical 95-point threshold and the record is older than 30 days;
+- `JD` is recognized as a 京东 alias;
+- search works before a resume is uploaded;
+- empty-query recommendation still uses resume fit and remains explainable.
+
+See `docs/UX_AUDIT_V0.4_DRAFT.md` for the adversarial product walkthrough and remediation matrix.
 
 ## GitHub Pages
 
-The repository contains `.github/workflows/pages.yml` for GitHub Pages deployment. The intended public URL is:
+The repository is currently configured in GitHub as:
 
-`https://mlliu6.github.io/26-27-path-to-offer/`
+`Settings → Pages → Deploy from a branch → main → / (root)`
 
-GitHub requires Pages to be enabled once for the repository with **Settings → Pages → Source: GitHub Actions**. After that, pushes to `main` deploy automatically. The repository workflow already contains the official `configure-pages`, `upload-pages-artifact`, and `deploy-pages` steps.
+Therefore every published change/data refresh on `main` is served from:
+
+**https://mlliu6.github.io/26-27-path-to-offer/**
+
+The old GitHub-Actions Pages deployment workflow is intentionally removed to avoid a second, conflicting deployment path.
 
 ## GitHub login and cross-device sync
 
-The UI includes a GitHub login entry and a production auth interface in `config.js`, but the repository does **not** put an OAuth client secret or reusable user token into public JavaScript.
+The UI exposes the intended GitHub-login entry, but a real multi-user OAuth flow still needs a server-side authorization-code/token exchange. A reusable token or OAuth client secret is never embedded in public GitHub Pages JavaScript.
 
-A secure production flow is:
+The production boundary remains:
 
-`github.io frontend → GitHub OAuth/GitHub App → small server-side token exchange → encrypted user storage`
+`github.io frontend → GitHub OAuth/GitHub App → server-side token exchange → encrypted user storage`
 
-Configure `githubClientId` and `githubOAuthProxy` in `config.js` after provisioning the identity backend. Until then, the site remains fully usable in Local-first mode without an account. GitHub's own documentation recommends a GitHub App for fine-grained permissions and short-lived tokens when the product serves multiple users.
-
-See `docs/AUTH_AND_SYNC.md`.
+Until that backend exists, the application remains Local-first and usable without an account. See `docs/AUTH_AND_SYNC.md`.
 
 ## Run locally
 
@@ -103,12 +151,18 @@ python scripts/aggregate_jobs.py
 PYTHONPATH=. python scripts/merge_public_tables.py
 ```
 
+For matching/profile tests:
+
+```bash
+node tests/persona_trials.mjs
+```
+
 ## Design
 
 - Georgia for English/numerals with Chinese serif fallbacks.
 - Light, low-contrast Morandi palette; ten accent themes.
 - Five flat product views rather than deep admin navigation.
-- Hover Lift, Active State, Drawer, Modal, Toast, Kanban Drag, Theme Accent Switch and restrained page transitions.
+- Restrained Hover Lift, Active State, Drawer, Modal, Toast, Kanban Drag and Theme Accent Switch interactions.
 - `prefers-reduced-motion` support.
 - Mobile bottom navigation and single-column job cards.
 
