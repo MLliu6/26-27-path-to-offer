@@ -18,15 +18,15 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Install crawler test dependencies
-        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
       - name: Check JavaScript and Python syntax
         run: |
           node --check app.js
           node --check matching-core.js
           node --check enhancements-v04.js
           node tests/persona_trials.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py scripts/offerjack_browser_replay.py scripts/merge_public_tables.py
+          python -m py_compile scripts/aggregate_jobs.py scripts/render_offerjack.py scripts/offerjack_public_api.py scripts/offerjack_browser_replay.py scripts/merge_public_tables.py tests/browser_smoke.py
           PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs
       - name: Check product invariants
         run: |
@@ -43,16 +43,19 @@ jobs:
           public_api=Path('scripts/offerjack_public_api.py').read_text(encoding='utf-8').lower()
           browser_replay=Path('scripts/offerjack_browser_replay.py').read_text(encoding='utf-8').lower()
           config=Path('config.js').read_text(encoding='utf-8')
+          browser_test=Path('tests/browser_smoke.py').read_text(encoding='utf-8')
           for token in ['resumeImport','jobMarketCards','githubLoginBtn','pipelineView','reviewImport']:
               assert f'id="{token}"' in html, token
           for token in ['extractResumeText','loadFeeds','promoteMarketJob','localStorage']:
               assert token in js, token
           for token in ['filterAndRank','searchMatch','directionScores','recommendedRoles','京东']:
               assert token in core, token
-          for token in ['profile-intelligence','搜索优先','画像引擎 v4','portalFor']:
+          for token in ['profile-intelligence','搜索优先','画像引擎 v4','portalFor','rebindEnhancedHandlers']:
               assert token in enhancement, token
           for token in ['Georgia','prefers-reduced-motion','market-card','drawer','--accent']:
               assert token in css, token
+          for token in ['jd-old','profileIntelligence','reviewImport','expect_download']:
+              assert token in browser_test, token
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
               assert forbidden not in js+html+core+enhancement, f'mock data leaked: {forbidden}'
           assert "version: '0.4.0'" in config
@@ -64,3 +67,10 @@ jobs:
           assert 'captcha' in browser_replay and ('no authentication' in browser_replay or 'does not' in browser_replay)
           print('Path to Offer v0.4 reliability checks passed.')
           PY
+      - name: Browser smoke test
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/path-to-offer-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 1
+          python tests/browser_smoke.py
