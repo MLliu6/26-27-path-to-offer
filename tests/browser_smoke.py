@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import shutil
-from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
@@ -89,8 +88,9 @@ def main() -> int:
         page.locator("#scoreThreshold").evaluate("el => { el.value='95'; el.dispatchEvent(new Event('input',{bubbles:true})); }")
         page.locator("#freshOnly").check()
         page.locator("#jobSearch").fill("京东")
-        page.wait_for_selector('[data-market-id="jd-old"]')
-        assert "京东" in page.locator('[data-market-id="jd-old"]').inner_text()
+        jd_card = page.locator('.market-card[data-market-id="jd-old"]')
+        jd_card.wait_for()
+        assert "京东" in jd_card.inner_text()
 
         # 2. Build a real v4 candidate profile through the UI's paste-resume path.
         page.locator("#jobSearch").fill("")
@@ -115,7 +115,7 @@ def main() -> int:
         page.locator("#scoreThreshold").evaluate("el => { el.value='95'; el.dispatchEvent(new Event('input',{bubbles:true})); }")
         page.locator("#freshOnly").check()
         page.locator("#jobSearch").fill("京东")
-        page.wait_for_selector('[data-market-id="jd-old"]')
+        page.locator('.market-card[data-market-id="jd-old"]').wait_for()
 
         # 5. Shortlist -> pipeline; preserve inferred direction and resume version.
         page.locator('[data-save-job="jd-old"]').click()
@@ -174,7 +174,7 @@ def main() -> int:
         mobile.goto(BASE, wait_until="domcontentloaded")
         mobile.wait_for_selector("#searchPolicy", timeout=12_000)
         mobile.locator("#jobSearch").fill("京东")
-        mobile.wait_for_selector('[data-market-id="jd-old"]')
+        mobile.locator('.market-card[data-market-id="jd-old"]').wait_for()
         assert mobile.locator('[data-save-job="jd-old"]').is_visible()
         mobile.close()
 
