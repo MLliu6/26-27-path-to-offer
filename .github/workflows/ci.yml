@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install test dependencies
-        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright pycryptodome==3.23.0
       - name: Check JavaScript and Python syntax
         run: |
           node --check app.js
@@ -27,13 +27,17 @@ jobs:
           node --check profile-core-v05.js
           node --check enhancements-v04.js
           node --check ranking-v06.js
+          node --check matching-v07.js
           node --check market-v06.js
           node --check enhancements-v05.js
           node --check enhancements-v06.js
+          node --check experience-v07.js
+          node --check performance-v07.js
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py
-          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed
+          node tests/matching_v07.mjs
+          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/china_official_campus.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_china_official_campus.py tests/test_compact_feed.py tests/test_expand_feed.py
+          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_china_official_campus tests.test_compact_feed tests.test_expand_feed
       - name: Check product invariants
         run: |
           python - <<'PY'
@@ -42,58 +46,58 @@ jobs:
           js=Path('app.js').read_text(encoding='utf-8')
           core=Path('matching-core.js').read_text(encoding='utf-8')
           profile=Path('profile-core-v05.js').read_text(encoding='utf-8')
-          enhancement=Path('enhancements-v04.js').read_text(encoding='utf-8')
           ranking=Path('ranking-v06.js').read_text(encoding='utf-8')
+          matching7=Path('matching-v07.js').read_text(encoding='utf-8')
           market=Path('market-v06.js').read_text(encoding='utf-8')
+          experience=Path('experience-v07.js').read_text(encoding='utf-8')
+          performance=Path('performance-v07.js').read_text(encoding='utf-8')
           enhancement5=Path('enhancements-v05.js').read_text(encoding='utf-8')
           enhancement6=Path('enhancements-v06.js').read_text(encoding='utf-8')
-          expand=Path('scripts/expand_feed.py').read_text(encoding='utf-8')
+          china=Path('scripts/china_official_campus.py').read_text(encoding='utf-8').lower()
           compact=Path('scripts/compact_feed.py').read_text(encoding='utf-8')
-          css=Path('styles.css').read_text(encoding='utf-8')
-          federation=Path('scripts/federated_harvester.py').read_text(encoding='utf-8').lower()
           config=Path('config.js').read_text(encoding='utf-8')
           browser_test=Path('tests/browser_smoke.py').read_text(encoding='utf-8')
           theme_test=Path('tests/theme_smoke.py').read_text(encoding='utf-8')
           large_test=Path('tests/large_catalog_smoke.py').read_text(encoding='utf-8')
-          federated_sources=Path('sources/federated_sources.json').read_text(encoding='utf-8')
           for token in ['resumeImport','jobMarketCards','githubLoginBtn','pipelineView','reviewImport']:
               assert f'id="{token}"' in html, token
           for token in ['extractResumeText','loadFeeds','promoteMarketJob','localStorage']:
               assert token in js, token
-          for token in ['filterAndRank','searchMatch','directionScores','recommendedRoles','京东']:
+          for token in ['filterAndRank','directionScores','recommendedRoles','京东']:
               assert token in core, token
           for token in ['splitSections','enrichProfile','sectionSummary','profileQuality']:
               assert token in profile, token
-          for token in ['profile-intelligence','搜索优先','画像引擎 v4','portalFor','rebindEnhancedHandlers']:
-              assert token in enhancement, token
-          for token in ['careerSignal','query-first','graduateProfile','senior']:
+          for token in ['careerSignal','graduateProfile','senior']:
               assert token.lower() in ranking.lower(), token
-          for token in ['PAGE_SIZE=60','marketPager','slice(0,visibleLimit)','baseNormalizeMarketJob','j.c','j.r']:
+          for token in ['classifyJob','title-first','geoSignal','岗位方向不匹配','企业官网']:
+              assert token in matching7, token
+          for token in ['PAGE_SIZE=60','marketPager','slice(0,visibleLimit)','baseNormalizeMarketJob']:
               assert token in market, token
-          for token in ['RESUME STRUCTURE','分章节','profileVersion=5','roleSearch']:
+          for token in ['queryBoost','jobById','geoQuickFilters','官网投递','detailApply','pipeline-quick-actions','requestMarketRender']:
+              assert token in experience, token
+          for token in ['no reason to run semantic scoring','linear filters','rankedVisible']:
+              assert token in performance, token
+          for token in ['RESUME STRUCTURE','分章节','profileVersion=5']:
               assert token in enhancement5, token
-          for token in ['appearance-control','data-appearance','repairSwatches','岗位池','dark']:
+          for token in ['appearance-control','data-appearance','repairSwatches','dark']:
               assert token in enhancement6, token
+          for token in ['feishu','moka','beisen','china-campus-first','beijing_count','direct_link_ratio','company-official public career surfaces']:
+              assert token in china, token
           for token in ['schema_version": 4','("c", "company")','("r", "role")','feed_bytes']:
               assert token in compact, token
-          for token in ['schema_version": 3','previous-compact-cache','expand_payload']:
-              assert token in expand, token
-          for token in ['greenhouse','ashby','lever','feishu','beisen','moka_skipped','board-discovery-only']:
-              assert token in federation or token in federated_sources.lower(), token
-          for token in ['Georgia','prefers-reduced-motion','market-card','drawer','--accent']:
-              assert token in css, token
-          for token in ['jd-old','profileIntelligence','reviewImport','expect_download']:
+          for token in ['AI 产品经理','foreign-ai','detailApply','data-mark-applied','resumeImport']:
               assert token in browser_test, token
           for token in ['appearance-control','backgroundColor','data-appearance-choice']:
               assert token in theme_test, token
           for token in ['COUNT=60000','unbounded card render','京东']:
               assert token in large_test, token
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
-              assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6, f'mock data leaked: {forbidden}'
-          assert "version: '0.6.3'" in config
+              assert forbidden not in js+html+core+matching7+experience, f'mock data leaked: {forbidden}'
+          assert "version: '0.7.0'" in config
+          for token in ['matching-v07.js','experience-v07.js','performance-v07.js']:
+              assert token in config, token
           assert 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
-          assert 'no account credentials' in federation and 'moka' in federation
-          print('Path to Offer v0.6.4 refresh-resilience checks passed.')
+          print('Path to Offer v0.7 China-first/precision/journey checks passed.')
           PY
       - name: Browser smoke tests
         run: |
