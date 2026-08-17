@@ -5,11 +5,13 @@ on:
     paths:
       - 'scripts/expand_feed.py'
       - 'scripts/federated_harvester.py'
+      - 'scripts/direct_china_official.py'
       - 'scripts/compact_feed.py'
       - 'ranking-v07.js'
       - 'enhancements-v07.js'
       - 'market-v06.js'
       - 'sources/federated_sources.json'
+      - 'sources/domestic_direct_sources.json'
       - '.github/workflows/federation-live.yml'
   workflow_dispatch:
 
@@ -35,6 +37,21 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
+      - name: Probe Meituan official public recruiting modes
+        run: |
+          python - <<'PY'
+          import requests
+          api='https://zhaopin.meituan.com/api/official/job/getJobList'
+          for code in ['1','2','3']:
+              body={
+                  'page':{'pageNo':1,'pageSize':5},'keywords':'','jobShareType':'1',
+                  'jobType':[{'code':code,'subCode':[]}],
+                  'cityList':[],'department':[],'jfJgList':[],'typeCode':[],'specialCode':[]
+              }
+              r=requests.post(api,json=body,timeout=20,headers={'User-Agent':'PathToOfferBot/0.8 (+https://github.com/MLliu6/26-27-path-to-offer)'})
+              r.raise_for_status();j=r.json();items=((j.get('data') or {}).get('list') or []);page=((j.get('data') or {}).get('page') or {})
+              print('MEITUAN_CODE',code,'TOTAL',page.get('totalCount'),'SAMPLES',[x.get('name') for x in items[:3]],'KEYS',sorted(items[0].keys())[:40] if items else [])
+          PY
       - name: Fetch pinned MIT adapter library
         run: |
           git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
@@ -44,6 +61,7 @@ jobs:
         run: |
           PYTHONPATH=. python scripts/expand_feed.py
           PYTHONPATH=. python scripts/federated_harvester.py
+          if [ -f scripts/direct_china_official.py ]; then PYTHONPATH=. python scripts/direct_china_official.py; fi
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Enforce global and China-first gates
         run: |
@@ -56,7 +74,7 @@ jobs:
           jobs=feed.get('jobs',[]); cn_jobs=cn.get('jobs',[])
           print('LIVE_GLOBAL=',len(jobs),'GLOBAL_BYTES=',gp.stat().st_size,'LIVE_CN=',len(cn_jobs),'CN_BYTES=',cp.stat().st_size)
           for s in status.get('sources',[]):
-              if s.get('name') in {'china-official-federation','official-ats-discovery','public-remote-boards'}:
+              if s.get('name') in {'china-official-federation','direct-china-official','official-ats-discovery','public-remote-boards'}:
                   print(s.get('name'), 'count=',s.get('count'),'ok=',s.get('ok'))
           assert feed.get('schema_version') == 4 and cn.get('schema_version') == 4
           assert len(jobs) >= 10000
@@ -64,7 +82,7 @@ jobs:
           assert gp.stat().st_size < 35_000_000
           assert cp.stat().st_size < gp.stat().st_size
           names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')) for j in cn_jobs).lower()
-          for q in ['京东','腾讯','字节','北京']:
+          for q in ['京东','腾讯','字节','北京','美团']:
               assert q.lower() in names, f'{q} missing from China-first feed'
           obvious=['united states','germany','france','singapore','tokyo','india']
           overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in obvious))
