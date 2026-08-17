@@ -6,12 +6,23 @@ on:
       - 'scripts/expand_feed.py'
       - 'scripts/federated_harvester.py'
       - 'scripts/direct_china_official.py'
+      - 'scripts/priority_official_harvester.py'
+      - 'scripts/official_site_job_spider.py'
+      - 'scripts/official_campaign_discovery.py'
+      - 'scripts/soe_directory_harvester.py'
+      - 'scripts/university_2027_discovery.py'
+      - 'scripts/ncss_public_harvester.py'
+      - 'scripts/ncss_recent_all.py'
       - 'scripts/compact_feed.py'
       - 'ranking-v07.js'
+      - 'ranking-v09.js'
       - 'enhancements-v07.js'
+      - 'enhancements-v09.js'
       - 'market-v06.js'
       - 'sources/federated_sources.json'
       - 'sources/domestic_direct_sources.json'
+      - 'sources/priority_official_sources.json'
+      - 'sources/campus_discovery_sources.json'
       - '.github/workflows/federation-live.yml'
   workflow_dispatch:
 
@@ -21,7 +32,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 58
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
@@ -30,6 +41,9 @@ jobs:
       PTO_BROWSER_JD_CHARS: '220'
       PTO_MAX_CATALOG: '60000'
       PTO_MAX_CN_CATALOG: '30000'
+      PTO_NCSS_MAX_EXPLICIT: '15000'
+      PTO_NCSS_PRIORITY_COMPANIES: '80'
+      PTO_NCSS_ALL_MAX_ROWS: '12000'
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -37,33 +51,26 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
-      - name: Probe Meituan and JD official recruiting modes
-        run: |
-          python - <<'PY'
-          import requests
-          ua={'User-Agent':'PathToOfferBot/0.8 (+https://github.com/MLliu6/26-27-path-to-offer)'}
-          m='https://zhaopin.meituan.com/api/official/job/getJobList'
-          for code in ['1','2','3']:
-              body={'page':{'pageNo':1,'pageSize':5},'keywords':'','jobShareType':'1','jobType':[{'code':code,'subCode':[]}],'cityList':[],'department':[],'jfJgList':[],'typeCode':[],'specialCode':[]}
-              j=requests.post(m,json=body,timeout=20,headers=ua).json(); items=((j.get('data') or {}).get('list') or []); page=((j.get('data') or {}).get('page') or {})
-              print('MEITUAN_CODE',code,'TOTAL',page.get('totalCount'),'SAMPLES',[x.get('name') for x in items[:3]])
-          jd='https://zhaopin.jd.com/web/job/job_list'; h={**ua,'Referer':'https://zhaopin.jd.com/','X-Requested-With':'XMLHttpRequest','Content-Type':'application/x-www-form-urlencoded'}
-          for code in [1,2,3]:
-              r=requests.post(jd,data={'pageIndex':1,'pageSize':8,'jobType':code},headers=h,timeout=20); r.raise_for_status(); p=r.json(); rows=p if isinstance(p,list) else (p.get('data') or p.get('list') or [])
-              print('JD_TYPE',code,'COUNT_PAGE',len(rows),'SAMPLES',[x.get('positionName') for x in rows[:4]],'JOB_TYPES',[(x.get('jobType'),x.get('jobTypeCode'),x.get('positionType')) for x in rows[:4]])
-          PY
       - name: Fetch pinned fallback adapter library
         run: |
           git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
           git -C "$PTO_HIRING_RADAR_DIR" checkout --quiet "$PTO_HIRING_RADAR_COMMIT"
           test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
-      - name: Run resilient live federation and compact transport
+      - name: Run live nationwide China-first source stack
         run: |
           PYTHONPATH=. python scripts/expand_feed.py
           PYTHONPATH=. python scripts/federated_harvester.py
           PYTHONPATH=. python scripts/direct_china_official.py
+          PYTHONPATH=. python scripts/merge_public_tables.py
+          PYTHONPATH=. python scripts/priority_official_harvester.py
+          PYTHONPATH=. python scripts/official_site_job_spider.py
+          PYTHONPATH=. python scripts/official_campaign_discovery.py
+          PYTHONPATH=. python scripts/soe_directory_harvester.py
+          PYTHONPATH=. python scripts/university_2027_discovery.py
+          PYTHONPATH=. python scripts/ncss_public_harvester.py
+          PYTHONPATH=. python scripts/ncss_recent_all.py
           PYTHONPATH=. python scripts/compact_feed.py
-      - name: Enforce global, China-first and employer-direct gates
+      - name: Enforce nationwide 2027 acceptance gates
         run: |
           python - <<'PY'
           import json
@@ -75,24 +82,44 @@ jobs:
           assert feed.get('schema_version') == 4 and cn.get('schema_version') == 4
           assert len(jobs) >= 10000 and len(cn_jobs) >= 1000
           assert gp.stat().st_size < 40_000_000 and cp.stat().st_size < gp.stat().st_size
-          names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')) for j in cn_jobs).lower()
-          for q in ['京东','腾讯','字节','北京','美团']: assert q.lower() in names, f'{q} missing from China-first feed'
+          names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')+' '+j.get('x','')) for j in cn_jobs).lower()
+          for q in ['京东','腾讯','字节','北京','美团','航天科工','银河通用','中国银行','宇树','小鹏']:
+              assert q.lower() in names, f'{q} missing from China-first feed'
           direct=next((s for s in status.get('sources',[]) if s.get('name')=='direct-china-official'),None); assert direct and direct.get('ok')
           companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
-          print('DIRECT_COMPANIES=',[(k,v.get('count'),v.get('ok'),v.get('diagnostics')) for k,v in companies.items()])
-          assert companies.get('美团',{}).get('count',0)>=50
-          assert companies.get('腾讯',{}).get('count',0)>=100
-          obvious=['united states','germany','france','singapore','tokyo','india']
-          overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in obvious))
-          assert overseas <= max(10,len(cn_jobs)//200), f'overseas leakage too high: {overseas}'
-          # Exact user-path acceptance: 美团 must have Beijing rows and at least
-          # one Beijing technical/AI row in the default China product feed.
-          meituan=[j for j in cn_jobs if '美团' in j.get('c','')]
-          mt_bj=[j for j in meituan if '北京' in j.get('l','')]
+          assert companies.get('美团',{}).get('count',0)>=50 and companies.get('腾讯',{}).get('count',0)>=100
+          priority=next((s for s in status.get('sources',[]) if s.get('name')=='priority-official-sources'),None); assert priority and priority.get('ok')
+          pdiag=priority.get('diagnostics') or {}; adapters=pdiag.get('adapters') or []; assert pdiag.get('watch_total',0)>=50
+          campaigns=lambda company:[x for x in adapters if x.get('company')==company and x.get('type')=='campaign']
+          assert sum(x.get('count',0) for x in campaigns('航天科工集团'))>=9
+          assert sum(x.get('count',0) for x in campaigns('银河通用'))>=6
+          assert sum(x.get('count',0) for x in campaigns('宇树科技'))>=7
+          assert sum(x.get('count',0) for x in campaigns('小鹏集团'))>=4
+          assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3
+          site_spider=next((s for s in status.get('sources',[]) if s.get('name')=='employer-site-job-spider'),None); assert site_spider is not None
+          campaign=next((s for s in status.get('sources',[]) if s.get('name')=='official-campaign-discovery'),None); assert campaign and (campaign.get('diagnostics') or {}).get('portals',0)>=50
+          soe=next((s for s in status.get('sources',[]) if s.get('name')=='central-soe-official-directory'),None); assert soe is not None
+          university=next((s for s in status.get('sources',[]) if s.get('name')=='university-2027-discovery'),None); assert university is not None
+          ncss=next((s for s in status.get('sources',[]) if s.get('name')=='ncss-2027-public'),None); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500, ncss
+          ndiag=ncss.get('diagnostics') or {}; assert ndiag.get('beijing_technical_rows',0)>=8 and ndiag.get('state_owned_rows',0)>=10, ndiag
+          ncss_all=next((s for s in status.get('sources',[]) if s.get('name')=='ncss-current-all'),None); assert ncss_all and ncss_all.get('ok') and ncss_all.get('count',0)>=100, ncss_all
+          meituan=[j for j in cn_jobs if '美团' in j.get('c','')]; mt_bj=[j for j in meituan if '北京' in j.get('l','')]
           tech=('大模型','算法','ai','推理','infra','研发','开发','技术','机器学习','多模态')
-          mt_bj_tech=[j for j in mt_bj if any(t in (j.get('r','')+' '+j.get('d','')).lower() for t in tech)]
-          print('MEITUAN_CN=',len(meituan),'MEITUAN_BEIJING=',len(mt_bj),'MEITUAN_BEIJING_TECH=',len(mt_bj_tech),'SAMPLES=',[(j.get('r'),j.get('l')) for j in mt_bj_tech[:8]])
-          assert mt_bj, 'Meituan has no Beijing rows in default China feed'
-          assert mt_bj_tech, 'Meituan has no Beijing technical/AI rows in default China feed'
-          print('China-first overseas leakage=',overseas)
+          mt_bj_tech=[j for j in mt_bj if any(t in (j.get('r','')+' '+j.get('d','')).lower() for t in tech)]; assert mt_bj and mt_bj_tech
+          casic_bj=[j for j in cn_jobs if '航天科工' in j.get('c','') and '北京' in j.get('l','') and '2027' in (j.get('r','')+j.get('g','')+j.get('b',''))]
+          galbot_rows=[j for j in cn_jobs if '银河通用' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
+          boc_rows=[j for j in cn_jobs if '中国银行' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
+          unitree_rows=[j for j in cn_jobs if '宇树' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
+          xpeng_rows=[j for j in cn_jobs if '小鹏' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
+          assert len(casic_bj)>=9 and len(galbot_rows)>=6 and len(boc_rows)>=3 and len(unitree_rows)>=7 and len(xpeng_rows)>=4
+          obvious=['united states','germany','france','singapore','tokyo','india']; overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in obvious)); assert overseas <= max(10,len(cn_jobs)//200)
+          print('DIRECT_COMPANIES=',[(k,v.get('count'),v.get('ok')) for k,v in companies.items()])
+          print('PRIORITY_WATCH=',pdiag.get('watch_ok'),'/',pdiag.get('watch_total'),'root_2027=',pdiag.get('watch_2027'))
+          print('SITE_SPIDER=',site_spider.get('count'),site_spider.get('diagnostics'))
+          print('PRIORITY_CAMPAIGNS=',[(x.get('company'),x.get('count'),x.get('ok')) for x in adapters if x.get('type')=='campaign'])
+          print('NCSS_TARGETED=',ncss.get('count'),ndiag)
+          print('NCSS_ALL=',ncss_all.get('count'),ncss_all.get('diagnostics'))
+          print('UNIVERSITY=',university.get('count'),university.get('diagnostics'))
+          print('SOE_DIRECTORY=',soe.get('count'),soe.get('diagnostics'))
+          print('FINAL_KEY_ROWS=',{'CASIC_BJ':len(casic_bj),'GALBOT':len(galbot_rows),'BOC':len(boc_rows),'UNITREE':len(unitree_rows),'XPENG':len(xpeng_rows),'MEITUAN_BJ_TECH':len(mt_bj_tech),'OVERSEAS':overseas})
           PY

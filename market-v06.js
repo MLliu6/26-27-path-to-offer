@@ -2,20 +2,23 @@
   'use strict';
   if(typeof renderMarket!=='function'||typeof visibleMarketJobs!=='function')return;
 
-  // Feed schema v4 uses one-character transport keys to keep a 60k static
-  // catalogue practical on GitHub Pages. The rest of the app continues to use
-  // the stable descriptive in-memory model.
+  // Feed schema v4 uses one-character transport keys. Keep provenance tier
+  // (`q`) and, critically, keep notice URL (`n`) separate from employer apply
+  // URL (`u`). NCSS/university discovery must never be presented as a fake
+  // “官网投递” merely because it has a public notice page.
   const baseNormalizeMarketJob=normalizeMarketJob;
   normalizeMarketJob=function(j){
     if(j&&j.c!==undefined&&j.r!==undefined){
       return {
-        id:j.i||uid('feed'),source:'federated',sourceLabel:j.x||'公开招聘来源',sourceUrl:'',
+        id:j.i||uid('feed'),source:'federated',sourceLabel:j.x||'公开招聘来源',sourceTier:Number(j.q)||1,sourceUrl:'',
         company:j.c||'',department:j.m||'',role:j.r||'',location:j.l||'',salary:j.p||'',
         batch:j.b||'',companyType:j.y||'',industry:j.h||'',graduation:j.g||'',education:j.e||'',
-        updatedAt:j.t||'',noticeUrl:j.n||'',applyUrl:j.u||j.n||'',jd:j.d||j.r||'',tags:[]
+        updatedAt:j.t||'',noticeUrl:j.n||'',applyUrl:j.u||'',jd:j.d||j.r||'',tags:[]
       };
     }
-    return baseNormalizeMarketJob(j);
+    const out=baseNormalizeMarketJob(j);
+    if(out&&!Number.isFinite(out.sourceTier))out.sourceTier=1;
+    return out;
   };
 
   const PAGE_SIZE=60;
@@ -39,10 +42,7 @@
 
   function ensurePager(){
     let el=document.querySelector('#marketPager');
-    if(!el){
-      el=document.createElement('div');el.id='marketPager';el.className='market-pager';
-      const market=document.querySelector('.job-market');market?.appendChild(el);
-    }
+    if(!el){el=document.createElement('div');el.id='marketPager';el.className='market-pager';const market=document.querySelector('.job-market');market?.appendChild(el);}
     return el;
   }
   function ensurePerfStyles(){
@@ -53,8 +53,6 @@
     `;document.head.appendChild(style);
   }
 
-  // Computing select options from 60k rows on every state update is wasted
-  // work. Cache the values until the catalogue length changes.
   renderMarketFilters=function(){
     if(filterCache.len!==marketJobs.length){
       filterCache.len=marketJobs.length;

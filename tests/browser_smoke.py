@@ -140,6 +140,14 @@ def main() -> int:
         page.locator("#jobSearch").fill("京东")
         page.locator('.market-card[data-market-id="jd-old"]').wait_for()
 
+        # v0.9 scoring must expose its eight-dimensional explanation in the
+        # actual detail drawer rather than returning an opaque 99-style badge.
+        page.locator('.market-card[data-market-id="jd-old"] [data-open-detail="jd-old"]').click()
+        page.wait_for_selector(".pto-score-audit")
+        audit = page.locator(".pto-score-audit").inner_text()
+        assert "匹配评分明细" in audit and "方向 / 30" in audit and "来源可信度 / 7" in audit
+        page.locator("#closeDrawer").click()
+
         # 5. Shortlist -> pipeline; use the visible card action, not the hidden table duplicate.
         page.locator('.market-card[data-market-id="jd-old"] [data-save-job="jd-old"]').click()
         page.locator('button.nav-item[data-view="pipeline"]').click()
@@ -184,8 +192,18 @@ def main() -> int:
         accent = page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()")
         assert accent.lower() == "#9db4c5"
 
-        # Source-health panel remains accessible.
         page.locator('button.nav-item[data-view="discover"]').click()
+
+        # A monitored priority employer with zero current rows must not look like
+        # an unknown company. The product should expose the official source and
+        # explicitly distinguish “under monitoring” from a fabricated job result.
+        page.locator("#jobSearch").fill("中石油")
+        page.wait_for_selector("#ptoSourceFallback")
+        fallback = page.locator("#ptoSourceFallback").inner_text()
+        assert "中国石油" in fallback and "官方招聘源已纳入雷达" in fallback
+        assert page.locator('#ptoSourceFallback a[href="https://zhaopin.cnpc.com.cn/"]').count() == 1
+
+        # Source-health panel remains accessible.
         page.locator("#openSourcePanel").click()
         page.wait_for_selector(".source-modal")
         assert "Browser QA" in page.locator(".source-modal").inner_text()
