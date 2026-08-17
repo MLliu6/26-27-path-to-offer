@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "policy": "Canonical job rows should come from the employer's own public recruiting site or its explicitly public recruiting tenant. Third-party aggregators may help discover a company source but are not canonical when an official source is available.",
   "sources": [
     {
@@ -13,6 +13,18 @@
       "page_size": 100,
       "company_type": "民营/互联网",
       "priority_cities": ["北京", "上海", "深圳", "广州", "杭州"]
+    },
+    {
+      "id": "bytedance",
+      "company": "字节跳动",
+      "adapter": "bytedance",
+      "official_url": "https://jobs.bytedance.com/campus/position",
+      "enabled": true,
+      "scopes": ["campus", "intern"],
+      "max_pages": 40,
+      "page_size": 100,
+      "company_type": "民营/互联网",
+      "priority_cities": ["北京", "上海", "深圳", "杭州", "广州"]
     },
     {
       "id": "tencent",
