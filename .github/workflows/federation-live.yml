@@ -1,7 +1,10 @@
 name: live-federation-acceptance
 
 on:
+  # 外部招聘站点是非确定性依赖。PR 不再每次 synchronize 都重跑 5~10 分钟的实时爬取，
+  # 只在 PR 建立/重新打开/从 draft 变为 ready 时做一次建议性验收；需要严格复测时手动触发。
   pull_request:
+    types: [opened, reopened, ready_for_review]
     paths:
       - 'scripts/expand_feed.py'
       - 'scripts/federated_harvester.py'
@@ -29,10 +32,17 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: live-federation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   probe:
     runs-on: ubuntu-24.04
     timeout-minutes: 58
+    # PR 自动验收只作为外部数据源健康提示：站点超时、反爬、结果数量瞬时变化不能把整个 PR 标红并发失败邮件。
+    # workflow_dispatch 保持严格模式；手动触发时任何失败仍会得到真正的红灯。
+    continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
