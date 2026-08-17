@@ -25,14 +25,18 @@ on:
 permissions:
   contents: write
 
+# 只保留最新刷新。外部站点慢/超时时，不让旧刷新排队追着新刷新跑。
 concurrency:
   group: refresh-public-jobs
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   aggregate:
     runs-on: ubuntu-24.04
     timeout-minutes: 58
+    # schedule/push 都属于无人值守自动刷新：招聘站点反爬、超时、临时数量波动时应停止本轮、保留旧数据，
+    # 但不要把仓库 CI 标红并连续发失败邮件。workflow_dispatch 保留严格模式，供人工验收。
+    continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
