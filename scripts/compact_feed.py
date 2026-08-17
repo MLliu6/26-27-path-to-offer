@@ -4,8 +4,9 @@
 The crawler keeps descriptive fields for maintainability. The browser receives a
 short-key schema. `jobs.json` remains the auditable global catalogue; `jobs_cn.json`
 is the default product feed and contains domestic/China-located jobs only, ordered
-so employer-direct sources, Beijing, first-tier cities, campus/graduate roles and
-technical roles are available without transferring irrelevant overseas records.
+so employer-direct sources, verified campus discovery, Beijing/first-tier cities,
+graduate roles and technical roles are available without transferring irrelevant
+overseas records.
 """
 from __future__ import annotations
 
@@ -29,8 +30,8 @@ CN_CITIES = (
 )
 FIRST_TIER = {"北京","上海","深圳","广州","杭州"}
 OVERSEAS = re.compile(r"海外|美国|加拿大|英国|德国|法国|欧洲|新加坡|日本|韩国|澳大利亚|印度|poland|germany|france|london|new york|san francisco|singapore|tokyo|india|united states|canada", re.I)
-CAMPUS = re.compile(r"校招|校园招聘|应届|毕业生|实习|实习生|new\s*grad|graduate|campus|intern", re.I)
-TECH = re.compile(r"ai|llm|vlm|vla|大模型|多模态|推理|cuda|gpu|kernel|算子|量化|ptq|编译器|compiler|runtime|npu|芯片|hpc|高性能|分布式|后端|算法|机器学习|深度学习|计算机视觉|嵌入式|机器人", re.I)
+CAMPUS = re.compile(r"2027|27届|校招|校园招聘|应届|毕业生|实习|实习生|new\s*grad|graduate|campus|intern", re.I)
+TECH = re.compile(r"ai|llm|vlm|vla|大模型|多模态|推理|cuda|gpu|kernel|算子|量化|ptq|编译器|compiler|runtime|npu|芯片|hpc|高性能|分布式|后端|算法|机器学习|深度学习|计算机视觉|嵌入式|机器人|软件|信息科技|金融科技|网络安全|云计算", re.I)
 
 FIELDS = [
     ("i", "id"), ("c", "company"), ("r", "role"), ("l", "location"),
@@ -47,16 +48,23 @@ def compact_text(value: Any, limit: int = MAX_PREVIEW) -> str:
 
 def source_class(job: dict[str, Any]) -> str:
     source = clean(job.get("source")).lower()
+    label = clean(job.get("source_label"))
     if source.startswith("direct-official:"):
-        label = clean(job.get("source_label"))
         return label[:40] if label else "企业招聘官网 · 自主直连"
+    if source.startswith("priority-official:") or source.startswith("priority-campaign:"):
+        return label[:40] if label else "重点企业 2027 招聘源"
+    if source.startswith("ncss-public:"):
+        return "国家大学生就业服务平台 · 2027招聘"
+    if source.startswith("campus-discovery:university"):
+        return label[:40] if label else "高校就业网 · 2027招聘发现"
+    if source.startswith("priority-discovery:sasac") or source.startswith("priority-official:soe-directory"):
+        return label[:40] if label else "央企官方招聘发现"
     if source.startswith("china-official"):
         return "中国企业官方招聘"
     if source.startswith("ats:"):
         return "企业官方 ATS"
     if source.startswith("remote-board"):
         return "公开远程招聘板"
-    label = clean(job.get("source_label"))
     return label[:40] if label else "公开招聘来源"
 
 
@@ -99,35 +107,71 @@ def is_domestic(job: dict[str, Any]) -> bool:
     src = verbose_source(job).lower()
     if OVERSEAS.search(loc):
         return False
-    if src.startswith("direct-official:") or src.startswith("china-official") or "中国企业官方招聘" in src or "招聘官网" in src:
+    domestic_source_prefixes = (
+        "direct-official:", "priority-official:", "priority-campaign:", "priority-discovery:",
+        "ncss-public:", "campus-discovery:university", "china-official",
+    )
+    if src.startswith(domestic_source_prefixes) or "中国企业官方招聘" in src or "招聘官网" in src or "国家大学生就业" in src or "高校就业网" in src:
         return True
     if any(city in loc for city in CN_CITIES):
         return True
     return bool(re.search(r"(?:中国|china|\bcn\b)", loc, re.I))
 
 
+def source_priority(src: str) -> int:
+    s = src.lower()
+    if s.startswith("direct-official:") or "招聘官网" in s:
+        return 145
+    if s.startswith("priority-official:"):
+        return 135
+    if s.startswith("priority-campaign:"):
+        return 110
+    if s.startswith("china-official") or "中国企业官方招聘" in s:
+        return 95
+    if s.startswith("ncss-public:") or "国家大学生就业" in s:
+        return 80
+    if s.startswith("priority-discovery:sasac") or "国资委" in s:
+        return 72
+    if s.startswith("campus-discovery:university") or "高校就业网" in s:
+        return 65
+    if s.startswith("ats:") or "企业官方 ats" in s:
+        return 55
+    return 0
+
+
 def domestic_priority(job: dict[str, Any]) -> tuple[int, str, str]:
     loc = verbose_location(job)
-    src = verbose_source(job).lower()
+    src = verbose_source(job)
     role = clean(job.get("role") or job.get("r"))
     jd = clean(job.get("jd") or job.get("d"))
-    score = 0
-    if src.startswith("direct-official:") or "招聘官网" in src:
-        score += 125
-    elif src.startswith("china-official") or "中国企业官方招聘" in src:
-        score += 80
+    batch = clean(job.get("batch") or job.get("b"))
+    graduation = clean(job.get("graduation") or job.get("g"))
+    score = source_priority(src)
     if "北京" in loc:
-        score += 60
+        score += 65
     elif any(c in loc for c in FIRST_TIER):
+        score += 38
+    if CAMPUS.search(" ".join((role, jd, batch, graduation))):
         score += 35
-    if CAMPUS.search(" ".join((role, jd, clean(job.get("batch") or job.get("b")), clean(job.get("graduation") or job.get("g"))))):
-        score += 30
-    if TECH.search(role):
+    if "2027" in role + jd + batch + graduation or "27届" in role + jd + batch + graduation:
         score += 18
+    if TECH.search(role):
+        score += 22
+    elif TECH.search(jd):
+        score += 9
     if clean(job.get("apply_url") or job.get("u")):
         score += 8
+    elif clean(job.get("notice_url") or job.get("n")):
+        score += 3
     updated = clean(job.get("updated_at") or job.get("t"))
     return (-score, updated, clean(job.get("company") or job.get("c")))
+
+
+def global_priority(job: dict[str, Any]) -> tuple[int, str]:
+    src = verbose_source(job)
+    campus_blob = " ".join((clean(job.get("role")), clean(job.get("batch")), clean(job.get("graduation"))))
+    score = source_priority(src) + (20 if CAMPUS.search(campus_blob) else 0)
+    return (-score, clean(job.get("updated_at")))
 
 
 def clean_status(status: dict[str, Any]) -> dict[str, Any]:
@@ -150,12 +194,9 @@ def main() -> int:
     jobs = payload.get("jobs", []) if isinstance(payload, dict) else []
     generated = payload.get("generated_at") if isinstance(payload, dict) else None
 
-    # Direct employer rows are deliberately placed before the global cap so a
-    # 60k legacy/federated cache cannot crowd newly fetched official jobs out.
-    global_verbose = sorted(
-        [j for j in jobs if isinstance(j, dict)],
-        key=lambda j: 0 if verbose_source(j).lower().startswith("direct-official:") else 1,
-    )
+    # High-provenance/current campus rows are placed before the global cap so a
+    # legacy 60k cache cannot crowd out newly discovered China recruiting data.
+    global_verbose = sorted([j for j in jobs if isinstance(j, dict)], key=global_priority)
     global_encoded = encode_jobs(global_verbose, MAX_ROWS)
     global_bytes = write_feed(JOBS_PATH, generated, global_encoded)
 
