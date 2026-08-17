@@ -2,10 +2,19 @@ name: static-checks
 
 on:
   push:
+    # 定时抓取只会改这三份生成数据；不要因此每两小时再完整跑一遍静态/浏览器 CI。
+    paths-ignore:
+      - 'data/jobs.json'
+      - 'data/jobs_cn.json'
+      - 'data/source_status.json'
   pull_request:
 
 permissions:
   contents: read
+
+concurrency:
+  group: static-checks-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
