@@ -4,8 +4,8 @@
 The crawler keeps descriptive fields for maintainability. The browser receives a
 short-key schema. `jobs.json` remains the auditable global catalogue; `jobs_cn.json`
 is the default product feed and contains domestic/China-located jobs only, ordered
-so Beijing, first-tier cities, campus/graduate roles and China-official sources are
-available without transferring tens of thousands of irrelevant overseas records.
+so employer-direct sources, Beijing, first-tier cities, campus/graduate roles and
+technical roles are available without transferring irrelevant overseas records.
 """
 from __future__ import annotations
 
@@ -47,6 +47,9 @@ def compact_text(value: Any, limit: int = MAX_PREVIEW) -> str:
 
 def source_class(job: dict[str, Any]) -> str:
     source = clean(job.get("source")).lower()
+    if source.startswith("direct-official:"):
+        label = clean(job.get("source_label"))
+        return label[:40] if label else "企业招聘官网 · 自主直连"
     if source.startswith("china-official"):
         return "中国企业官方招聘"
     if source.startswith("ats:"):
@@ -93,10 +96,10 @@ def verbose_source(job: dict[str, Any]) -> str:
 
 def is_domestic(job: dict[str, Any]) -> bool:
     loc = verbose_location(job)
-    src = verbose_source(job)
+    src = verbose_source(job).lower()
     if OVERSEAS.search(loc):
         return False
-    if src.startswith("china-official") or "中国企业官方招聘" in src:
+    if src.startswith("direct-official:") or src.startswith("china-official") or "中国企业官方招聘" in src or "招聘官网" in src:
         return True
     if any(city in loc for city in CN_CITIES):
         return True
@@ -105,11 +108,13 @@ def is_domestic(job: dict[str, Any]) -> bool:
 
 def domestic_priority(job: dict[str, Any]) -> tuple[int, str, str]:
     loc = verbose_location(job)
-    src = verbose_source(job)
+    src = verbose_source(job).lower()
     role = clean(job.get("role") or job.get("r"))
     jd = clean(job.get("jd") or job.get("d"))
     score = 0
-    if src.startswith("china-official") or "中国企业官方招聘" in src:
+    if src.startswith("direct-official:") or "招聘官网" in src:
+        score += 125
+    elif src.startswith("china-official") or "中国企业官方招聘" in src:
         score += 80
     if "北京" in loc:
         score += 60
@@ -145,7 +150,13 @@ def main() -> int:
     jobs = payload.get("jobs", []) if isinstance(payload, dict) else []
     generated = payload.get("generated_at") if isinstance(payload, dict) else None
 
-    global_encoded = encode_jobs(jobs, MAX_ROWS)
+    # Direct employer rows are deliberately placed before the global cap so a
+    # 60k legacy/federated cache cannot crowd newly fetched official jobs out.
+    global_verbose = sorted(
+        [j for j in jobs if isinstance(j, dict)],
+        key=lambda j: 0 if verbose_source(j).lower().startswith("direct-official:") else 1,
+    )
+    global_encoded = encode_jobs(global_verbose, MAX_ROWS)
     global_bytes = write_feed(JOBS_PATH, generated, global_encoded)
 
     domestic_verbose = [j for j in jobs if isinstance(j, dict) and is_domestic(j)]

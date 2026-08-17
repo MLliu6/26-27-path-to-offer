@@ -34,8 +34,8 @@ jobs:
           node --check enhancements-v07.js
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py
-          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed
+          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/direct_china_official.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py tests/test_direct_china_official.py
+          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official
       - name: Check product invariants
         run: |
           python - <<'PY'
@@ -51,6 +51,8 @@ jobs:
           enhancement5=Path('enhancements-v05.js').read_text(encoding='utf-8')
           enhancement6=Path('enhancements-v06.js').read_text(encoding='utf-8')
           enhancement7=Path('enhancements-v07.js').read_text(encoding='utf-8')
+          direct=Path('scripts/direct_china_official.py').read_text(encoding='utf-8')
+          registry=Path('sources/domestic_direct_sources.json').read_text(encoding='utf-8')
           expand=Path('scripts/expand_feed.py').read_text(encoding='utf-8')
           compact=Path('scripts/compact_feed.py').read_text(encoding='utf-8')
           css=Path('styles.css').read_text(encoding='utf-8')
@@ -80,9 +82,13 @@ jobs:
               assert token in enhancement5, token
           for token in ['appearance-control','data-appearance','repairSwatches','岗位池','dark']:
               assert token in enhancement6, token
-          for token in ['pto-flow','查看详情','官网投递','复制岗位链接','北京优先']:
+          for token in ['market.prepend(el)','pto-flow','查看详情','官网投递','复制岗位链接','北京优先']:
               assert token in enhancement7, token
-          for token in ['jobs_cn.json','cn_catalog_count','is_domestic','domestic_priority']:
+          for token in ['direct-official:meituan','direct-official:tencent','zhaopin.meituan.com/api/official/job/getJobList','careers.tencent.com/tencentcareer/api/post/Query','国内企业招聘官网 · 自主直连']:
+              assert token in direct, token
+          for token in ['"meituan"','"tencent"','zhaopin.meituan.com/web/campus','careers.tencent.com']:
+              assert token in registry, token
+          for token in ['jobs_cn.json','cn_catalog_count','is_domestic','domestic_priority','direct-official:']:
               assert token in compact, token
           for token in ['schema_version": 3','previous-compact-cache','expand_payload']:
               assert token in expand, token
@@ -90,7 +96,7 @@ jobs:
               assert token in federation or token in federated_sources.lower(), token
           for token in ['Georgia','prefers-reduced-motion','market-card','drawer','--accent']:
               assert token in css, token
-          for token in ['jd-old','profileIntelligence','reviewImport','expect_download']:
+          for token in ['jd-old','profileIntelligence','reviewImport','expect_download','parentElement.classList.contains(\'job-market\')','官网投递']:
               assert token in browser_test, token
           for token in ['appearance-control','backgroundColor','data-appearance-choice']:
               assert token in theme_test, token
@@ -98,10 +104,10 @@ jobs:
               assert token in large_test, token
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
               assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6+enhancement7, f'mock data leaked: {forbidden}'
-          assert "version: '0.7.0'" in config
+          assert "version: '0.8.0'" in config
           assert 'domesticJobsFeed' in config and 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
           assert 'no account credentials' in federation and 'moka' in federation
-          print('Path to Offer v0.7 domestic-first checks passed.')
+          print('Path to Offer v0.8 official-source/layout checks passed.')
           PY
       - name: Browser smoke tests
         run: |

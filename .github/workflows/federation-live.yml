@@ -5,11 +5,13 @@ on:
     paths:
       - 'scripts/expand_feed.py'
       - 'scripts/federated_harvester.py'
+      - 'scripts/direct_china_official.py'
       - 'scripts/compact_feed.py'
       - 'ranking-v07.js'
       - 'enhancements-v07.js'
       - 'market-v06.js'
       - 'sources/federated_sources.json'
+      - 'sources/domestic_direct_sources.json'
       - '.github/workflows/federation-live.yml'
   workflow_dispatch:
 
@@ -19,7 +21,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 45
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
@@ -35,7 +37,22 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
-      - name: Fetch pinned MIT adapter library
+      - name: Probe Meituan and JD official recruiting modes
+        run: |
+          python - <<'PY'
+          import requests
+          ua={'User-Agent':'PathToOfferBot/0.8 (+https://github.com/MLliu6/26-27-path-to-offer)'}
+          m='https://zhaopin.meituan.com/api/official/job/getJobList'
+          for code in ['1','2','3']:
+              body={'page':{'pageNo':1,'pageSize':5},'keywords':'','jobShareType':'1','jobType':[{'code':code,'subCode':[]}],'cityList':[],'department':[],'jfJgList':[],'typeCode':[],'specialCode':[]}
+              j=requests.post(m,json=body,timeout=20,headers=ua).json(); items=((j.get('data') or {}).get('list') or []); page=((j.get('data') or {}).get('page') or {})
+              print('MEITUAN_CODE',code,'TOTAL',page.get('totalCount'),'SAMPLES',[x.get('name') for x in items[:3]])
+          jd='https://zhaopin.jd.com/web/job/job_list'; h={**ua,'Referer':'https://zhaopin.jd.com/','X-Requested-With':'XMLHttpRequest','Content-Type':'application/x-www-form-urlencoded'}
+          for code in [1,2,3]:
+              r=requests.post(jd,data={'pageIndex':1,'pageSize':8,'jobType':code},headers=h,timeout=20); r.raise_for_status(); p=r.json(); rows=p if isinstance(p,list) else (p.get('data') or p.get('list') or [])
+              print('JD_TYPE',code,'COUNT_PAGE',len(rows),'SAMPLES',[x.get('positionName') for x in rows[:4]],'JOB_TYPES',[(x.get('jobType'),x.get('jobTypeCode'),x.get('positionType')) for x in rows[:4]])
+          PY
+      - name: Fetch pinned fallback adapter library
         run: |
           git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
           git -C "$PTO_HIRING_RADAR_DIR" checkout --quiet "$PTO_HIRING_RADAR_COMMIT"
@@ -44,30 +61,38 @@ jobs:
         run: |
           PYTHONPATH=. python scripts/expand_feed.py
           PYTHONPATH=. python scripts/federated_harvester.py
+          PYTHONPATH=. python scripts/direct_china_official.py
           PYTHONPATH=. python scripts/compact_feed.py
-      - name: Enforce global and China-first gates
+      - name: Enforce global, China-first and employer-direct gates
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
           gp=Path('data/jobs.json'); cp=Path('data/jobs_cn.json')
-          feed=json.loads(gp.read_text(encoding='utf-8')); cn=json.loads(cp.read_text(encoding='utf-8'))
-          status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
+          feed=json.loads(gp.read_text(encoding='utf-8')); cn=json.loads(cp.read_text(encoding='utf-8')); status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
           jobs=feed.get('jobs',[]); cn_jobs=cn.get('jobs',[])
           print('LIVE_GLOBAL=',len(jobs),'GLOBAL_BYTES=',gp.stat().st_size,'LIVE_CN=',len(cn_jobs),'CN_BYTES=',cp.stat().st_size)
-          for s in status.get('sources',[]):
-              if s.get('name') in {'china-official-federation','official-ats-discovery','public-remote-boards'}:
-                  print(s.get('name'), 'count=',s.get('count'),'ok=',s.get('ok'))
           assert feed.get('schema_version') == 4 and cn.get('schema_version') == 4
-          assert len(jobs) >= 10000
-          assert len(cn_jobs) >= 1000
-          assert gp.stat().st_size < 35_000_000
-          assert cp.stat().st_size < gp.stat().st_size
+          assert len(jobs) >= 10000 and len(cn_jobs) >= 1000
+          assert gp.stat().st_size < 40_000_000 and cp.stat().st_size < gp.stat().st_size
           names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')) for j in cn_jobs).lower()
-          for q in ['京东','腾讯','字节','北京']:
-              assert q.lower() in names, f'{q} missing from China-first feed'
+          for q in ['京东','腾讯','字节','北京','美团']: assert q.lower() in names, f'{q} missing from China-first feed'
+          direct=next((s for s in status.get('sources',[]) if s.get('name')=='direct-china-official'),None); assert direct and direct.get('ok')
+          companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
+          print('DIRECT_COMPANIES=',[(k,v.get('count'),v.get('ok'),v.get('diagnostics')) for k,v in companies.items()])
+          assert companies.get('美团',{}).get('count',0)>=50
+          assert companies.get('腾讯',{}).get('count',0)>=100
           obvious=['united states','germany','france','singapore','tokyo','india']
           overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in obvious))
           assert overseas <= max(10,len(cn_jobs)//200), f'overseas leakage too high: {overseas}'
+          # Exact user-path acceptance: 美团 must have Beijing rows and at least
+          # one Beijing technical/AI row in the default China product feed.
+          meituan=[j for j in cn_jobs if '美团' in j.get('c','')]
+          mt_bj=[j for j in meituan if '北京' in j.get('l','')]
+          tech=('大模型','算法','ai','推理','infra','研发','开发','技术','机器学习','多模态')
+          mt_bj_tech=[j for j in mt_bj if any(t in (j.get('r','')+' '+j.get('d','')).lower() for t in tech)]
+          print('MEITUAN_CN=',len(meituan),'MEITUAN_BEIJING=',len(mt_bj),'MEITUAN_BEIJING_TECH=',len(mt_bj_tech),'SAMPLES=',[(j.get('r'),j.get('l')) for j in mt_bj_tech[:8]])
+          assert mt_bj, 'Meituan has no Beijing rows in default China feed'
+          assert mt_bj_tech, 'Meituan has no Beijing technical/AI rows in default China feed'
           print('China-first overseas leakage=',overseas)
           PY

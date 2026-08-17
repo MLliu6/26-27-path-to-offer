@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "policy": "Canonical job rows should come from the employer's own public recruiting site or its explicitly public recruiting tenant. Third-party aggregators may help discover a company source but are not canonical when an official source is available.",
+  "sources": [
+    {
+      "id": "meituan",
+      "company": "美团",
+      "adapter": "meituan",
+      "official_url": "https://zhaopin.meituan.com/web/campus",
+      "enabled": true,
+      "job_type_codes": ["1", "2"],
+      "max_pages": 40,
+      "page_size": 100,
+      "company_type": "民营/互联网",
+      "priority_cities": ["北京", "上海", "深圳", "广州", "杭州"]
+    },
+    {
+      "id": "bytedance",
+      "company": "字节跳动",
+      "adapter": "bytedance",
+      "official_url": "https://jobs.bytedance.com/campus/position",
+      "enabled": false,
+      "status": "runtime-probe-blocked-405",
+      "note": "Campus semantics 201/202 are implemented and unit-tested, but the Python requests runtime received HTTP 405 in the live GitHub runner. Keep fallback official coverage until a browser/Node-compatible first-party transport is separately proven.",
+      "scopes": ["campus", "intern"],
+      "max_pages": 40,
+      "page_size": 100,
+      "company_type": "民营/互联网",
+      "priority_cities": ["北京", "上海", "深圳", "杭州", "广州"]
+    },
+    {
+      "id": "tencent",
+      "company": "腾讯",
+      "adapter": "tencent",
+      "official_url": "https://careers.tencent.com/search.html",
+      "enabled": true,
+      "max_pages": 20,
+      "page_size": 100,
+      "company_type": "民营/互联网",
+      "priority_cities": ["北京", "深圳", "上海", "广州"]
+    }
+  ]
+}

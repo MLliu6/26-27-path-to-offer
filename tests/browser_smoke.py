@@ -70,7 +70,7 @@ def main() -> int:
 
         def route_handler(route):
             url = route.request.url
-            if "/data/jobs.json" in url:
+            if "/data/jobs_cn.json" in url or "/data/jobs.json" in url:
                 route.fulfill(status=200, content_type="application/json", body=json.dumps(JOBS, ensure_ascii=False))
             elif "/data/source_status.json" in url:
                 route.fulfill(status=200, content_type="application/json", body=json.dumps(STATUS, ensure_ascii=False))
@@ -90,6 +90,30 @@ def main() -> int:
         jd_card = page.locator('.market-card[data-market-id="jd-old"]')
         jd_card.wait_for()
         assert "京东" in jd_card.inner_text()
+
+        # Regression for the production overlap screenshot: the 4-step flow must
+        # live inside the right-hand job market, never as a third grid child that
+        # pushes cards into the 205px MATCH CONTROL rail.
+        page.wait_for_selector("#ptoFlow")
+        assert page.locator("#ptoFlow").evaluate("el => el.parentElement.classList.contains('job-market')")
+        rail_box = page.locator(".match-rail").bounding_box()
+        market_box = page.locator(".job-market").bounding_box()
+        card_box = jd_card.bounding_box()
+        assert rail_box and market_box and card_box
+        assert market_box["x"] >= rail_box["x"] + rail_box["width"] + 8, (rail_box, market_box)
+        assert market_box["width"] > 700, market_box
+        assert card_box["width"] > 300, card_box
+
+        # Explicit affordances must actually open a rich detail view and expose
+        # the canonical external application action instead of relying on a vague
+        # whole-card click target.
+        page.locator('.market-card[data-market-id="jd-old"] [data-open-detail="jd-old"]').click()
+        page.wait_for_selector("#marketJobDetail:not(.hidden)")
+        detail_text = page.locator("#marketJobDetail").inner_text()
+        assert "JOB DESCRIPTION" in detail_text
+        assert "官网投递" in detail_text
+        assert page.locator('#marketJobDetail a[href="https://zhaopin.jd.com/"]').count() >= 1
+        page.locator("#closeDrawer").click()
 
         # 2. Create a v4 profile through the real paste-resume UI.
         page.locator("#jobSearch").fill("")
@@ -165,8 +189,10 @@ def main() -> int:
         page.locator("#openSourcePanel").click()
         page.wait_for_selector(".source-modal")
         assert "Browser QA" in page.locator(".source-modal").inner_text()
+        page.locator("#closeModal").click()
 
-        # Mobile sanity: critical action does not depend on hover.
+        # Mobile sanity: critical action does not depend on hover and the flow
+        # remains structurally inside the market column.
         mobile = context.new_page()
         mobile.set_viewport_size({"width": 390, "height": 844})
         mobile.route("**/*", route_handler)
@@ -175,6 +201,7 @@ def main() -> int:
         mobile.locator("#jobSearch").fill("京东")
         mobile.locator('.market-card[data-market-id="jd-old"]').wait_for()
         assert mobile.locator('.market-card[data-market-id="jd-old"] [data-save-job="jd-old"]').is_visible()
+        assert mobile.locator("#ptoFlow").evaluate("el => el.parentElement.classList.contains('job-market')")
         mobile.close()
 
         context.close(); browser.close()
