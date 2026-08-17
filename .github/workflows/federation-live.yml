@@ -7,6 +7,7 @@ on:
       - 'scripts/federated_harvester.py'
       - 'scripts/direct_china_official.py'
       - 'scripts/priority_official_harvester.py'
+      - 'scripts/official_campaign_discovery.py'
       - 'scripts/compact_feed.py'
       - 'ranking-v07.js'
       - 'ranking-v09.js'
@@ -25,7 +26,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 48
+    timeout-minutes: 52
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
@@ -53,6 +54,7 @@ jobs:
           PYTHONPATH=. python scripts/direct_china_official.py
           PYTHONPATH=. python scripts/merge_public_tables.py
           PYTHONPATH=. python scripts/priority_official_harvester.py
+          PYTHONPATH=. python scripts/official_campaign_discovery.py
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Enforce global, China-first and priority-source gates
         run: |
@@ -67,7 +69,7 @@ jobs:
           assert len(jobs) >= 10000 and len(cn_jobs) >= 1000
           assert gp.stat().st_size < 40_000_000 and cp.stat().st_size < gp.stat().st_size
           names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')+' '+j.get('x','')) for j in cn_jobs).lower()
-          for q in ['京东','腾讯','字节','北京','美团','航天科工','银河通用']:
+          for q in ['京东','腾讯','字节','北京','美团','航天科工','银河通用','中国银行']:
               assert q.lower() in names, f'{q} missing from China-first feed'
           direct=next((s for s in status.get('sources',[]) if s.get('name')=='direct-china-official'),None); assert direct and direct.get('ok')
           companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
@@ -75,11 +77,15 @@ jobs:
           assert companies.get('腾讯',{}).get('count',0)>=100
           priority=next((s for s in status.get('sources',[]) if s.get('name')=='priority-official-sources'),None); assert priority and priority.get('ok')
           pdiag=priority.get('diagnostics') or {}; adapters=pdiag.get('adapters') or []
-          assert pdiag.get('watch_total',0)>=35
+          assert pdiag.get('watch_total',0)>=45
           casic=next((x for x in adapters if x.get('company')=='航天科工集团' and x.get('type')=='zhiye-campus'),{})
           galbot=next((x for x in adapters if x.get('company')=='银河通用' and x.get('type')=='campaign'),{})
+          boc=[x for x in adapters if x.get('company')=='中国银行' and x.get('type')=='campaign']
           assert casic.get('count',0)>=5, casic
           assert galbot.get('count',0)>=6, galbot
+          assert sum(x.get('count',0) for x in boc)>=3, boc
+          campaign=next((s for s in status.get('sources',[]) if s.get('name')=='official-campaign-discovery'),None); assert campaign
+          cdiag=campaign.get('diagnostics') or {}; assert cdiag.get('portals',0)>=45
           meituan=[j for j in cn_jobs if '美团' in j.get('c','')]; mt_bj=[j for j in meituan if '北京' in j.get('l','')]
           tech=('大模型','算法','ai','推理','infra','研发','开发','技术','机器学习','多模态')
           mt_bj_tech=[j for j in mt_bj if any(t in (j.get('r','')+' '+j.get('d','')).lower() for t in tech)]
@@ -88,10 +94,13 @@ jobs:
           assert casic_bj, 'CASIC has no Beijing 2027 rows in default China feed'
           galbot_rows=[j for j in cn_jobs if '银河通用' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
           assert len(galbot_rows)>=6, 'Galbot 2027 roles missing'
+          boc_rows=[j for j in cn_jobs if '中国银行' in j.get('c','') and '2027' in (j.get('g','')+j.get('b','')) and ('信科' in j.get('r','') or '信息科技' in j.get('r','') or '软件' in j.get('r',''))]
+          assert len(boc_rows)>=3, 'BOC 2027-target technology rows missing'
           obvious=['united states','germany','france','singapore','tokyo','india']
           overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in obvious)); assert overseas <= max(10,len(cn_jobs)//200)
           print('DIRECT_COMPANIES=',[(k,v.get('count'),v.get('ok')) for k,v in companies.items()])
           print('PRIORITY_WATCH=',pdiag.get('watch_ok'),'/',pdiag.get('watch_total'),'2027=',pdiag.get('watch_2027'))
           print('PRIORITY_ADAPTERS=',[(x.get('company'),x.get('type'),x.get('count'),x.get('ok')) for x in adapters])
-          print('CASIC_BEIJING_2027=',len(casic_bj),'GALBOT_2027=',len(galbot_rows),'MEITUAN_BEIJING_TECH=',len(mt_bj_tech),'OVERSEAS=',overseas)
+          print('AUTO_CAMPAIGNS=',campaign.get('count'),cdiag)
+          print('CASIC_BEIJING_2027=',len(casic_bj),'GALBOT_2027=',len(galbot_rows),'BOC_TECH_2027=',len(boc_rows),'MEITUAN_BEIJING_TECH=',len(mt_bj_tech),'OVERSEAS=',overseas)
           PY
