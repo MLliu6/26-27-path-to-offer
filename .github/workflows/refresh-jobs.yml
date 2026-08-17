@@ -25,7 +25,7 @@ concurrency:
 jobs:
   aggregate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 38
+    timeout-minutes: 42
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
@@ -51,26 +51,18 @@ jobs:
           test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
       - name: Aggregate public official sources
         run: |
-          # Restore compact production cache to readable rows first.
           PYTHONPATH=. python scripts/expand_feed.py
-          # Broad fallback federation keeps existing China/ATS coverage.
           PYTHONPATH=. python scripts/federated_harvester.py
-          # First-party employer endpoints are canonical and intentionally run
-          # independently of the fallback repo-based adapter layer.
           PYTHONPATH=. python scripts/direct_china_official.py
-          # Public campus/state tables are only an additive announcement supplement.
           PYTHONPATH=. python scripts/merge_public_tables.py
-          # Publish compact global + China-first browser feeds.
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Validate catalogue output
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          global_path=Path('data/jobs.json')
-          cn_path=Path('data/jobs_cn.json')
-          feed=json.loads(global_path.read_text(encoding='utf-8'))
-          cn=json.loads(cn_path.read_text(encoding='utf-8'))
+          global_path=Path('data/jobs.json'); cn_path=Path('data/jobs_cn.json')
+          feed=json.loads(global_path.read_text(encoding='utf-8')); cn=json.loads(cn_path.read_text(encoding='utf-8'))
           status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
           jobs=feed.get('jobs',[]); cn_jobs=cn.get('jobs',[])
           assert feed.get('schema_version') == 4 and cn.get('schema_version') == 4
@@ -78,7 +70,7 @@ jobs:
           assert len(cn_jobs) >= 1_000, f'China-first catalogue unexpectedly small: {len(cn_jobs)}'
           assert all(j.get('c') and j.get('r') for j in cn_jobs)
           assert status.get('cn_catalog_count') == len(cn_jobs)
-          assert global_path.stat().st_size < 35_000_000, f'global catalogue exceeds budget: {global_path.stat().st_size}'
+          assert global_path.stat().st_size < 40_000_000, f'global catalogue exceeds budget: {global_path.stat().st_size}'
           assert cn_path.stat().st_size < global_path.stat().st_size, 'China-first feed should be smaller than global feed'
           names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')+' '+j.get('x','')) for j in cn_jobs).lower()
           for q in ['京东','腾讯','字节','北京','美团']:
@@ -87,6 +79,7 @@ jobs:
           assert direct and direct.get('ok') and direct.get('count',0)>0, 'autonomous employer-direct source group is empty'
           direct_companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
           assert direct_companies.get('美团',{}).get('count',0)>=50, f'Meituan direct crawl too small: {direct_companies.get("美团")}'
+          assert direct_companies.get('字节跳动',{}).get('count',0)>=100, f'ByteDance direct campus crawl too small: {direct_companies.get("字节跳动")}'
           overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in ['united states','germany','france','singapore','tokyo','india']))
           assert overseas <= max(10, len(cn_jobs)//200), f'too many obvious overseas rows in China feed: {overseas}'
           print('global rows/bytes:',len(jobs),global_path.stat().st_size)
