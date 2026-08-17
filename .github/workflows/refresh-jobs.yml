@@ -10,6 +10,7 @@ on:
       - 'scripts/federated_harvester.py'
       - 'scripts/direct_china_official.py'
       - 'scripts/priority_official_harvester.py'
+      - 'scripts/official_site_job_spider.py'
       - 'scripts/official_campaign_discovery.py'
       - 'scripts/soe_directory_harvester.py'
       - 'scripts/university_2027_discovery.py'
@@ -63,6 +64,7 @@ jobs:
           PYTHONPATH=. python scripts/direct_china_official.py
           PYTHONPATH=. python scripts/merge_public_tables.py
           PYTHONPATH=. python scripts/priority_official_harvester.py
+          PYTHONPATH=. python scripts/official_site_job_spider.py
           PYTHONPATH=. python scripts/official_campaign_discovery.py
           PYTHONPATH=. python scripts/soe_directory_harvester.py
           PYTHONPATH=. python scripts/university_2027_discovery.py
@@ -91,18 +93,17 @@ jobs:
           priority=next((s for s in status.get('sources',[]) if s.get('name')=='priority-official-sources'),None); assert priority and priority.get('ok')
           pdiag=priority.get('diagnostics') or {}; adapters=pdiag.get('adapters') or []; assert pdiag.get('watch_total',0)>=50
           campaigns=lambda company:[x for x in adapters if x.get('company')==company and x.get('type')=='campaign']
-          assert sum(x.get('count',0) for x in campaigns('航天科工集团'))>=9, campaigns('航天科工集团')
-          assert sum(x.get('count',0) for x in campaigns('银河通用'))>=6, campaigns('银河通用')
-          assert sum(x.get('count',0) for x in campaigns('宇树科技'))>=7, campaigns('宇树科技')
-          assert sum(x.get('count',0) for x in campaigns('小鹏集团'))>=4, campaigns('小鹏集团')
-          assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3, campaigns('中国银行')
+          assert sum(x.get('count',0) for x in campaigns('航天科工集团'))>=9
+          assert sum(x.get('count',0) for x in campaigns('银河通用'))>=6
+          assert sum(x.get('count',0) for x in campaigns('宇树科技'))>=7
+          assert sum(x.get('count',0) for x in campaigns('小鹏集团'))>=4
+          assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3
+          site_spider=next((s for s in status.get('sources',[]) if s.get('name')=='employer-site-job-spider'),None); assert site_spider is not None
           campaign=next((s for s in status.get('sources',[]) if s.get('name')=='official-campaign-discovery'),None); assert campaign and (campaign.get('diagnostics') or {}).get('portals',0)>=50
           soe=next((s for s in status.get('sources',[]) if s.get('name')=='central-soe-official-directory'),None); assert soe is not None
           university=next((s for s in status.get('sources',[]) if s.get('name')=='university-2027-discovery'),None); assert university is not None
           ncss=next((s for s in status.get('sources',[]) if s.get('name')=='ncss-2027-public'),None); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500, ncss
-          ndiag=ncss.get('diagnostics') or {}
-          assert ndiag.get('beijing_technical_rows',0)>=20, ndiag
-          assert ndiag.get('state_owned_rows',0)>=10, ndiag
+          ndiag=ncss.get('diagnostics') or {}; assert ndiag.get('beijing_technical_rows',0)>=20 and ndiag.get('state_owned_rows',0)>=10, ndiag
           casic_bj=[j for j in cn_jobs if '航天科工' in j.get('c','') and '北京' in j.get('l','') and '2027' in (j.get('r','')+j.get('g','')+j.get('b',''))]
           galbot_rows=[j for j in cn_jobs if '银河通用' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
           boc_rows=[j for j in cn_jobs if '中国银行' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
@@ -115,10 +116,9 @@ jobs:
           print('china rows/bytes:',len(cn_jobs),cn_path.stat().st_size,'overseas=',overseas)
           print('direct official:',[(k,v.get('count'),v.get('ok')) for k,v in direct_companies.items()])
           print('priority watch:',pdiag.get('watch_ok'),'/',pdiag.get('watch_total'),'root_2027=',pdiag.get('watch_2027'))
-          print('priority campaigns:',[(x.get('company'),x.get('count'),x.get('ok')) for x in adapters if x.get('type')=='campaign'])
+          print('site spider:',site_spider.get('count'),site_spider.get('diagnostics'))
           print('NCSS:',ncss.get('count'),ndiag)
           print('university:',university.get('count'),university.get('diagnostics'))
-          print('SOE directory:',soe.get('count'),soe.get('diagnostics'))
           PY
       - name: Commit refreshed feed when changed
         run: |
