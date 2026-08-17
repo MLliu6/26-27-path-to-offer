@@ -1,5 +1,5 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.8.0',
+  version: '0.9.0',
   // Keep the stable logical feed name for compatibility. After enhancement
   // bundles load, fetch() prefers the smaller China-first official feed and
   // falls back to the global catalogue if a refresh has not published it yet.
@@ -91,10 +91,12 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v04.js');
     await loadPtoScript('ranking-v06.js');
     await loadPtoScript('ranking-v07.js');
+    await loadPtoScript('ranking-v09.js');
     await loadPtoScript('market-v06.js');
     await loadPtoScript('enhancements-v05.js');
     await loadPtoScript('enhancements-v06.js');
     await loadPtoScript('enhancements-v07.js');
+    await loadPtoScript('enhancements-v09.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
