@@ -8,6 +8,7 @@ on:
       - 'scripts/expand_feed.py'
       - 'scripts/merge_public_tables.py'
       - 'scripts/federated_harvester.py'
+      - 'scripts/direct_china_official.py'
       - 'scripts/compact_feed.py'
       - 'sources/**'
       - '.github/workflows/refresh-jobs.yml'
@@ -24,7 +25,7 @@ concurrency:
 jobs:
   aggregate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 32
+    timeout-minutes: 38
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
@@ -42,7 +43,7 @@ jobs:
           python-version: '3.12'
       - name: Install crawler dependencies
         run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
-      - name: Fetch pinned MIT public ATS adapters
+      - name: Fetch pinned fallback adapter library
         run: |
           rm -rf "$PTO_HIRING_RADAR_DIR"
           git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
@@ -50,9 +51,16 @@ jobs:
           test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
       - name: Aggregate public official sources
         run: |
+          # Restore compact production cache to readable rows first.
           PYTHONPATH=. python scripts/expand_feed.py
+          # Broad fallback federation keeps existing China/ATS coverage.
           PYTHONPATH=. python scripts/federated_harvester.py
+          # First-party employer endpoints are canonical and intentionally run
+          # independently of the fallback repo-based adapter layer.
+          PYTHONPATH=. python scripts/direct_china_official.py
+          # Public campus/state tables are only an additive announcement supplement.
           PYTHONPATH=. python scripts/merge_public_tables.py
+          # Publish compact global + China-first browser feeds.
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Validate catalogue output
         run: |
@@ -72,13 +80,18 @@ jobs:
           assert status.get('cn_catalog_count') == len(cn_jobs)
           assert global_path.stat().st_size < 35_000_000, f'global catalogue exceeds budget: {global_path.stat().st_size}'
           assert cn_path.stat().st_size < global_path.stat().st_size, 'China-first feed should be smaller than global feed'
-          names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')) for j in cn_jobs).lower()
-          for q in ['京东','腾讯','字节','北京']:
+          names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')+' '+j.get('x','')) for j in cn_jobs).lower()
+          for q in ['京东','腾讯','字节','北京','美团']:
               assert q.lower() in names, f'{q} missing from China-first product feed'
+          direct=next((s for s in status.get('sources',[]) if s.get('name')=='direct-china-official'),None)
+          assert direct and direct.get('ok') and direct.get('count',0)>0, 'autonomous employer-direct source group is empty'
+          direct_companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
+          assert direct_companies.get('美团',{}).get('count',0)>=50, f'Meituan direct crawl too small: {direct_companies.get("美团")}'
           overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in ['united states','germany','france','singapore','tokyo','india']))
           assert overseas <= max(10, len(cn_jobs)//200), f'too many obvious overseas rows in China feed: {overseas}'
           print('global rows/bytes:',len(jobs),global_path.stat().st_size)
           print('china rows/bytes:',len(cn_jobs),cn_path.stat().st_size,'overseas=',overseas)
+          print('direct official:',[(k,v.get('count'),v.get('ok')) for k,v in direct_companies.items()])
           PY
       - name: Commit refreshed feed when changed
         run: |
@@ -89,5 +102,5 @@ jobs:
           git config user.name "path-to-offer-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/jobs.json data/jobs_cn.json data/source_status.json
-          git commit -m "data: refresh China-first federated jobs"
+          git commit -m "data: refresh China-first official jobs"
           git push origin HEAD:main
