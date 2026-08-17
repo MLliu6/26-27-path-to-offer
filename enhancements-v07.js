@@ -6,7 +6,7 @@
   function ensureStyles(){
     if($('#ptoV07Style'))return;
     const style=document.createElement('style');style.id='ptoV07Style';style.textContent=`
-      .pto-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 16px}.pto-flow-step{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--panel);min-width:0}.pto-flow-step.done{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel))}.pto-flow-step strong{display:block;font-size:12px;color:var(--text)}.pto-flow-step small{display:block;margin-top:3px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pto-quick-cities{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}.pto-quick-cities button{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;padding:5px 9px;font:inherit;font-size:11px;cursor:pointer}.pto-quick-cities button.active{color:var(--accent-strong);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--panel))}.pto-card-actions{display:flex;gap:6px;margin-left:8px}.pto-card-actions .btn,.pto-card-actions .text-btn{white-space:nowrap}.market-card[tabindex="0"]:focus-visible,.market-table tr[tabindex="0"]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.pto-source-note{font-size:11px;color:var(--muted);padding:8px 10px;border:1px dashed var(--line);border-radius:10px;margin-top:10px}.pto-source-note strong{color:var(--text)}
+      .job-market>#ptoFlow{width:100%;min-width:0}.pto-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 16px}.pto-flow-step{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--panel);min-width:0}.pto-flow-step.done{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel))}.pto-flow-step strong{display:block;font-size:12px;color:var(--text)}.pto-flow-step small{display:block;margin-top:3px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pto-quick-cities{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}.pto-quick-cities button{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;padding:5px 9px;font:inherit;font-size:11px;cursor:pointer}.pto-quick-cities button.active{color:var(--accent-strong);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--panel))}.pto-card-actions{display:flex;gap:6px;margin-left:8px}.pto-card-actions .btn,.pto-card-actions .text-btn{white-space:nowrap}.market-card[tabindex="0"]:focus-visible,.market-table tr[tabindex="0"]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.pto-source-note{font-size:11px;color:var(--muted);padding:8px 10px;border:1px dashed var(--line);border-radius:10px;margin-top:10px}.pto-source-note strong{color:var(--text)}
       @media(max-width:760px){.pto-flow{grid-template-columns:1fr 1fr}.pto-card-actions{width:100%;margin:8px 0 0;justify-content:flex-end}.market-card-foot{flex-wrap:wrap}}
     `;document.head.appendChild(style);
   }
@@ -19,7 +19,13 @@
   }
   function renderFlow(){
     const market=$('.job-market');if(!market)return;
-    let el=$('#ptoFlow');if(!el){el=document.createElement('div');el.id='ptoFlow';market.parentNode?.insertBefore(el,market);}
+    let el=$('#ptoFlow');
+    if(!el){el=document.createElement('div');el.id='ptoFlow';}
+    // The flow strip belongs inside the second grid column. v0.7 inserted it as
+    // a sibling of `.job-market`, making the browser place the actual market in
+    // the 205px left rail on the next grid row. Move even an already-rendered
+    // strip into the market so stale DOM/cache cannot reproduce the overlap.
+    if(el.parentElement!==market)market.prepend(el);
     const {p,count,saved}=flowState();
     const parsed=p?`${p.signals?.skills?.length||0} 个技能信号`:'等待上传';
     el.innerHTML=`<div class="pto-flow">
