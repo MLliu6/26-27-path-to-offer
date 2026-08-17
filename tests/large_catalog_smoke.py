@@ -28,22 +28,19 @@ def feed():
 
 def main():
     payload=json.dumps(feed(),ensure_ascii=False,separators=(',',':'))
-    status=json.dumps({'generated_at':'2026-08-16T10:00:00Z','catalog_count':COUNT,'catalog_target':10000,'sources':[{'name':'fixture','label':'fixture','ok':True,'count':COUNT}]},ensure_ascii=False)
+    status=json.dumps({'generated_at':'2026-08-16T10:00:00Z','catalog_count':COUNT,'cn_catalog_count':COUNT,'catalog_target':10000,'sources':[{'name':'fixture','label':'fixture','ok':True,'count':COUNT}]},ensure_ascii=False)
     with sync_playwright() as p:
         browser=p.chromium.launch(headless=True,executable_path=browser_path(),args=['--no-sandbox','--disable-dev-shm-usage'])
         context=browser.new_context(viewport={'width':1440,'height':1000})
         page=context.new_page()
         def route(route):
             u=route.request.url
-            if '/data/jobs.json' in u:route.fulfill(status=200,content_type='application/json',body=payload)
+            if '/data/jobs_cn.json' in u or '/data/jobs.json' in u:route.fulfill(status=200,content_type='application/json',body=payload)
             elif '/data/source_status.json' in u:route.fulfill(status=200,content_type='application/json',body=status)
             elif u.startswith('https://cdn.jsdelivr.net/'):route.abort()
             else:route.continue_()
         page.route('**/*',route)
         start=time.perf_counter();page.goto(BASE,wait_until='domcontentloaded')
-        # `marketJobs` is a top-level lexical `let`, intentionally not a window
-        # global. Wait on the primary user-visible result count to prove the real
-        # 60k feed passed through the post-enhancement renderer.
         page.wait_for_function(f"document.querySelector('#marketCount') && document.querySelector('#marketCount').textContent.replace(/,/g,'') === '{COUNT}'",timeout=35000)
         page.wait_for_selector('#marketPager',timeout=15000)
         elapsed=time.perf_counter()-start
