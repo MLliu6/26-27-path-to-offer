@@ -1,6 +1,10 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.7.0',
-  jobsFeed: './data/jobs_cn.json',
+  // Keep the stable logical feed name for compatibility; after the v0.7 bundles
+  // load, fetch() transparently prefers the much smaller China-first feed and
+  // falls back to the global catalogue if a refresh has not published it yet.
+  jobsFeed: './data/jobs.json',
+  domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
   sourceStatusFeed: './data/source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
@@ -13,12 +17,17 @@ window.PTO_ENHANCEMENTS_READY = false;
 const PTO_NATIVE_FETCH = window.fetch.bind(window);
 window.fetch = function ptoBootstrapFetch(input, init) {
   const url = typeof input === 'string' ? input : (input && input.url) || '';
-  const jobsPath = String(window.PTO_CONFIG.jobsFeed || './data/jobs_cn.json').replace(/^\.\//, '');
-  if (!window.PTO_ENHANCEMENTS_READY && jobsPath && String(url).includes(jobsPath)) {
+  const globalPath = String(window.PTO_CONFIG.jobsFeed || './data/jobs.json').replace(/^\.\//, '');
+  if (!window.PTO_ENHANCEMENTS_READY && globalPath && String(url).includes(globalPath)) {
     return Promise.resolve(new Response(JSON.stringify({schema_version:4, generated_at:null, jobs:[]}), {
       status: 200,
       headers: {'Content-Type':'application/json'}
     }));
+  }
+  if (window.PTO_ENHANCEMENTS_READY && globalPath && String(url).includes(globalPath)) {
+    const domestic = String(window.PTO_CONFIG.domesticJobsFeed || './data/jobs_cn.json');
+    const suffix = String(url).includes('?') ? String(url).slice(String(url).indexOf('?')) : '';
+    return PTO_NATIVE_FETCH(`${domestic}${suffix}`, init).then(r => r.ok ? r : PTO_NATIVE_FETCH(input, init)).catch(() => PTO_NATIVE_FETCH(input, init));
   }
   return PTO_NATIVE_FETCH(input, init);
 };
