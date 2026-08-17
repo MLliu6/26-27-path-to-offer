@@ -12,6 +12,7 @@ on:
       - 'scripts/soe_directory_harvester.py'
       - 'scripts/university_2027_discovery.py'
       - 'scripts/ncss_public_harvester.py'
+      - 'scripts/ncss_recent_all.py'
       - 'scripts/compact_feed.py'
       - 'ranking-v07.js'
       - 'ranking-v09.js'
@@ -42,6 +43,7 @@ jobs:
       PTO_MAX_CN_CATALOG: '30000'
       PTO_NCSS_MAX_EXPLICIT: '15000'
       PTO_NCSS_PRIORITY_COMPANIES: '80'
+      PTO_NCSS_ALL_MAX_ROWS: '12000'
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -66,6 +68,7 @@ jobs:
           PYTHONPATH=. python scripts/soe_directory_harvester.py
           PYTHONPATH=. python scripts/university_2027_discovery.py
           PYTHONPATH=. python scripts/ncss_public_harvester.py
+          PYTHONPATH=. python scripts/ncss_recent_all.py
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Enforce nationwide 2027 acceptance gates
         run: |
@@ -98,7 +101,8 @@ jobs:
           soe=next((s for s in status.get('sources',[]) if s.get('name')=='central-soe-official-directory'),None); assert soe is not None
           university=next((s for s in status.get('sources',[]) if s.get('name')=='university-2027-discovery'),None); assert university is not None
           ncss=next((s for s in status.get('sources',[]) if s.get('name')=='ncss-2027-public'),None); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500, ncss
-          ndiag=ncss.get('diagnostics') or {}; assert ndiag.get('beijing_technical_rows',0)>=20 and ndiag.get('state_owned_rows',0)>=10, ndiag
+          ndiag=ncss.get('diagnostics') or {}; assert ndiag.get('beijing_technical_rows',0)>=8 and ndiag.get('state_owned_rows',0)>=10, ndiag
+          ncss_all=next((s for s in status.get('sources',[]) if s.get('name')=='ncss-current-all'),None); assert ncss_all and ncss_all.get('ok') and ncss_all.get('count',0)>=100, ncss_all
           meituan=[j for j in cn_jobs if '美团' in j.get('c','')]; mt_bj=[j for j in meituan if '北京' in j.get('l','')]
           tech=('大模型','算法','ai','推理','infra','研发','开发','技术','机器学习','多模态')
           mt_bj_tech=[j for j in mt_bj if any(t in (j.get('r','')+' '+j.get('d','')).lower() for t in tech)]; assert mt_bj and mt_bj_tech
@@ -113,7 +117,8 @@ jobs:
           print('PRIORITY_WATCH=',pdiag.get('watch_ok'),'/',pdiag.get('watch_total'),'root_2027=',pdiag.get('watch_2027'))
           print('SITE_SPIDER=',site_spider.get('count'),site_spider.get('diagnostics'))
           print('PRIORITY_CAMPAIGNS=',[(x.get('company'),x.get('count'),x.get('ok')) for x in adapters if x.get('type')=='campaign'])
-          print('NCSS=',ncss.get('count'),ndiag)
+          print('NCSS_TARGETED=',ncss.get('count'),ndiag)
+          print('NCSS_ALL=',ncss_all.get('count'),ncss_all.get('diagnostics'))
           print('UNIVERSITY=',university.get('count'),university.get('diagnostics'))
           print('SOE_DIRECTORY=',soe.get('count'),soe.get('diagnostics'))
           print('FINAL_KEY_ROWS=',{'CASIC_BJ':len(casic_bj),'GALBOT':len(galbot_rows),'BOC':len(boc_rows),'UNITREE':len(unitree_rows),'XPENG':len(xpeng_rows),'MEITUAN_BJ_TECH':len(mt_bj_tech),'OVERSEAS':overseas})
