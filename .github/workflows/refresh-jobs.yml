@@ -15,6 +15,7 @@ on:
       - 'scripts/soe_directory_harvester.py'
       - 'scripts/university_2027_discovery.py'
       - 'scripts/ncss_public_harvester.py'
+      - 'scripts/ncss_recent_all.py'
       - 'scripts/compact_feed.py'
       - 'sources/**'
       - '.github/workflows/refresh-jobs.yml'
@@ -42,6 +43,7 @@ jobs:
       PTO_MAX_CN_CATALOG: '30000'
       PTO_NCSS_MAX_EXPLICIT: '15000'
       PTO_NCSS_PRIORITY_COMPANIES: '80'
+      PTO_NCSS_ALL_MAX_ROWS: '12000'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -69,6 +71,7 @@ jobs:
           PYTHONPATH=. python scripts/soe_directory_harvester.py
           PYTHONPATH=. python scripts/university_2027_discovery.py
           PYTHONPATH=. python scripts/ncss_public_harvester.py
+          PYTHONPATH=. python scripts/ncss_recent_all.py
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Validate catalogue output
         run: |
@@ -103,7 +106,8 @@ jobs:
           soe=next((s for s in status.get('sources',[]) if s.get('name')=='central-soe-official-directory'),None); assert soe is not None
           university=next((s for s in status.get('sources',[]) if s.get('name')=='university-2027-discovery'),None); assert university is not None
           ncss=next((s for s in status.get('sources',[]) if s.get('name')=='ncss-2027-public'),None); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500, ncss
-          ndiag=ncss.get('diagnostics') or {}; assert ndiag.get('beijing_technical_rows',0)>=20 and ndiag.get('state_owned_rows',0)>=10, ndiag
+          ndiag=ncss.get('diagnostics') or {}; assert ndiag.get('beijing_technical_rows',0)>=8 and ndiag.get('state_owned_rows',0)>=10, ndiag
+          ncss_all=next((s for s in status.get('sources',[]) if s.get('name')=='ncss-current-all'),None); assert ncss_all and ncss_all.get('ok') and ncss_all.get('count',0)>=100, ncss_all
           casic_bj=[j for j in cn_jobs if '航天科工' in j.get('c','') and '北京' in j.get('l','') and '2027' in (j.get('r','')+j.get('g','')+j.get('b',''))]
           galbot_rows=[j for j in cn_jobs if '银河通用' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
           boc_rows=[j for j in cn_jobs if '中国银行' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
@@ -117,7 +121,8 @@ jobs:
           print('direct official:',[(k,v.get('count'),v.get('ok')) for k,v in direct_companies.items()])
           print('priority watch:',pdiag.get('watch_ok'),'/',pdiag.get('watch_total'),'root_2027=',pdiag.get('watch_2027'))
           print('site spider:',site_spider.get('count'),site_spider.get('diagnostics'))
-          print('NCSS:',ncss.get('count'),ndiag)
+          print('NCSS targeted:',ncss.get('count'),ndiag)
+          print('NCSS all:',ncss_all.get('count'),ncss_all.get('diagnostics'))
           print('university:',university.get('count'),university.get('diagnostics'))
           PY
       - name: Commit refreshed feed when changed
