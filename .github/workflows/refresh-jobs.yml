@@ -32,6 +32,7 @@ jobs:
       PTO_CATALOG_JD_CHARS: '600'
       PTO_BROWSER_JD_CHARS: '220'
       PTO_MAX_CATALOG: '60000'
+      PTO_MAX_CN_CATALOG: '30000'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -49,43 +50,44 @@ jobs:
           test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
       - name: Aggregate public official sources
         run: |
-          # Previous production data is a compact browser transport. Restore it
-          # first so a temporary upstream outage cannot erase a healthy cache.
           PYTHONPATH=. python scripts/expand_feed.py
-          # Primary federation preserves the previous readable catalogue while
-          # adding fresh China official + global official ATS records.
           PYTHONPATH=. python scripts/federated_harvester.py
-          # Public campus/state tables are an additive China/央国企 supplement.
           PYTHONPATH=. python scripts/merge_public_tables.py
-          # Publish the merged result back to the compact browser schema.
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Validate catalogue output
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          path=Path('data/jobs.json')
-          feed=json.loads(path.read_text(encoding='utf-8'))
+          global_path=Path('data/jobs.json')
+          cn_path=Path('data/jobs_cn.json')
+          feed=json.loads(global_path.read_text(encoding='utf-8'))
+          cn=json.loads(cn_path.read_text(encoding='utf-8'))
           status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
-          jobs=feed.get('jobs',[])
-          size=path.stat().st_size
-          assert feed.get('schema_version') == 4
-          assert isinstance(jobs,list)
-          assert status.get('catalog_count') == len(jobs)
-          assert all(j.get('c') and j.get('r') for j in jobs)
+          jobs=feed.get('jobs',[]); cn_jobs=cn.get('jobs',[])
+          assert feed.get('schema_version') == 4 and cn.get('schema_version') == 4
           assert len(jobs) >= 10_000, f'catalogue unexpectedly collapsed: {len(jobs)}'
-          assert size < 35_000_000, f'compact catalogue exceeds browser budget: {size}'
-          print('catalogue rows:',len(jobs),'bytes:',size,'schema:',feed.get('schema_version'))
-          print('federated counts:',[(s.get('name'),s.get('count')) for s in status.get('sources',[]) if s.get('name') in {'china-official-federation','official-ats-discovery','public-remote-boards'}])
+          assert len(cn_jobs) >= 1_000, f'China-first catalogue unexpectedly small: {len(cn_jobs)}'
+          assert all(j.get('c') and j.get('r') for j in cn_jobs)
+          assert status.get('cn_catalog_count') == len(cn_jobs)
+          assert global_path.stat().st_size < 35_000_000, f'global catalogue exceeds budget: {global_path.stat().st_size}'
+          assert cn_path.stat().st_size < global_path.stat().st_size, 'China-first feed should be smaller than global feed'
+          names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')) for j in cn_jobs).lower()
+          for q in ['京东','腾讯','字节','北京']:
+              assert q.lower() in names, f'{q} missing from China-first product feed'
+          overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in ['united states','germany','france','singapore','tokyo','india']))
+          assert overseas <= max(10, len(cn_jobs)//200), f'too many obvious overseas rows in China feed: {overseas}'
+          print('global rows/bytes:',len(jobs),global_path.stat().st_size)
+          print('china rows/bytes:',len(cn_jobs),cn_path.stat().st_size,'overseas=',overseas)
           PY
       - name: Commit refreshed feed when changed
         run: |
-          if git diff --quiet -- data/jobs.json data/source_status.json; then
+          if git diff --quiet -- data/jobs.json data/jobs_cn.json data/source_status.json; then
             echo "No feed changes."
             exit 0
           fi
           git config user.name "path-to-offer-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/jobs.json data/source_status.json
-          git commit -m "data: refresh compact federated jobs"
+          git add data/jobs.json data/jobs_cn.json data/source_status.json
+          git commit -m "data: refresh China-first federated jobs"
           git push origin HEAD:main
