@@ -1,13 +1,60 @@
 {
-  "generated_at": "2026-08-17T03:14:49Z",
+  "generated_at": "2026-08-17T04:11:19Z",
   "catalog_count": 60000,
   "sources": [
+    {
+      "name": "direct-china-official",
+      "label": "国内企业招聘官网 · 自主直连",
+      "url": "",
+      "ok": true,
+      "count": 2448,
+      "error": "",
+      "diagnostics": {
+        "registry": "sources/domestic_direct_sources.json",
+        "sources": [
+          {
+            "id": "meituan",
+            "company": "美团",
+            "official_url": "https://zhaopin.meituan.com/web/campus",
+            "ok": true,
+            "count": 448,
+            "diagnostics": {
+              "endpoint": "https://zhaopin.meituan.com/api/official/job/getJobList",
+              "job_type_counts": {
+                "1": {
+                  "total_reported": 69,
+                  "rows_seen": 69
+                },
+                "2": {
+                  "total_reported": 379,
+                  "rows_seen": 379
+                }
+              },
+              "page_size": 100,
+              "unique_jobs": 448
+            }
+          },
+          {
+            "id": "tencent",
+            "company": "腾讯",
+            "official_url": "https://careers.tencent.com/search.html",
+            "ok": true,
+            "count": 2000,
+            "diagnostics": {
+              "endpoint": "https://careers.tencent.com/tencentcareer/api/post/Query",
+              "total_reported": 2303,
+              "unique_jobs": 2000
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "china-official-federation",
       "label": "中国企业官方招聘 / Feishu / Beisen",
       "url": "https://github.com/simonlin1212/Hiring-Radar",
       "ok": true,
-      "count": 11675,
+      "count": 11670,
       "error": "",
       "diagnostics": {
         "adapters_attempted": 89,
@@ -47,11 +94,11 @@
             400
           ],
           [
-            "库洛游戏",
+            "理想汽车",
             400
           ],
           [
-            "理想汽车",
+            "库洛游戏",
             400
           ],
           [
@@ -63,11 +110,11 @@
             400
           ],
           [
-            "智元机器人",
+            "拓竹",
             386
           ],
           [
-            "拓竹",
+            "智元机器人",
             386
           ],
           [
@@ -106,7 +153,7 @@
       "label": "全球官方 ATS 联邦",
       "url": "https://github.com/speedyapply/2027-SWE-College-Jobs",
       "ok": true,
-      "count": 57494,
+      "count": 57518,
       "error": "",
       "diagnostics": {
         "boards_discovered": 414,
@@ -114,15 +161,15 @@
         "top_boards": [
           [
             "smartrecruiters:BoschGroup",
-            4804
+            4803
           ],
           [
             "smartrecruiters:SGS",
-            4334
+            4336
           ],
           [
             "lever:jobgether",
-            3889
+            3926
           ],
           [
             "smartrecruiters:JobsForHumanity",
@@ -138,11 +185,11 @@
           ],
           [
             "greenhouse:spacex",
-            2107
+            2097
           ],
           [
             "smartrecruiters:HMGroup",
-            1733
+            1728
           ],
           [
             "ashby:bjakcareer",
@@ -254,11 +301,11 @@
     "gank-public-search",
     "offerjack"
   ],
-  "cn_catalog_count": 9583,
+  "cn_catalog_count": 11835,
   "feed_schema": 4,
   "browser_jd_chars": 220,
-  "feed_bytes": 34022740,
-  "cn_feed_bytes": 7814997,
+  "feed_bytes": 34592600,
+  "cn_feed_bytes": 9831767,
   "catalog_cap": 60000,
   "cn_catalog_cap": 30000,
   "default_product_feed": "data/jobs_cn.json"
