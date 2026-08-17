@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-17T05:00:08Z",
+  "generated_at": "2026-08-17T07:18:41Z",
   "catalog_count": 60000,
   "sources": [
     {
@@ -7,7 +7,7 @@
       "label": "国内企业招聘官网 · 自主直连",
       "url": "",
       "ok": true,
-      "count": 2447,
+      "count": 2448,
       "error": "",
       "diagnostics": {
         "registry": "sources/domestic_direct_sources.json",
@@ -39,11 +39,11 @@
             "company": "腾讯",
             "official_url": "https://careers.tencent.com/search.html",
             "ok": true,
-            "count": 1999,
+            "count": 2000,
             "diagnostics": {
               "endpoint": "https://careers.tencent.com/tencentcareer/api/post/Query",
-              "total_reported": 2304,
-              "unique_jobs": 1999
+              "total_reported": 2307,
+              "unique_jobs": 2000
             }
           }
         ]
@@ -54,12 +54,12 @@
       "label": "中国企业官方招聘 / Feishu / Beisen",
       "url": "https://github.com/simonlin1212/Hiring-Radar",
       "ok": true,
-      "count": 11070,
+      "count": 11685,
       "error": "",
       "diagnostics": {
         "adapters_attempted": 89,
-        "companies_with_jobs": 83,
-        "companies_zero_or_failed": 6,
+        "companies_with_jobs": 84,
+        "companies_zero_or_failed": 5,
         "top_companies": [
           [
             "腾讯",
@@ -78,7 +78,15 @@
             400
           ],
           [
+            "奇瑞汽车",
+            400
+          ],
+          [
             "德赛西威",
+            400
+          ],
+          [
+            "追觅",
             400
           ],
           [
@@ -102,16 +110,16 @@
             400
           ],
           [
+            "智元机器人",
+            394
+          ],
+          [
             "拓竹",
             386
           ],
           [
-            "智元机器人",
-            386
-          ],
-          [
             "京东方",
-            380
+            379
           ],
           [
             "元气森林",
@@ -132,19 +140,10 @@
           [
             "智谱AI",
             222
-          ],
-          [
-            "MiniMax",
-            210
-          ],
-          [
-            "追觅",
-            200
           ]
         ],
         "failures_sample": [
-          "unitree: RuntimeError: local parser 退出码 1: Traceback (most recent call last): File \"/tmp/hiring-radar/parsers/unitree.py\", line 94, in <module>",
-          "chery: RuntimeError: local parser 超时(30.0s): chery"
+          "unitree: RuntimeError: local parser 退出码 1: Traceback (most recent call last): File \"/tmp/hiring-radar/parsers/unitree.py\", line 94, in <module>"
         ],
         "moka_skipped": true
       }
@@ -154,7 +153,7 @@
       "label": "全球官方 ATS 联邦",
       "url": "https://github.com/speedyapply/2027-SWE-College-Jobs",
       "ok": true,
-      "count": 57618,
+      "count": 57780,
       "error": "",
       "diagnostics": {
         "boards_discovered": 414,
@@ -162,15 +161,15 @@
         "top_boards": [
           [
             "smartrecruiters:BoschGroup",
-            4804
+            4802
           ],
           [
             "smartrecruiters:SGS",
-            4336
+            4340
           ],
           [
             "lever:jobgether",
-            4031
+            4174
           ],
           [
             "smartrecruiters:JobsForHumanity",
@@ -178,7 +177,7 @@
           ],
           [
             "smartrecruiters:VeoliaEnvironnementSA",
-            2909
+            2911
           ],
           [
             "greenhouse:andurilindustries",
@@ -190,7 +189,7 @@
           ],
           [
             "smartrecruiters:HMGroup",
-            1727
+            1736
           ],
           [
             "ashby:bjakcareer",
@@ -198,7 +197,7 @@
           ],
           [
             "smartrecruiters:RedBull",
-            1198
+            1196
           ],
           [
             "smartrecruiters:ALTEN",
@@ -210,7 +209,7 @@
           ],
           [
             "ashby:airwallex",
-            616
+            617
           ],
           [
             "greenhouse:feverup",
@@ -218,7 +217,7 @@
           ],
           [
             "smartrecruiters:SIXT",
-            540
+            541
           ],
           [
             "lever:lyrahealth",
@@ -302,11 +301,11 @@
     "gank-public-search",
     "offerjack"
   ],
-  "cn_catalog_count": 10674,
+  "cn_catalog_count": 10711,
   "feed_schema": 4,
   "browser_jd_chars": 220,
-  "feed_bytes": 34586417,
-  "cn_feed_bytes": 8864174,
+  "feed_bytes": 34561941,
+  "cn_feed_bytes": 8905385,
   "catalog_cap": 60000,
   "cn_catalog_cap": 30000,
   "default_product_feed": "data/jobs_cn.json"
