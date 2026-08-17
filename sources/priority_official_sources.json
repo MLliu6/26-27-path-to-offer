@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "policy": "Employer-owned campus portals and official public recruiting tenants are preferred. Authoritative government/university announcements are discovery evidence only; when an employer application page exists it remains the canonical apply destination.",
+  "version": 2,
+  "policy": "Employer-owned campus portals and official public recruiting tenants are preferred. Authoritative government/university announcements are discovery evidence only; when an employer application page exists it remains the canonical apply destination. A watched portal is not automatically treated as an active 2027 campaign: 2027 rows require live official/authoritative evidence or a directly crawled job row.",
   "watch": [
     {"company":"中国石油","category":"央企/能源","url":"https://zhaopin.cnpc.com.cn/"},
     {"company":"中国石化","category":"央企/能源","url":"https://job.sinopec.com/"},
@@ -17,12 +17,16 @@
     {"company":"中国电科","category":"央企/电子信息","url":"https://www.cetc.com.cn/"},
     {"company":"中国商飞","category":"央企/航空","url":"https://www.comac.cc/"},
     {"company":"中国中车","category":"央企/高端制造","url":"https://www.crrcgc.cc/"},
+    {"company":"中国兵器工业集团","category":"央企/军工","url":"https://www.norincogroup.com.cn/"},
+    {"company":"中国兵器装备集团","category":"央企/军工","url":"https://www.csgc.com.cn/"},
+    {"company":"中国电子","category":"央企/电子信息","url":"https://www.cec.com.cn/"},
     {"company":"中国工商银行","category":"银行/国有大行","url":"https://job.icbc.com.cn/pc/index.html"},
     {"company":"中国建设银行","category":"银行/国有大行","url":"https://job.ccb.com/cn/job/index.html"},
     {"company":"中国银行","category":"银行/国有大行","url":"https://www.boc.cn/aboutboc/bi4/"},
     {"company":"中国农业银行","category":"银行/国有大行","url":"https://career.abchina.com/"},
     {"company":"交通银行","category":"银行/国有大行","url":"https://job.bankcomm.com/"},
-    {"company":"招商银行","category":"银行/股份制","url":"https://career.cmbchina.com/"},
+    {"company":"中国邮政储蓄银行","category":"银行/国有大行","url":"https://www.psbc.com/cn/gyyc/rczp/"},
+    {"company":"招商银行","category":"银行/股份制","url":"https://career.cmbchina.com/campus/home"},
     {"company":"百度","category":"互联网/AI","url":"https://talent.baidu.com/jobs/list?projectType=1"},
     {"company":"字节跳动","category":"互联网/AI","url":"https://jobs.bytedance.com/campus/position"},
     {"company":"腾讯","category":"互联网/AI","url":"https://careers.tencent.com/search.html"},
@@ -41,15 +45,21 @@
     {"company":"摩尔线程","category":"GPU/AI芯片","url":"https://www.mthreads.com/"},
     {"company":"沐曦","category":"GPU/AI芯片","url":"https://www.metax-tech.com/"},
     {"company":"壁仞科技","category":"GPU/AI芯片","url":"https://www.birentech.com/"},
+    {"company":"燧原科技","category":"AI芯片","url":"https://www.enflame-tech.com/"},
+    {"company":"海光信息","category":"CPU/DCU芯片","url":"https://www.hygon.cn/"},
     {"company":"智谱AI","category":"大模型/AI","url":"https://www.zhipuai.cn/"},
     {"company":"MiniMax","category":"大模型/AI","url":"https://www.minimaxi.com/"},
-    {"company":"月之暗面","category":"大模型/AI","url":"https://www.moonshot.cn/"}
+    {"company":"月之暗面","category":"大模型/AI","url":"https://www.moonshot.cn/"},
+    {"company":"阶跃星辰","category":"大模型/AI","url":"https://www.stepfun.com/"},
+    {"company":"商汤科技","category":"人工智能","url":"https://www.sensetime.com/"},
+    {"company":"Momenta","category":"自动驾驶/AI","url":"https://www.momenta.cn/"}
   ],
   "zhiye_campus": [
     {"company":"航天科工集团","company_type":"央企/航天军工","list_url":"https://casic.zhiye.com/xzlist/?PageIndex={page}","official_url":"https://casic.zhiye.com/Campus","max_pages":60,"require_year":"2027"}
   ],
   "career_spiders": [
-    {"company":"辉羲智能","company_type":"民营/AI芯片初创","start_url":"https://www.rhino.auto/ShouYe","max_pages":45,"max_depth":2,"priority_locations":["北京","上海","杭州","合肥"]}
+    {"company":"辉羲智能","company_type":"民营/AI芯片初创","start_url":"https://www.rhino.auto/ShouYe","max_pages":45,"max_depth":2,"priority_locations":["北京","上海","杭州","合肥"]},
+    {"company":"银河通用","company_type":"民营/具身智能初创","start_url":"https://www.galbot.com/careers","max_pages":35,"max_depth":2,"priority_locations":["北京","深圳","苏州"]}
   ],
   "campaigns": [
     {
@@ -66,6 +76,21 @@
       "company":"航天科工集团","company_type":"央企/航天军工","batch":"2027校园招聘","graduation":"2027届","locations":"北京/全国",
       "evidence_url":"https://wap.sasac.gov.cn/n2588035/n2588325/c35503679/content.html","official_url":"https://casic.zhiye.com/Campus","published":"2026-06-29",
       "roles":["2027届校园招聘·航天科工集团"]
+    },
+    {
+      "company":"中国银行","company_type":"国有大行","batch":"2026实习生招聘·2027届人才储备","graduation":"2027届","locations":"北京",
+      "evidence_url":"https://www.boc.cn/aboutboc/bi4/202603/t20260311_25654054.html","official_url":"https://www.boc.cn/aboutboc/bi4/202603/t20260311_25654054.html","published":"2026-03-11",
+      "roles":["总行部门实习生（信科）"]
+    },
+    {
+      "company":"中国银行","company_type":"国有大行","batch":"2026实习生招聘·2027届人才储备","graduation":"2027届","locations":"北京/上海",
+      "evidence_url":"https://www.boc.cn/aboutboc/bi4/202603/t20260311_25654054.html","official_url":"https://www.boc.cn/aboutboc/bi4/202603/t20260311_25654054.html","published":"2026-03-11",
+      "roles":["信息科技运营中心实习生（信科）"]
+    },
+    {
+      "company":"中国银行","company_type":"国有大行","batch":"2026实习生招聘·2027届人才储备","graduation":"2027届","locations":"上海/武汉/成都",
+      "evidence_url":"https://www.boc.cn/aboutboc/bi4/202603/t20260311_25654054.html","official_url":"https://www.boc.cn/aboutboc/bi4/202603/t20260311_25654054.html","published":"2026-03-11",
+      "roles":["软件中心实习生（信科）"]
     }
   ],
   "discovery_indexes": [
