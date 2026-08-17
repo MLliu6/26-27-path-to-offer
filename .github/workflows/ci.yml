@@ -37,8 +37,8 @@ jobs:
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
           node tests/ranking_calibration.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py tests/test_direct_china_official.py
-          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official
+          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py scripts/official_campaign_discovery.py scripts/soe_directory_harvester.py scripts/university_2027_discovery.py scripts/ncss_public_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py tests/test_direct_china_official.py tests/test_ncss_public_harvester.py
+          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official tests.test_ncss_public_harvester
       - name: Check product invariants
         run: |
           python - <<'PY'
@@ -58,8 +58,13 @@ jobs:
           enhancement9=Path('enhancements-v09.js').read_text(encoding='utf-8')
           direct=Path('scripts/direct_china_official.py').read_text(encoding='utf-8')
           priority=Path('scripts/priority_official_harvester.py').read_text(encoding='utf-8')
+          campaign=Path('scripts/official_campaign_discovery.py').read_text(encoding='utf-8')
+          soe=Path('scripts/soe_directory_harvester.py').read_text(encoding='utf-8')
+          university=Path('scripts/university_2027_discovery.py').read_text(encoding='utf-8')
+          ncss=Path('scripts/ncss_public_harvester.py').read_text(encoding='utf-8')
           registry=Path('sources/domestic_direct_sources.json').read_text(encoding='utf-8')
           priority_registry=Path('sources/priority_official_sources.json').read_text(encoding='utf-8')
+          university_registry=Path('sources/campus_discovery_sources.json').read_text(encoding='utf-8')
           expand=Path('scripts/expand_feed.py').read_text(encoding='utf-8')
           compact=Path('scripts/compact_feed.py').read_text(encoding='utf-8')
           css=Path('styles.css').read_text(encoding='utf-8')
@@ -94,18 +99,27 @@ jobs:
               assert token in enhancement6, token
           for token in ['market.prepend(el)','pto-flow','查看详情','官网投递','复制岗位链接','北京优先']:
               assert token in enhancement7, token
-          for token in ['匹配评分明细','八维','证据门槛上限','pto-score-grid']:
+          for token in ['匹配评分明细','八维','证据门槛上限','官方招聘源已纳入雷达','pto-score-grid']:
               assert token in enhancement9, token
           for token in ['direct-official:meituan','direct-official:tencent','zhaopin.meituan.com/api/official/job/getJobList','careers.tencent.com/tencentcareer/api/post/Query','国内企业招聘官网 · 自主直连']:
               assert token in direct, token
           for token in ['priority-official-sources','crawl_zhiye','spider_career','sasac_discovery','priority-official-harvester']:
               assert token in priority, token
-          for token in ['中国石油','中国石化','航天科工集团','中国工商银行','银河通用','辉羲智能','priority_official_sources']:
-              assert token in priority_registry or token in priority, token
-          assert priority_registry.count('"company"') >= 40
+          for token in ['employer-visible-campaign-link','official-campaign-discovery','2027']:
+              assert token in campaign, token
+          for token in ['Central-SOE','state-directory-to-employer-domain','gjzwfw']:
+              assert token.lower() in soe.lower(), token
+          for token in ['campus-discovery:university','public-university-employment-site','2027']:
+              assert token in university, token
+          for token in ['jobslist/ajax','ncss-public:2027','国家大学生就业服务平台','MAX_EXPLICIT','priority_query']:
+              assert token in ncss, token
+          for token in ['中国石油','中国石化','航天科工集团','中国工商银行','银河通用','辉羲智能','宇树科技','小鹏集团','中国银行']:
+              assert token in priority_registry, token
+          assert priority_registry.count('"company"') >= 50
+          assert university_registry.count('"url"') >= 6
           for token in ['"meituan"','"tencent"','zhaopin.meituan.com/web/campus','careers.tencent.com']:
               assert token in registry, token
-          for token in ['jobs_cn.json','cn_catalog_count','is_domestic','domestic_priority','direct-official:']:
+          for token in ['jobs_cn.json','cn_catalog_count','is_domestic','domestic_priority','ncss-public:','priority-campaign:']:
               assert token in compact, token
           for token in ['schema_version": 3','previous-compact-cache','expand_payload']:
               assert token in expand, token
@@ -113,7 +127,7 @@ jobs:
               assert token in federation or token in federated_sources.lower(), token
           for token in ['Georgia','prefers-reduced-motion','market-card','drawer','--accent']:
               assert token in css, token
-          for token in ['jd-old','profileIntelligence','reviewImport','expect_download','parentElement.classList.contains(\'job-market\')','官网投递']:
+          for token in ['jd-old','profileIntelligence','reviewImport','expect_download','parentElement.classList.contains(\'job-market\')','官网投递','ptoSourceFallback']:
               assert token in browser_test, token
           for token in ['appearance-control','backgroundColor','data-appearance-choice']:
               assert token in theme_test, token
@@ -127,7 +141,7 @@ jobs:
           assert 'ranking-v09.js' in config and 'enhancements-v09.js' in config
           assert 'domesticJobsFeed' in config and 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
           assert 'no account credentials' in federation and 'moka' in federation
-          print('Path to Offer v0.9 source-breadth and calibrated-ranking checks passed.')
+          print('Path to Offer v0.9 nationwide-source and calibrated-ranking checks passed.')
           PY
       - name: Browser smoke tests
         run: |
