@@ -79,7 +79,7 @@ jobs:
           assert direct and direct.get('ok') and direct.get('count',0)>0, 'autonomous employer-direct source group is empty'
           direct_companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
           assert direct_companies.get('美团',{}).get('count',0)>=50, f'Meituan direct crawl too small: {direct_companies.get("美团")}'
-          assert direct_companies.get('字节跳动',{}).get('count',0)>=100, f'ByteDance direct campus crawl too small: {direct_companies.get("字节跳动")}'
+          assert direct_companies.get('腾讯',{}).get('count',0)>=100, f'Tencent direct crawl too small: {direct_companies.get("腾讯")}'
           overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in ['united states','germany','france','singapore','tokyo','india']))
           assert overseas <= max(10, len(cn_jobs)//200), f'too many obvious overseas rows in China feed: {overseas}'
           print('global rows/bytes:',len(jobs),global_path.stat().st_size)
