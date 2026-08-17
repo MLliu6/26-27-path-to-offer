@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "policy": "Canonical job rows should come from the employer's own public recruiting site or its explicitly public recruiting tenant. Third-party aggregators may help discover a company source but are not canonical when an official source is available.",
+  "sources": [
+    {
+      "id": "meituan",
+      "company": "美团",
+      "adapter": "meituan",
+      "official_url": "https://zhaopin.meituan.com/web/campus",
+      "enabled": true,
+      "job_type_codes": ["1", "2"],
+      "max_pages": 40,
+      "page_size": 100,
+      "company_type": "民营/互联网",
+      "priority_cities": ["北京", "上海", "深圳", "广州", "杭州"]
+    },
+    {
+      "id": "tencent",
+      "company": "腾讯",
+      "adapter": "tencent",
+      "official_url": "https://careers.tencent.com/search.html",
+      "enabled": true,
+      "max_pages": 20,
+      "page_size": 100,
+      "company_type": "民营/互联网",
+      "priority_cities": ["北京", "深圳", "上海", "广州"]
+    }
+  ]
+}
