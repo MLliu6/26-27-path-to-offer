@@ -20,11 +20,10 @@ import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
 from scripts.aggregate_jobs import JOBS_PATH, STATUS_PATH, clean, utc_now
-from scripts.ncss_public_harvester import fetch_page, normalize, identity
+from scripts.ncss_public_harvester import fetch_page, normalize, identity, session
 
 MAX_ROWS = max(1000, min(20000, int(os.getenv("PTO_NCSS_ALL_MAX_ROWS", "12000"))))
 PAGE_SIZE = 20
@@ -43,9 +42,6 @@ def is_recent(row: dict[str, Any]) -> bool:
 
 
 def fetch_number(page: int):
-    # fetch_page creates no global state and the NCSS endpoint is anonymous.
-    import requests
-    from scripts.ncss_public_harvester import session
     s = session()
     rows = fetch_page(s, "", page, PAGE_SIZE)
     return page, rows
@@ -57,7 +53,6 @@ def scan() -> tuple[list[dict[str, Any]], dict[str, Any]]:
     raw_rows = 0
     short_page = None
     errors: list[str] = []
-
     start = 1
     while start <= MAX_PAGES and len(kept) < MAX_ROWS:
         pages = list(range(start, min(MAX_PAGES + 1, start + BATCH)))
@@ -86,6 +81,15 @@ def scan() -> tuple[list[dict[str, Any]], dict[str, Any]]:
                     continue
                 job = normalize(row, explicit_query=False)
                 if job:
+                    # This mode is intentionally broader than the campus-keyword
+                    # scanner. Keep explicit 2027 rows as such, but label all
+                    # other rows honestly as current public student-platform jobs.
+                    if not clean(job.get("graduation")):
+                        job["source"] = "ncss-public:current-all"
+                        job["source_label"] = "国家大学生就业服务平台 · 当前公开岗位"
+                        job["batch"] = "当前公开岗位·年份待确认"
+                        tags = [x for x in (job.get("tags") or []) if x != "国家大学生就业服务平台"]
+                        job["tags"] = ["NCSS", "当前公开岗位", "年份待确认", *tags]
                     kept[identity(job)] = job
                     if len(kept) >= MAX_ROWS:
                         stop = True
