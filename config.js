@@ -1,35 +1,37 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.6.3',
+  version: '0.7.0',
+  // Keep the stable logical feed name for compatibility; after the v0.7 bundles
+  // load, fetch() transparently prefers the much smaller China-first feed and
+  // falls back to the global catalogue if a refresh has not published it yet.
   jobsFeed: './data/jobs.json',
+  domesticJobsFeed: './data/jobs_cn.json',
+  globalJobsFeed: './data/jobs.json',
   sourceStatusFeed: './data/source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
-  // Optional. A production GitHub login needs a server-side token exchange.
-  // Point this to your own OAuth callback/proxy when one is provisioned.
   githubOAuthProxy: '',
   githubClientId: '',
   githubOAuthScopes: 'read:user user:email',
 });
 
-// The stable v0.2 shell calls loadFeeds() as soon as app.js executes. With a
-// 60k catalogue that legacy render path would attempt to materialize every card
-// before the v0.6 bounded renderer exists. Gate only the first jobs-feed fetch:
-// the shell boots against an empty catalogue, enhancements load, then we perform
-// the real fetch through the query-first / 60-row renderer.
 window.PTO_ENHANCEMENTS_READY = false;
 const PTO_NATIVE_FETCH = window.fetch.bind(window);
 window.fetch = function ptoBootstrapFetch(input, init) {
   const url = typeof input === 'string' ? input : (input && input.url) || '';
-  const jobsPath = String(window.PTO_CONFIG.jobsFeed || './data/jobs.json').replace(/^\.\//, '');
-  if (!window.PTO_ENHANCEMENTS_READY && jobsPath && String(url).includes(jobsPath)) {
+  const globalPath = String(window.PTO_CONFIG.jobsFeed || './data/jobs.json').replace(/^\.\//, '');
+  if (!window.PTO_ENHANCEMENTS_READY && globalPath && String(url).includes(globalPath)) {
     return Promise.resolve(new Response(JSON.stringify({schema_version:4, generated_at:null, jobs:[]}), {
       status: 200,
       headers: {'Content-Type':'application/json'}
     }));
   }
+  if (window.PTO_ENHANCEMENTS_READY && globalPath && String(url).includes(globalPath)) {
+    const domestic = String(window.PTO_CONFIG.domesticJobsFeed || './data/jobs_cn.json');
+    const suffix = String(url).includes('?') ? String(url).slice(String(url).indexOf('?')) : '';
+    return PTO_NATIVE_FETCH(`${domestic}${suffix}`, init).then(r => r.ok ? r : PTO_NATIVE_FETCH(input, init)).catch(() => PTO_NATIVE_FETCH(input, init));
+  }
   return PTO_NATIVE_FETCH(input, init);
 };
 
-// Compatibility guard for named-form access across browsers.
 window.addEventListener('load', () => {
   if (typeof openJob !== 'function') return;
   openJob = function fixedOpenJob(id = null) {
@@ -82,20 +84,18 @@ function loadPtoScript(src) {
   });
 }
 
-// Matching/profile logic is layered over the stable application shell so the
-// tracker remains usable even if an enhancement bundle fails to load.
 window.addEventListener('load', async () => {
   try {
     await loadPtoScript('matching-core.js');
     await loadPtoScript('profile-core-v05.js');
     await loadPtoScript('enhancements-v04.js');
     await loadPtoScript('ranking-v06.js');
+    await loadPtoScript('ranking-v07.js');
     await loadPtoScript('market-v06.js');
     await loadPtoScript('enhancements-v05.js');
     await loadPtoScript('enhancements-v06.js');
+    await loadPtoScript('enhancements-v07.js');
     window.PTO_ENHANCEMENTS_READY = true;
-    // Re-fetch the real catalogue only after large-catalogue ranking/rendering
-    // has replaced the legacy path.
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
     window.PTO_ENHANCEMENTS_READY = true;

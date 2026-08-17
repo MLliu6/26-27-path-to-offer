@@ -27,9 +27,11 @@ jobs:
           node --check profile-core-v05.js
           node --check enhancements-v04.js
           node --check ranking-v06.js
+          node --check ranking-v07.js
           node --check market-v06.js
           node --check enhancements-v05.js
           node --check enhancements-v06.js
+          node --check enhancements-v07.js
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
           python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py
@@ -43,10 +45,12 @@ jobs:
           core=Path('matching-core.js').read_text(encoding='utf-8')
           profile=Path('profile-core-v05.js').read_text(encoding='utf-8')
           enhancement=Path('enhancements-v04.js').read_text(encoding='utf-8')
-          ranking=Path('ranking-v06.js').read_text(encoding='utf-8')
+          ranking6=Path('ranking-v06.js').read_text(encoding='utf-8')
+          ranking7=Path('ranking-v07.js').read_text(encoding='utf-8')
           market=Path('market-v06.js').read_text(encoding='utf-8')
           enhancement5=Path('enhancements-v05.js').read_text(encoding='utf-8')
           enhancement6=Path('enhancements-v06.js').read_text(encoding='utf-8')
+          enhancement7=Path('enhancements-v07.js').read_text(encoding='utf-8')
           expand=Path('scripts/expand_feed.py').read_text(encoding='utf-8')
           compact=Path('scripts/compact_feed.py').read_text(encoding='utf-8')
           css=Path('styles.css').read_text(encoding='utf-8')
@@ -67,14 +71,18 @@ jobs:
           for token in ['profile-intelligence','搜索优先','画像引擎 v4','portalFor','rebindEnhancedHandlers']:
               assert token in enhancement, token
           for token in ['careerSignal','query-first','graduateProfile','senior']:
-              assert token.lower() in ranking.lower(), token
+              assert token.lower() in ranking6.lower(), token
+          for token in ['isDomestic','MAX_FULL_SCORE','北京','中国企业官方招聘','cheapFit']:
+              assert token in ranking7, token
           for token in ['PAGE_SIZE=60','marketPager','slice(0,visibleLimit)','baseNormalizeMarketJob','j.c','j.r']:
               assert token in market, token
           for token in ['RESUME STRUCTURE','分章节','profileVersion=5','roleSearch']:
               assert token in enhancement5, token
           for token in ['appearance-control','data-appearance','repairSwatches','岗位池','dark']:
               assert token in enhancement6, token
-          for token in ['schema_version": 4','("c", "company")','("r", "role")','feed_bytes']:
+          for token in ['pto-flow','查看详情','官网投递','复制岗位链接','北京优先']:
+              assert token in enhancement7, token
+          for token in ['jobs_cn.json','cn_catalog_count','is_domestic','domestic_priority']:
               assert token in compact, token
           for token in ['schema_version": 3','previous-compact-cache','expand_payload']:
               assert token in expand, token
@@ -89,11 +97,11 @@ jobs:
           for token in ['COUNT=60000','unbounded card render','京东']:
               assert token in large_test, token
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
-              assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6, f'mock data leaked: {forbidden}'
-          assert "version: '0.6.3'" in config
-          assert 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
+              assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6+enhancement7, f'mock data leaked: {forbidden}'
+          assert "version: '0.7.0'" in config
+          assert 'domesticJobsFeed' in config and 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
           assert 'no account credentials' in federation and 'moka' in federation
-          print('Path to Offer v0.6.4 refresh-resilience checks passed.')
+          print('Path to Offer v0.7 domestic-first checks passed.')
           PY
       - name: Browser smoke tests
         run: |

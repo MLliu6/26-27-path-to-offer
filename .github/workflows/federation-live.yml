@@ -6,6 +6,8 @@ on:
       - 'scripts/expand_feed.py'
       - 'scripts/federated_harvester.py'
       - 'scripts/compact_feed.py'
+      - 'ranking-v07.js'
+      - 'enhancements-v07.js'
       - 'market-v06.js'
       - 'sources/federated_sources.json'
       - '.github/workflows/federation-live.yml'
@@ -25,6 +27,7 @@ jobs:
       PTO_CATALOG_JD_CHARS: '600'
       PTO_BROWSER_JD_CHARS: '220'
       PTO_MAX_CATALOG: '60000'
+      PTO_MAX_CN_CATALOG: '30000'
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -42,25 +45,29 @@ jobs:
           PYTHONPATH=. python scripts/expand_feed.py
           PYTHONPATH=. python scripts/federated_harvester.py
           PYTHONPATH=. python scripts/compact_feed.py
-      - name: Enforce discovery value and browser payload gates
+      - name: Enforce global and China-first gates
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          path=Path('data/jobs.json')
-          feed=json.loads(path.read_text(encoding='utf-8'))
+          gp=Path('data/jobs.json'); cp=Path('data/jobs_cn.json')
+          feed=json.loads(gp.read_text(encoding='utf-8')); cn=json.loads(cp.read_text(encoding='utf-8'))
           status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
-          jobs=feed.get('jobs',[])
-          size=path.stat().st_size
-          print('LIVE_CATALOG_COUNT=',len(jobs),'PAYLOAD_BYTES=',size,'SCHEMA=',feed.get('schema_version'))
+          jobs=feed.get('jobs',[]); cn_jobs=cn.get('jobs',[])
+          print('LIVE_GLOBAL=',len(jobs),'GLOBAL_BYTES=',gp.stat().st_size,'LIVE_CN=',len(cn_jobs),'CN_BYTES=',cp.stat().st_size)
           for s in status.get('sources',[]):
               if s.get('name') in {'china-official-federation','official-ats-discovery','public-remote-boards'}:
                   print(s.get('name'), 'count=',s.get('count'),'ok=',s.get('ok'))
-          names='\n'.join((j.get('c','')+' '+j.get('r','')) for j in jobs).lower()
-          assert feed.get('schema_version') == 4
-          assert len(jobs) >= 10000, f'Federation value gate failed: {len(jobs)} < 10000 real normalized jobs'
-          assert size < 35_000_000, f'Compact GitHub Pages catalogue too large: {size} bytes'
-          assert '京东' in names, 'JD/京东 official jobs missing from live catalogue'
-          assert '腾讯' in names, 'Tencent/腾讯 official jobs missing from live catalogue'
-          assert '字节' in names, 'ByteDance/字节 official jobs missing from live catalogue'
+          assert feed.get('schema_version') == 4 and cn.get('schema_version') == 4
+          assert len(jobs) >= 10000
+          assert len(cn_jobs) >= 1000
+          assert gp.stat().st_size < 35_000_000
+          assert cp.stat().st_size < gp.stat().st_size
+          names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')) for j in cn_jobs).lower()
+          for q in ['京东','腾讯','字节','北京']:
+              assert q.lower() in names, f'{q} missing from China-first feed'
+          obvious=['united states','germany','france','singapore','tokyo','india']
+          overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in obvious))
+          assert overseas <= max(10,len(cn_jobs)//200), f'overseas leakage too high: {overseas}'
+          print('China-first overseas leakage=',overseas)
           PY
