@@ -1,7 +1,7 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.7.0',
-  // Keep the stable logical feed name for compatibility; after the v0.7 bundles
-  // load, fetch() transparently prefers the much smaller China-first feed and
+  version: '0.8.0',
+  // Keep the stable logical feed name for compatibility. After enhancement
+  // bundles load, fetch() prefers the smaller China-first official feed and
   // falls back to the global catalogue if a refresh has not published it yet.
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
