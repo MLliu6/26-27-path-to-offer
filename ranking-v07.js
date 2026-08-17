@@ -42,8 +42,7 @@
     if(!profile)return {delta:0,label:''};
     const role=text(job.role); const jd=text(job.jd);
     const s=profile.signals||{};
-    const terms=[...(s.recommendedRoles||[]),...(s.skills||[]).slice(0,24)]
-      .map(x=>text(x).trim()).filter(x=>x.length>=3);
+    const terms=[...(s.recommendedRoles||[]),...(s.skills||[]).slice(0,24)].map(x=>text(x).trim()).filter(x=>x.length>=3);
     let titleHits=0,bodyHits=0;
     for(const t of terms){if(role.includes(t))titleHits++;else if(jd.includes(t))bodyHits++;}
     if(titleHits)return {delta:Math.min(16,8+titleHits*3),label:'岗位标题高度相关'};
@@ -58,7 +57,7 @@
     const domestic=isDomestic(job)?4:-28;
     const score=Math.max(0,Math.min(99,Math.round(base.score+src.delta+loc.delta+role.delta+campus+domestic)));
     const reasons=[...(base.reasons||[])];
-    for(const x of [src.label,loc.label,role.label,campus?'校招 / 实习':'' ])if(x)reasons.unshift(x);
+    for(const x of [src.label,loc.label,role.label,campus?'校招 / 实习':''])if(x)reasons.unshift(x);
     return {...base,score,reasons:[...new Set(reasons)].slice(0,6),components:{...(base.components||{}),domestic,official:src.delta,location:loc.delta,titleFit:role.delta,campus}};
   }
 
@@ -92,15 +91,15 @@
     candidates=candidates.filter(j=>(location==='all'||locationText(j).includes(location))&&(companyType==='all'||j.companyType===companyType||j.company_type===companyType)&&(batch==='all'||j.batch===batch));
 
     if(q){
-      const nq=text(q);
-      let rows=[];
+      const nq=text(q); let rows=[];
       for(const job of candidates){
-        // Fast literal/alias prefilter avoids invoking the heavier matcher for all rows.
         const blob=fastBlob(job);
-        if(!blob.includes(nq)&&!text(job.company).includes(nq)&&!text(job.role).includes(nq)){
-          const sm=baseSearch(job,q); if(!sm.matched)continue; job.__ptoLastSearch=sm;
-        }
-        const sm=job.__ptoLastSearch||baseSearch(job,q); if(!sm.matched)continue;
+        const literal=blob.includes(nq)||text(job.company).includes(nq)||text(job.role).includes(nq);
+        // Alias matching is still evaluated for every potential result, but the
+        // expensive resume score runs only after retrieval has matched.
+        const sm=baseSearch(job,q);
+        if(!literal&&!sm.matched)continue;
+        if(!sm.matched)continue;
         const age=ageOf(job.updatedAt||job.updated_at);
         rows.push({...job,_age:age,_search:sm,match:scoreJobV7(job,profile,{...preferences,ageDays:age,targetLocations:preferences.targetLocations||[],targetDirections:preferences.targetDirections||[]})});
       }
@@ -108,9 +107,6 @@
       return rows;
     }
 
-    // Recommendation mode is intentionally China-first. A 60k global catalogue
-    // should not spend CPU scoring irrelevant overseas jobs nor flood a China-based
-    // graduate with foreign senior positions.
     candidates=candidates.filter(isDomestic);
     if(profile&&candidates.length>MAX_FULL_SCORE){
       candidates=candidates.map(j=>({j,q:cheapFit(j,profile,preferences)})).sort((a,b)=>b.q-a.q).slice(0,MAX_FULL_SCORE).map(x=>x.j);
