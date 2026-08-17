@@ -18,13 +18,14 @@
     if(job.__ptoDomestic!==undefined)return job.__ptoDomestic;
     const loc=locationText(job);
     const source=String(job.sourceLabel||job.source||'');
-    const domestic=source.includes('中国企业官方招聘') || /官方招聘/.test(source) || CN_CITIES.some(c=>loc.includes(c)) || /(中国|china|cn\b)/i.test(loc);
+    const domestic=source.includes('中国企业官方招聘') || /招聘官网|官方招聘|direct-official/i.test(source) || CN_CITIES.some(c=>loc.includes(c)) || /(中国|china|cn\b)/i.test(loc);
     job.__ptoDomestic=!!domestic&&!OVERSEAS.test(loc);
     return job.__ptoDomestic;
   }
   function cityOf(job){return CN_CITIES.find(c=>locationText(job).includes(c))||'';}
   function sourceSignal(job){
     const s=String(job.sourceLabel||job.source||'');
+    if(/招聘官网|direct-official/i.test(s))return {delta:18,label:'企业招聘官网'};
     if(s.includes('中国企业官方招聘'))return {delta:12,label:'企业官方招聘'};
     if(/官方|campus/i.test(s))return {delta:6,label:'官方来源'};
     return {delta:0,label:''};
@@ -66,13 +67,22 @@
     job.__ptoFastBlob=text([job.company,job.role,job.location,job.department,job.batch,job.graduation,job.jd].join(' '));
     return job.__ptoFastBlob;
   }
+  function literalSearch(job,nq){
+    const company=text(job.company),role=text(job.role),blob=fastBlob(job);
+    if(company===nq||company.startsWith(nq))return {matched:true,exact:true,boost:100};
+    if(company.includes(nq))return {matched:true,exact:false,boost:70};
+    if(role.includes(nq))return {matched:true,exact:false,boost:50};
+    if(blob.includes(nq))return {matched:true,exact:false,boost:20};
+    return null;
+  }
   function cheapFit(job,profile,preferences={}){
     const s=profile?.signals||{}; const title=text(job.role); const blob=fastBlob(job);
     let score=0;
     if(isDomestic(job))score+=30; else score-=60;
     const city=cityOf(job); if(city==='北京')score+=20; else if(FIRST_TIER.has(city))score+=10;
     if((preferences.targetLocations||[]).some(c=>locationText(job).includes(c)))score+=28;
-    if(String(job.sourceLabel||'').includes('中国企业官方招聘'))score+=18;
+    if(/招聘官网|direct-official/i.test(String(job.sourceLabel||job.source||'')))score+=28;
+    else if(String(job.sourceLabel||'').includes('中国企业官方招聘'))score+=18;
     if(CAMPUS.test(blob))score+=12;
     if(profile){
       const roles=(s.recommendedRoles||[]).map(text).filter(Boolean);
@@ -93,12 +103,12 @@
     if(q){
       const nq=text(q); let rows=[];
       for(const job of candidates){
-        const blob=fastBlob(job);
-        const literal=blob.includes(nq)||text(job.company).includes(nq)||text(job.role).includes(nq);
-        // Alias matching is still evaluated for every potential result, but the
-        // expensive resume score runs only after retrieval has matched.
-        const sm=baseSearch(job,q);
-        if(!literal&&!sm.matched)continue;
+        // Most user searches are literal company/title terms (e.g. 美团/京东/CUDA).
+        // Handle those from a cached lowercase blob and only invoke the more
+        // expensive alias/token matcher for literal misses. This avoids doing
+        // normalization + alias expansion across every row on every keystroke.
+        const fast=literalSearch(job,nq);
+        const sm=fast||baseSearch(job,q);
         if(!sm.matched)continue;
         const age=ageOf(job.updatedAt||job.updated_at);
         rows.push({...job,_age:age,_search:sm,match:scoreJobV7(job,profile,{...preferences,ageDays:age,targetLocations:preferences.targetLocations||[],targetDirections:preferences.targetDirections||[]})});
@@ -123,5 +133,5 @@
   CORE.scoreJob=scoreJobV7;
   CORE.filterAndRank=filterAndRankV7;
   CORE.isDomesticJob=isDomestic;
-  CORE.version='7.0.0';
+  CORE.version='7.1.0';
 })();
