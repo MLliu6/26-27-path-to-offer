@@ -10,6 +10,7 @@ on:
       - 'scripts/federated_harvester.py'
       - 'scripts/direct_china_official.py'
       - 'scripts/priority_official_harvester.py'
+      - 'scripts/official_campaign_discovery.py'
       - 'scripts/compact_feed.py'
       - 'sources/**'
       - '.github/workflows/refresh-jobs.yml'
@@ -26,7 +27,7 @@ concurrency:
 jobs:
   aggregate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 48
+    timeout-minutes: 52
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
@@ -57,6 +58,7 @@ jobs:
           PYTHONPATH=. python scripts/direct_china_official.py
           PYTHONPATH=. python scripts/merge_public_tables.py
           PYTHONPATH=. python scripts/priority_official_harvester.py
+          PYTHONPATH=. python scripts/official_campaign_discovery.py
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Validate catalogue output
         run: |
@@ -75,7 +77,7 @@ jobs:
           assert global_path.stat().st_size < 40_000_000, f'global catalogue exceeds budget: {global_path.stat().st_size}'
           assert cn_path.stat().st_size < global_path.stat().st_size, 'China-first feed should be smaller than global feed'
           names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')+' '+j.get('x','')) for j in cn_jobs).lower()
-          for q in ['京东','腾讯','字节','北京','美团','航天科工','银河通用']:
+          for q in ['京东','腾讯','字节','北京','美团','航天科工','银河通用','中国银行']:
               assert q.lower() in names, f'{q} missing from China-first product feed'
           direct=next((s for s in status.get('sources',[]) if s.get('name')=='direct-china-official'),None)
           assert direct and direct.get('ok') and direct.get('count',0)>0, 'autonomous employer-direct source group is empty'
@@ -84,13 +86,16 @@ jobs:
           assert direct_companies.get('腾讯',{}).get('count',0)>=100, f'Tencent direct crawl too small: {direct_companies.get("腾讯")}'
           priority=next((s for s in status.get('sources',[]) if s.get('name')=='priority-official-sources'),None)
           assert priority and priority.get('ok'), 'priority official source layer is empty'
-          diag=priority.get('diagnostics') or {}
-          assert diag.get('watch_total',0)>=35, f'priority watch registry too small: {diag.get("watch_total")}'
+          diag=priority.get('diagnostics') or {}; assert diag.get('watch_total',0)>=45, f'priority watch registry too small: {diag.get("watch_total")}'
           adapters=diag.get('adapters') or []
           casic=next((x for x in adapters if x.get('company')=='航天科工集团' and x.get('type')=='zhiye-campus'),{})
           galbot=next((x for x in adapters if x.get('company')=='银河通用' and x.get('type')=='campaign'),{})
+          boc=[x for x in adapters if x.get('company')=='中国银行' and x.get('type')=='campaign']
           assert casic.get('count',0)>=5, f'CASIC direct campus crawl too small: {casic}'
           assert galbot.get('count',0)>=6, f'Galbot 2027 campaign missing: {galbot}'
+          assert sum(x.get('count',0) for x in boc)>=3, f'BOC 2027-target technology internships missing: {boc}'
+          campaign=next((s for s in status.get('sources',[]) if s.get('name')=='official-campaign-discovery'),None)
+          assert campaign and (campaign.get('diagnostics') or {}).get('portals',0)>=45, 'official campaign monitor did not scan priority portals'
           overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in ['united states','germany','france','singapore','tokyo','india']))
           assert overseas <= max(10, len(cn_jobs)//200), f'too many obvious overseas rows in China feed: {overseas}'
           print('global rows/bytes:',len(jobs),global_path.stat().st_size)
@@ -98,6 +103,7 @@ jobs:
           print('direct official:',[(k,v.get('count'),v.get('ok')) for k,v in direct_companies.items()])
           print('priority official watch:',diag.get('watch_ok'),'/',diag.get('watch_total'),'2027=',diag.get('watch_2027'))
           print('priority adapters:',[(x.get('company'),x.get('type'),x.get('count'),x.get('ok')) for x in adapters])
+          print('automatic campaign discovery:',campaign.get('count'),campaign.get('diagnostics'))
           PY
       - name: Commit refreshed feed when changed
         run: |
