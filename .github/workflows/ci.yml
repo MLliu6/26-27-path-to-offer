@@ -28,13 +28,16 @@ jobs:
           node --check enhancements-v04.js
           node --check ranking-v06.js
           node --check ranking-v07.js
+          node --check ranking-v09.js
           node --check market-v06.js
           node --check enhancements-v05.js
           node --check enhancements-v06.js
           node --check enhancements-v07.js
+          node --check enhancements-v09.js
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/direct_china_official.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py tests/test_direct_china_official.py
+          node tests/ranking_calibration.mjs
+          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py tests/test_direct_china_official.py
           PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official
       - name: Check product invariants
         run: |
@@ -47,12 +50,16 @@ jobs:
           enhancement=Path('enhancements-v04.js').read_text(encoding='utf-8')
           ranking6=Path('ranking-v06.js').read_text(encoding='utf-8')
           ranking7=Path('ranking-v07.js').read_text(encoding='utf-8')
+          ranking9=Path('ranking-v09.js').read_text(encoding='utf-8')
           market=Path('market-v06.js').read_text(encoding='utf-8')
           enhancement5=Path('enhancements-v05.js').read_text(encoding='utf-8')
           enhancement6=Path('enhancements-v06.js').read_text(encoding='utf-8')
           enhancement7=Path('enhancements-v07.js').read_text(encoding='utf-8')
+          enhancement9=Path('enhancements-v09.js').read_text(encoding='utf-8')
           direct=Path('scripts/direct_china_official.py').read_text(encoding='utf-8')
+          priority=Path('scripts/priority_official_harvester.py').read_text(encoding='utf-8')
           registry=Path('sources/domestic_direct_sources.json').read_text(encoding='utf-8')
+          priority_registry=Path('sources/priority_official_sources.json').read_text(encoding='utf-8')
           expand=Path('scripts/expand_feed.py').read_text(encoding='utf-8')
           compact=Path('scripts/compact_feed.py').read_text(encoding='utf-8')
           css=Path('styles.css').read_text(encoding='utf-8')
@@ -61,6 +68,7 @@ jobs:
           browser_test=Path('tests/browser_smoke.py').read_text(encoding='utf-8')
           theme_test=Path('tests/theme_smoke.py').read_text(encoding='utf-8')
           large_test=Path('tests/large_catalog_smoke.py').read_text(encoding='utf-8')
+          calibration=Path('tests/ranking_calibration.mjs').read_text(encoding='utf-8')
           federated_sources=Path('sources/federated_sources.json').read_text(encoding='utf-8')
           for token in ['resumeImport','jobMarketCards','githubLoginBtn','pipelineView','reviewImport']:
               assert f'id="{token}"' in html, token
@@ -76,6 +84,8 @@ jobs:
               assert token.lower() in ranking6.lower(), token
           for token in ['isDomestic','MAX_FULL_SCORE','北京','中国企业官方招聘','cheapFit']:
               assert token in ranking7, token
+          for token in ['v9-eight-dimension','directionScore','skillScore','eligibilityScore','eliteGate','perfectGate','sourceScore']:
+              assert token in ranking9, token
           for token in ['PAGE_SIZE=60','marketPager','slice(0,visibleLimit)','baseNormalizeMarketJob','j.c','j.r']:
               assert token in market, token
           for token in ['RESUME STRUCTURE','分章节','profileVersion=5','roleSearch']:
@@ -84,8 +94,15 @@ jobs:
               assert token in enhancement6, token
           for token in ['market.prepend(el)','pto-flow','查看详情','官网投递','复制岗位链接','北京优先']:
               assert token in enhancement7, token
+          for token in ['匹配评分明细','八维','证据门槛上限','pto-score-grid']:
+              assert token in enhancement9, token
           for token in ['direct-official:meituan','direct-official:tencent','zhaopin.meituan.com/api/official/job/getJobList','careers.tencent.com/tencentcareer/api/post/Query','国内企业招聘官网 · 自主直连']:
               assert token in direct, token
+          for token in ['priority-official-sources','crawl_zhiye','spider_career','sasac_discovery','priority-official-harvester']:
+              assert token in priority, token
+          for token in ['中国石油','中国石化','航天科工集团','中国工商银行','银河通用','辉羲智能','priority_official_sources']:
+              assert token in priority_registry or token in priority, token
+          assert priority_registry.count('"company"') >= 40
           for token in ['"meituan"','"tencent"','zhaopin.meituan.com/web/campus','careers.tencent.com']:
               assert token in registry, token
           for token in ['jobs_cn.json','cn_catalog_count','is_domestic','domestic_priority','direct-official:']:
@@ -102,12 +119,15 @@ jobs:
               assert token in theme_test, token
           for token in ['COUNT=60000','unbounded card render','京东']:
               assert token in large_test, token
+          for token in ['95+ score inflation','near-perfect score inflation','score distribution collapsed']:
+              assert token in calibration, token
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
-              assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6+enhancement7, f'mock data leaked: {forbidden}'
-          assert "version: '0.8.0'" in config
+              assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6+enhancement7+enhancement9, f'mock data leaked: {forbidden}'
+          assert "version: '0.9.0'" in config
+          assert 'ranking-v09.js' in config and 'enhancements-v09.js' in config
           assert 'domesticJobsFeed' in config and 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
           assert 'no account credentials' in federation and 'moka' in federation
-          print('Path to Offer v0.8 official-source/layout checks passed.')
+          print('Path to Offer v0.9 source-breadth and calibrated-ranking checks passed.')
           PY
       - name: Browser smoke tests
         run: |
