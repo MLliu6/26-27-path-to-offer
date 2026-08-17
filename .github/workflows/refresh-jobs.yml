@@ -12,6 +12,8 @@ on:
       - 'scripts/priority_official_harvester.py'
       - 'scripts/official_campaign_discovery.py'
       - 'scripts/soe_directory_harvester.py'
+      - 'scripts/university_2027_discovery.py'
+      - 'scripts/ncss_public_harvester.py'
       - 'scripts/compact_feed.py'
       - 'sources/**'
       - '.github/workflows/refresh-jobs.yml'
@@ -28,7 +30,7 @@ concurrency:
 jobs:
   aggregate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 55
+    timeout-minutes: 58
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
@@ -37,6 +39,8 @@ jobs:
       PTO_BROWSER_JD_CHARS: '220'
       PTO_MAX_CATALOG: '60000'
       PTO_MAX_CN_CATALOG: '30000'
+      PTO_NCSS_MAX_EXPLICIT: '15000'
+      PTO_NCSS_PRIORITY_COMPANIES: '80'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -61,6 +65,8 @@ jobs:
           PYTHONPATH=. python scripts/priority_official_harvester.py
           PYTHONPATH=. python scripts/official_campaign_discovery.py
           PYTHONPATH=. python scripts/soe_directory_harvester.py
+          PYTHONPATH=. python scripts/university_2027_discovery.py
+          PYTHONPATH=. python scripts/ncss_public_harvester.py
           PYTHONPATH=. python scripts/compact_feed.py
       - name: Validate catalogue output
         run: |
@@ -83,23 +89,36 @@ jobs:
           direct_companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
           assert direct_companies.get('美团',{}).get('count',0)>=50 and direct_companies.get('腾讯',{}).get('count',0)>=100
           priority=next((s for s in status.get('sources',[]) if s.get('name')=='priority-official-sources'),None); assert priority and priority.get('ok')
-          diag=priority.get('diagnostics') or {}; assert diag.get('watch_total',0)>=45
-          adapters=diag.get('adapters') or []
-          casic=next((x for x in adapters if x.get('company')=='航天科工集团' and x.get('type')=='zhiye-campus'),{})
-          galbot=next((x for x in adapters if x.get('company')=='银河通用' and x.get('type')=='campaign'),{})
-          boc=[x for x in adapters if x.get('company')=='中国银行' and x.get('type')=='campaign']
-          assert casic.get('count',0)>=5 and galbot.get('count',0)>=6 and sum(x.get('count',0) for x in boc)>=3
-          campaign=next((s for s in status.get('sources',[]) if s.get('name')=='official-campaign-discovery'),None); assert campaign and (campaign.get('diagnostics') or {}).get('portals',0)>=45
+          pdiag=priority.get('diagnostics') or {}; adapters=pdiag.get('adapters') or []; assert pdiag.get('watch_total',0)>=50
+          campaigns=lambda company:[x for x in adapters if x.get('company')==company and x.get('type')=='campaign']
+          assert sum(x.get('count',0) for x in campaigns('航天科工集团'))>=9, campaigns('航天科工集团')
+          assert sum(x.get('count',0) for x in campaigns('银河通用'))>=6, campaigns('银河通用')
+          assert sum(x.get('count',0) for x in campaigns('宇树科技'))>=7, campaigns('宇树科技')
+          assert sum(x.get('count',0) for x in campaigns('小鹏集团'))>=4, campaigns('小鹏集团')
+          assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3, campaigns('中国银行')
+          campaign=next((s for s in status.get('sources',[]) if s.get('name')=='official-campaign-discovery'),None); assert campaign and (campaign.get('diagnostics') or {}).get('portals',0)>=50
           soe=next((s for s in status.get('sources',[]) if s.get('name')=='central-soe-official-directory'),None); assert soe is not None
+          university=next((s for s in status.get('sources',[]) if s.get('name')=='university-2027-discovery'),None); assert university is not None
+          ncss=next((s for s in status.get('sources',[]) if s.get('name')=='ncss-2027-public'),None); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500, ncss
+          ndiag=ncss.get('diagnostics') or {}
+          assert ndiag.get('beijing_technical_rows',0)>=20, ndiag
+          assert ndiag.get('state_owned_rows',0)>=10, ndiag
+          casic_bj=[j for j in cn_jobs if '航天科工' in j.get('c','') and '北京' in j.get('l','') and '2027' in (j.get('r','')+j.get('g','')+j.get('b',''))]
+          galbot_rows=[j for j in cn_jobs if '银河通用' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
+          boc_rows=[j for j in cn_jobs if '中国银行' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
+          unitree_rows=[j for j in cn_jobs if '宇树' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
+          xpeng_rows=[j for j in cn_jobs if '小鹏' in j.get('c','') and '2027' in (j.get('g','')+j.get('b',''))]
+          assert len(casic_bj)>=9 and len(galbot_rows)>=6 and len(boc_rows)>=3 and len(unitree_rows)>=7 and len(xpeng_rows)>=4
           overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in ['united states','germany','france','singapore','tokyo','india']))
           assert overseas <= max(10, len(cn_jobs)//200)
           print('global rows/bytes:',len(jobs),global_path.stat().st_size)
           print('china rows/bytes:',len(cn_jobs),cn_path.stat().st_size,'overseas=',overseas)
           print('direct official:',[(k,v.get('count'),v.get('ok')) for k,v in direct_companies.items()])
-          print('priority official watch:',diag.get('watch_ok'),'/',diag.get('watch_total'),'2027=',diag.get('watch_2027'))
-          print('priority adapters:',[(x.get('company'),x.get('type'),x.get('count'),x.get('ok')) for x in adapters])
-          print('automatic campaign discovery:',campaign.get('count'),campaign.get('diagnostics'))
-          print('SOE directory discovery:',soe.get('count'),soe.get('diagnostics'))
+          print('priority watch:',pdiag.get('watch_ok'),'/',pdiag.get('watch_total'),'root_2027=',pdiag.get('watch_2027'))
+          print('priority campaigns:',[(x.get('company'),x.get('count'),x.get('ok')) for x in adapters if x.get('type')=='campaign'])
+          print('NCSS:',ncss.get('count'),ndiag)
+          print('university:',university.get('count'),university.get('diagnostics'))
+          print('SOE directory:',soe.get('count'),soe.get('diagnostics'))
           PY
       - name: Commit refreshed feed when changed
         run: |
@@ -110,5 +129,5 @@ jobs:
           git config user.name "path-to-offer-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/jobs.json data/jobs_cn.json data/source_status.json
-          git commit -m "data: refresh priority China campus sources"
+          git commit -m "data: refresh nationwide 2027 China campus sources"
           git push origin HEAD:main
