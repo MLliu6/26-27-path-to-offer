@@ -13,19 +13,19 @@
 
   function flowState(){
     const p=typeof currentProfile==='function'?currentProfile():null;
-    const rows=typeof visibleMarketJobs==='function'?visibleMarketJobs():[];
-    const saved=(window.state?.jobs||[]).length;
-    return {p,rows,saved};
+    const count=Number(($('#marketCount')?.textContent||'0').replace(/,/g,''))||0;
+    const saved=(state?.jobs||[]).length;
+    return {p,count,saved};
   }
   function renderFlow(){
     const market=$('.job-market');if(!market)return;
     let el=$('#ptoFlow');if(!el){el=document.createElement('div');el.id='ptoFlow';market.parentNode?.insertBefore(el,market);}
-    const {p,rows,saved}=flowState();
+    const {p,count,saved}=flowState();
     const parsed=p?`${p.signals?.skills?.length||0} 个技能信号`:'等待上传';
     el.innerHTML=`<div class="pto-flow">
       <div class="pto-flow-step ${p?'done':''}"><strong>1 · 上传简历</strong><small>${p?esc(p.name):'PDF / DOCX / TXT'}</small></div>
       <div class="pto-flow-step ${p?'done':''}"><strong>2 · 解析画像</strong><small>${parsed}</small></div>
-      <div class="pto-flow-step ${p&&rows.length?'done':''}"><strong>3 · 职位匹配</strong><small>${p?`${rows.length.toLocaleString()} 条当前命中`:'上传后生成推荐'}</small></div>
+      <div class="pto-flow-step ${p&&count?'done':''}"><strong>3 · 职位匹配</strong><small>${p?`${count.toLocaleString()} 条当前命中`:'上传后生成推荐'}</small></div>
       <div class="pto-flow-step ${saved?'done':''}"><strong>4 · 投递跟踪</strong><small>${saved?`${saved} 条已加入流程`:'查看详情 → 官网投递'}</small></div>
     </div><div class="pto-quick-cities" id="ptoCities"><button data-pto-city="北京">北京优先</button><button data-pto-city="上海">上海</button><button data-pto-city="深圳">深圳</button><button data-pto-city="杭州">杭州</button><button data-pto-city="广州">广州</button><button data-pto-city="国内">全部国内</button></div>`;
     const targets=state?.preferences?.targetLocations||[];
@@ -40,10 +40,10 @@
       const opt=[...select.options].find(o=>o.value===target||o.textContent.includes(target));
       select.value=opt?.value||'all';
     }
-    saveState(false);renderMarket();renderFlow();toast(city==='国内'?'已切换为国内岗位优先':'已将 '+city+' 设为首要目标城市');
+    saveState(false);renderMarket();toast(city==='国内'?'已切换为国内岗位优先':'已将 '+city+' 设为首要目标城市');
   }
 
-  function jobById(id){return (window.marketJobs||[]).find(j=>String(j.id)===String(id));}
+  function jobById(id){return (marketJobs||[]).find(j=>String(j.id)===String(id));}
   function upgradeRows(){
     $$('[data-market-id]').forEach(el=>{
       el.tabIndex=0;el.setAttribute('role','button');el.setAttribute('aria-label','查看岗位详情');
