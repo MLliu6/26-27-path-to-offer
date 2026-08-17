@@ -7,6 +7,7 @@ on:
       - 'scripts/federated_harvester.py'
       - 'scripts/direct_china_official.py'
       - 'scripts/priority_official_harvester.py'
+      - 'scripts/official_site_job_spider.py'
       - 'scripts/official_campaign_discovery.py'
       - 'scripts/soe_directory_harvester.py'
       - 'scripts/university_2027_discovery.py'
@@ -60,6 +61,7 @@ jobs:
           PYTHONPATH=. python scripts/direct_china_official.py
           PYTHONPATH=. python scripts/merge_public_tables.py
           PYTHONPATH=. python scripts/priority_official_harvester.py
+          PYTHONPATH=. python scripts/official_site_job_spider.py
           PYTHONPATH=. python scripts/official_campaign_discovery.py
           PYTHONPATH=. python scripts/soe_directory_harvester.py
           PYTHONPATH=. python scripts/university_2027_discovery.py
@@ -86,11 +88,12 @@ jobs:
           priority=next((s for s in status.get('sources',[]) if s.get('name')=='priority-official-sources'),None); assert priority and priority.get('ok')
           pdiag=priority.get('diagnostics') or {}; adapters=pdiag.get('adapters') or []; assert pdiag.get('watch_total',0)>=50
           campaigns=lambda company:[x for x in adapters if x.get('company')==company and x.get('type')=='campaign']
-          assert sum(x.get('count',0) for x in campaigns('航天科工集团'))>=9, campaigns('航天科工集团')
-          assert sum(x.get('count',0) for x in campaigns('银河通用'))>=6, campaigns('银河通用')
-          assert sum(x.get('count',0) for x in campaigns('宇树科技'))>=7, campaigns('宇树科技')
-          assert sum(x.get('count',0) for x in campaigns('小鹏集团'))>=4, campaigns('小鹏集团')
-          assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3, campaigns('中国银行')
+          assert sum(x.get('count',0) for x in campaigns('航天科工集团'))>=9
+          assert sum(x.get('count',0) for x in campaigns('银河通用'))>=6
+          assert sum(x.get('count',0) for x in campaigns('宇树科技'))>=7
+          assert sum(x.get('count',0) for x in campaigns('小鹏集团'))>=4
+          assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3
+          site_spider=next((s for s in status.get('sources',[]) if s.get('name')=='employer-site-job-spider'),None); assert site_spider is not None
           campaign=next((s for s in status.get('sources',[]) if s.get('name')=='official-campaign-discovery'),None); assert campaign and (campaign.get('diagnostics') or {}).get('portals',0)>=50
           soe=next((s for s in status.get('sources',[]) if s.get('name')=='central-soe-official-directory'),None); assert soe is not None
           university=next((s for s in status.get('sources',[]) if s.get('name')=='university-2027-discovery'),None); assert university is not None
@@ -108,6 +111,7 @@ jobs:
           obvious=['united states','germany','france','singapore','tokyo','india']; overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in obvious)); assert overseas <= max(10,len(cn_jobs)//200)
           print('DIRECT_COMPANIES=',[(k,v.get('count'),v.get('ok')) for k,v in companies.items()])
           print('PRIORITY_WATCH=',pdiag.get('watch_ok'),'/',pdiag.get('watch_total'),'root_2027=',pdiag.get('watch_2027'))
+          print('SITE_SPIDER=',site_spider.get('count'),site_spider.get('diagnostics'))
           print('PRIORITY_CAMPAIGNS=',[(x.get('company'),x.get('count'),x.get('ok')) for x in adapters if x.get('type')=='campaign'])
           print('NCSS=',ncss.get('count'),ndiag)
           print('UNIVERSITY=',university.get('count'),university.get('diagnostics'))
