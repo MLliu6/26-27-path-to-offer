@@ -16,6 +16,7 @@ PAGES = [
     "https://talent.didiglobal.com/",
     "https://talent.didiglobal.com/campus",
     "https://talent.didiglobal.com/social",
+    "https://talent.didiglobal.com/social/p/58333",
 ]
 
 
@@ -27,7 +28,7 @@ def browser_path() -> str:
     raise RuntimeError("Chrome/Chromium unavailable")
 
 
-def compact(value: str, limit: int = 2200) -> str:
+def compact(value: str, limit: int = 3200) -> str:
     return re.sub(r"\s+", " ", value or "").strip()[:limit]
 
 
@@ -42,14 +43,14 @@ def main() -> int:
             host = (urlparse(req.url).hostname or "").lower()
             if "didiglobal.com" not in host or req.resource_type not in {"xhr", "fetch", "document"}:
                 return
-            print("DIDI_REQ", req.method, req.resource_type, req.url, "POST", compact(req.post_data or "", 1200), flush=True)
+            print("DIDI_REQ", req.method, req.resource_type, req.url, "POST", compact(req.post_data or "", 1600), flush=True)
 
         def on_response(resp):
             host = (urlparse(resp.url).hostname or "").lower()
             if "didiglobal.com" not in host:
                 return
             ctype = (resp.headers.get("content-type") or "").lower()
-            interesting = "json" in ctype or re.search(r"/(api|job|position|recruit|campus|search|list|detail)", resp.url, re.I)
+            interesting = "json" in ctype or re.search(r"/(api|job|position|recruit|campus|search|list|detail|front)", resp.url, re.I)
             if not interesting:
                 return
             key = f"{resp.status}:{resp.url}"
@@ -71,7 +72,7 @@ def main() -> int:
                 page.goto(url, wait_until="domcontentloaded", timeout=60_000)
                 page.wait_for_timeout(10_000)
                 print("DIDI_TITLE", page.title(), flush=True)
-                print("DIDI_VISIBLE", compact(page.locator("body").inner_text(), 6000), flush=True)
+                print("DIDI_VISIBLE", compact(page.locator("body").inner_text(), 8000), flush=True)
                 print("DIDI_URL", page.url, flush=True)
             except Exception as exc:
                 print("DIDI_PAGE_ERROR", url, type(exc).__name__, compact(str(exc), 500), flush=True)
