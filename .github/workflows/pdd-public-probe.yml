@@ -6,6 +6,10 @@ on:
     paths:
       - 'scripts/probe_pdd_official.py'
       - '.github/workflows/pdd-public-probe.yml'
+  pull_request:
+    paths:
+      - 'scripts/probe_pdd_official.py'
+      - '.github/workflows/pdd-public-probe.yml'
   workflow_dispatch:
 
 permissions:
