@@ -6,13 +6,14 @@ PDD's public campus frontend calls anonymous JSON endpoints on the employer-owne
 and internship row, enriches graduate rows with the public detail endpoint, and
 merges canonical employer-direct jobs into Path to Offer.
 
-Why this exists:
-- a broad third-party campaign row ("研发类 / 产品类 / 数据算法类") cannot replace
-  concrete employer positions;
-- list pages can change filters or pagination, so user-reported official URLs are
-  also kept as live-resolved seeds and fetched by stable position UUID;
-- all categories are retained: technology, product, operations, legal, language,
-  design, regional business and other campus tracks.
+The public endpoint currently clamps a requested page size of 100 to ten rows.
+Pagination therefore stops on the reported total / accumulated rows, never on
+`len(rows) < requested_page_size`; the latter was the concrete reason only the
+first ten graduate jobs were initially retained.
+
+User-reported official job URLs are stored as live-resolved seeds. A seed is not
+trusted by declaration: its stable position UUID must still resolve through the
+employer's own public endpoint and its title must match the expected position.
 
 No login, account cookie, CAPTCHA solving, proxy rotation, stealth automation or
 access-control bypass is used.
@@ -45,7 +46,7 @@ OFFICIAL_GRAD = f"{BASE}/campus/grad"
 OFFICIAL_INTERN = f"{BASE}/campus/intern"
 UA = "PathToOfferBot/1.1 (+https://github.com/MLliu6/26-27-path-to-offer)"
 TIMEOUT = max(8, min(45, int(os.getenv("PTO_PDD_TIMEOUT", "22"))))
-PAGE_SIZE = max(20, min(100, int(os.getenv("PTO_PDD_PAGE_SIZE", "100"))))
+PAGE_SIZE = max(10, min(100, int(os.getenv("PTO_PDD_PAGE_SIZE", "100"))))
 MAX_PAGES = max(2, min(30, int(os.getenv("PTO_PDD_MAX_PAGES", "12"))))
 MAX_JD = max(1200, min(12000, int(os.getenv("PTO_PDD_JD_CHARS", "7000"))))
 
@@ -57,37 +58,38 @@ def compact(value: Any, limit: int = MAX_JD) -> str:
 
 def iso_date(value: Any) -> str:
     try:
-        n = float(value)
-        if n > 10_000_000_000:
-            n /= 1000.0
-        return datetime.fromtimestamp(n, tz=timezone.utc).date().isoformat()
+        number = float(value)
+        if number > 10_000_000_000:
+            number /= 1000.0
+        return datetime.fromtimestamp(number, tz=timezone.utc).date().isoformat()
     except Exception:
         text = clean(value)
-        m = re.search(r"(20\d{2})[-年/.](\d{1,2})[-月/.](\d{1,2})", text)
-        return f"{int(m.group(1)):04d}-{int(m.group(2)):02d}-{int(m.group(3)):02d}" if m else ""
+        match = re.search(r"(20\d{2})[-年/.](\d{1,2})[-月/.](\d{1,2})", text)
+        return f"{int(match.group(1)):04d}-{int(match.group(2)):02d}-{int(match.group(3)):02d}" if match else ""
 
 
 def public_session() -> requests.Session:
-    s = requests.Session()
-    s.headers.update({
+    session = requests.Session()
+    session.headers.update({
         "User-Agent": UA,
         "Accept": "application/json,text/plain,*/*",
         "Content-Type": "application/json",
         "Origin": BASE,
         "Referer": OFFICIAL_GRAD,
     })
-    return s
+    return session
 
 
-def post_json(s: requests.Session, url: str, body: dict[str, Any]) -> dict[str, Any]:
+def post_json(session: requests.Session, url: str, body: dict[str, Any]) -> dict[str, Any]:
     last: Exception | None = None
     for attempt in range(3):
         try:
-            r = s.post(url, json=body, timeout=TIMEOUT)
-            r.raise_for_status()
-            payload = r.json()
+            response = session.post(url, json=body, timeout=TIMEOUT)
+            response.raise_for_status()
+            payload = response.json()
             if not isinstance(payload, dict) or payload.get("success") is False:
-                raise RuntimeError(compact(payload.get("errorMsg") if isinstance(payload, dict) else payload, 220) or "invalid payload")
+                message = payload.get("errorMsg") if isinstance(payload, dict) else payload
+                raise RuntimeError(compact(message, 220) or "invalid payload")
             return payload
         except Exception as exc:
             last = exc
@@ -106,9 +108,9 @@ def labels(value: Any) -> list[str]:
         return []
     out: list[str] = []
     for item in value:
-        v = clean(item.get("name") if isinstance(item, dict) else item)
-        if v and v not in out:
-            out.append(v)
+        text = clean(item.get("name") if isinstance(item, dict) else item)
+        if text and text not in out:
+            out.append(text)
     return out
 
 
@@ -117,15 +119,15 @@ def detail_url(position_id: str, scope: str) -> str:
     return f"{BASE}/campus/{page}/detail?positionId={position_id}"
 
 
-def fetch_detail(s: requests.Session, position_id: str, scope: str) -> dict[str, Any]:
+def fetch_detail(session: requests.Session, position_id: str, scope: str) -> dict[str, Any]:
     if scope == "grad":
         try:
-            return result_object(post_json(s, DETAIL_GRAD, {"id": position_id, "t": None}))
+            return result_object(post_json(session, DETAIL_GRAD, {"id": position_id, "t": None}))
         except Exception:
             return {}
     for endpoint in DETAIL_INTERN_CANDIDATES:
         try:
-            row = result_object(post_json(s, endpoint, {"id": position_id, "t": None}))
+            row = result_object(post_json(session, endpoint, {"id": position_id, "t": None}))
             if row:
                 return row
         except Exception:
@@ -186,26 +188,29 @@ def normalize(row: dict[str, Any], scope: str) -> dict[str, Any] | None:
         "education": clean(row.get("education") or row.get("educationName")),
         "notice_url": url,
         "apply_url": url,
-        "jd": compact("；".join(x for x in jd_parts if x) or role),
+        "jd": compact("；".join(part for part in jd_parts if part) or role),
         "tags": ["企业官网", "拼多多", "校园招聘", category, recruit_type, *row_labels],
         "observed_via": "employer-public-json-api",
         "position_id": position_id,
         "scope": scope,
     }
-    job["tags"] = [x for i, x in enumerate(job["tags"]) if x and x not in job["tags"][:i]]
+    job["tags"] = [value for index, value in enumerate(job["tags"]) if value and value not in job["tags"][:index]]
     job["id"] = stable_id(job["company"], role, location, position_id)
     return job
 
 
-def enumerate_scope(s: requests.Session, scope: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def enumerate_scope(session: requests.Session, scope: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     endpoint = LIST_INTERN if scope == "intern" else LIST_GRAD
     jobs: dict[str, dict[str, Any]] = {}
     pages = 0
     raw = 0
     total = 0
     errors: list[str] = []
+    seen_pages: set[tuple[str, ...]] = set()
+    observed_page_sizes: list[int] = []
+
     for page in range(1, MAX_PAGES + 1):
-        payload = post_json(s, endpoint, {"page": page, "pageSize": PAGE_SIZE, "t": None})
+        payload = post_json(session, endpoint, {"page": page, "pageSize": PAGE_SIZE, "t": None})
         result = result_object(payload)
         rows = result.get("list") or []
         try:
@@ -215,26 +220,46 @@ def enumerate_scope(s: requests.Session, scope: str) -> tuple[list[dict[str, Any
         pages += 1
         if not isinstance(rows, list) or not rows:
             break
+
+        page_ids = tuple(clean(row.get("id") or row.get("positionId")) for row in rows if isinstance(row, dict))
+        if page_ids and page_ids in seen_pages:
+            errors.append(f"pagination repeated page {page}; stopped to avoid an infinite loop")
+            break
+        if page_ids:
+            seen_pages.add(page_ids)
+        observed_page_sizes.append(len(rows))
         raw += len(rows)
+
         for raw_row in rows:
             if not isinstance(raw_row, dict):
                 continue
-            pid = clean(raw_row.get("id") or raw_row.get("positionId"))
-            detail = {}
-            if pid:
+            position_id = clean(raw_row.get("id") or raw_row.get("positionId"))
+            detail: dict[str, Any] = {}
+            if position_id:
                 try:
-                    detail = fetch_detail(s, pid, scope)
+                    detail = fetch_detail(session, position_id, scope)
                 except Exception as exc:
-                    errors.append(f"{pid}: {type(exc).__name__}: {compact(exc, 120)}")
+                    errors.append(f"{position_id}: {type(exc).__name__}: {compact(exc, 120)}")
             job = normalize(merge_row(raw_row, detail), scope)
             if job:
                 jobs[job["position_id"]] = job
-        if total and page * PAGE_SIZE >= total:
-            break
-        if len(rows) < PAGE_SIZE:
+
+        # PDD currently returns ten rows even when pageSize=100. Accumulated raw
+        # rows and the API's own total are the only safe completion condition.
+        if total and raw >= total:
             break
         time.sleep(0.08)
-    return list(jobs.values()), {"scope": scope, "pages": pages, "raw": raw, "reported_total": total, "unique": len(jobs), "detail_errors": errors[:20]}
+
+    return list(jobs.values()), {
+        "scope": scope,
+        "pages": pages,
+        "raw": raw,
+        "reported_total": total,
+        "unique": len(jobs),
+        "requested_page_size": PAGE_SIZE,
+        "observed_page_sizes": observed_page_sizes,
+        "detail_errors": errors[:20],
+    }
 
 
 def load_seeds() -> list[dict[str, Any]]:
@@ -242,29 +267,29 @@ def load_seeds() -> list[dict[str, Any]]:
         payload = json.loads(SEED_PATH.read_text(encoding="utf-8"))
     except Exception:
         return []
-    return [x for x in payload.get("positions", []) if isinstance(x, dict) and clean(x.get("adapter")) == "pdd"]
+    return [row for row in payload.get("positions", []) if isinstance(row, dict) and clean(row.get("adapter")) == "pdd"]
 
 
-def resolve_seeds(s: requests.Session, existing: dict[str, dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def resolve_seeds(session: requests.Session, existing: dict[str, dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     resolved: list[dict[str, Any]] = []
     diagnostics: list[dict[str, Any]] = []
     for seed in load_seeds():
-        pid = clean(seed.get("position_id"))
+        position_id = clean(seed.get("position_id"))
         scope = clean(seed.get("scope")) or "grad"
-        if not pid:
+        if not position_id:
             continue
-        job = existing.get(pid)
+        job = existing.get(position_id)
         error = ""
         if not job:
             try:
-                detail = fetch_detail(s, pid, scope)
+                detail = fetch_detail(session, position_id, scope)
                 job = normalize(detail, scope) if detail else None
             except Exception as exc:
                 error = f"{type(exc).__name__}: {compact(exc, 180)}"
         expected = clean(seed.get("expected_title"))
         title_ok = bool(job and (not expected or expected.lower() in clean(job.get("role")).lower()))
         diagnostics.append({
-            "position_id": pid,
+            "position_id": position_id,
             "expected_title": expected,
             "found": bool(job),
             "title_ok": title_ok,
@@ -273,21 +298,22 @@ def resolve_seeds(s: requests.Session, existing: dict[str, dict[str, Any]]) -> t
             "error": error,
         })
         if job:
-            existing[pid] = job
+            existing[position_id] = job
             resolved.append(job)
     return resolved, diagnostics
 
 
 def collect_pdd(session: requests.Session | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    s = session or public_session()
+    active_session = session or public_session()
     jobs: dict[str, dict[str, Any]] = {}
     scope_diagnostics: list[dict[str, Any]] = []
     for scope in ("grad", "intern"):
-        rows, diag = enumerate_scope(s, scope)
-        scope_diagnostics.append(diag)
+        rows, diagnostics = enumerate_scope(active_session, scope)
+        scope_diagnostics.append(diagnostics)
         for job in rows:
             jobs[job["position_id"]] = job
-    _, seed_diagnostics = resolve_seeds(s, jobs)
+    _, seed_diagnostics = resolve_seeds(active_session, jobs)
+
     categories: dict[str, int] = {}
     for job in jobs.values():
         category = clean(job.get("department")) or "未分类"
@@ -297,9 +323,9 @@ def collect_pdd(session: requests.Session | None = None) -> tuple[list[dict[str,
         "list_endpoints": [LIST_GRAD, LIST_INTERN],
         "scopes": scope_diagnostics,
         "unique_jobs": len(jobs),
-        "categories": sorted(categories.items(), key=lambda x: (-x[1], x[0])),
+        "categories": sorted(categories.items(), key=lambda item: (-item[1], item[0])),
         "seeds": seed_diagnostics,
-        "seed_gate_ok": all(x.get("found") and x.get("title_ok") for x in seed_diagnostics) if seed_diagnostics else True,
+        "seed_gate_ok": all(row.get("found") and row.get("title_ok") for row in seed_diagnostics) if seed_diagnostics else True,
     }
     return list(jobs.values()), diagnostics
 
@@ -314,8 +340,6 @@ def identity(job: dict[str, Any]) -> tuple[str, str, str, str]:
 
 
 def merge_catalog(existing: Iterable[dict[str, Any]], fresh: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    # A successful first-party refresh replaces old PDD-direct rows, so closed or
-    # renamed positions do not live forever. Other sources are left untouched.
     merged: dict[tuple[str, str, str, str], dict[str, Any]] = {}
     for job in existing:
         if not isinstance(job, dict):
@@ -330,11 +354,11 @@ def merge_catalog(existing: Iterable[dict[str, Any]], fresh: list[dict[str, Any]
 
 
 def main() -> int:
-    jobs, diag = collect_pdd()
+    jobs, diagnostics = collect_pdd()
     if not jobs:
         raise RuntimeError("PDD public API returned zero concrete positions; preserving the previous catalogue")
-    if not diag.get("seed_gate_ok"):
-        raise RuntimeError(f"PDD exact-position seed gate failed: {diag.get('seeds')}")
+    if not diagnostics.get("seed_gate_ok"):
+        raise RuntimeError(f"PDD exact-position seed gate failed: {diagnostics.get('seeds')}")
 
     payload = json.loads(JOBS_PATH.read_text(encoding="utf-8")) if JOBS_PATH.exists() else {"schema_version": 3, "jobs": []}
     existing = payload.get("jobs", []) if isinstance(payload, dict) else []
@@ -353,13 +377,13 @@ def main() -> int:
         "ok": True,
         "count": len(jobs),
         "error": "",
-        "diagnostics": diag,
+        "diagnostics": diagnostics,
     }
-    sources = [x for x in status.get("sources", []) if not isinstance(x, dict) or x.get("name") != group["name"]]
+    sources = [source for source in status.get("sources", []) if not isinstance(source, dict) or source.get("name") != group["name"]]
     sources.insert(0, group)
     status.update({"sources": sources, "catalog_count": len(merged), "generated_at": utc_now()})
     STATUS_PATH.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"pdd_jobs": len(jobs), "seed_gate_ok": diag.get("seed_gate_ok"), "categories": diag.get("categories")}, ensure_ascii=False))
+    print(json.dumps({"pdd_jobs": len(jobs), "seed_gate_ok": diagnostics.get("seed_gate_ok"), "categories": diagnostics.get("categories")}, ensure_ascii=False))
     return 0
 
 
