@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
-  buildVersion: '1.2.0-local-vault-admin-source',
+  buildVersion: '1.2.1-local-vault-user-owned-sync',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -8,12 +8,12 @@ window.PTO_CONFIG = Object.freeze({
   sourceStatusFeed: './data/source_status.json',
   prioritySourceStatusFeed: './data/priority_source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
-  vaultRepositoryOwner: 'MLliu6',
-  vaultRepositoryName: '26-27-path-to-offer',
-  adminAccount: 'MLliu6',
   githubOAuthProxy: '',
   githubClientId: '',
   githubOAuthScopes: 'read:user user:email',
+  vaultRepositoryOwner: 'MLliu6',
+  vaultRepositoryName: '26-27-path-to-offer',
+  adminAccount: 'MLliu6',
 });
 
 window.PTO_ENHANCEMENTS_READY = false;
@@ -104,6 +104,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('account-vault.js');
     await loadPtoScript('enhancements-v12.js');
     await loadPtoScript('enhancements-v12-hotfix.js');
+    await loadPtoScript('enhancements-v12-security.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
