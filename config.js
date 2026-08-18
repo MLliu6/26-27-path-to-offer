@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
-  buildVersion: '1.1.0-pdd-source-fix',
+  buildVersion: '1.2.0-local-vault-source-scale',
   // Keep the stable logical feed name for compatibility. After enhancement
   // bundles load, fetch() prefers the smaller China-first official feed and
   // falls back to the global catalogue if a refresh has not published it yet.
@@ -11,6 +11,18 @@ window.PTO_CONFIG = Object.freeze({
   sourceStatusFeed: './data/source_status.json',
   prioritySourceStatusFeed: './data/priority_source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
+
+  // Local-first account vault. Leave syncApiBase empty until a serverless vault
+  // endpoint is deployed. The browser still supports encrypted export/import.
+  syncApiBase: '',
+  syncRawResumeText: false,
+
+  // UI access gate for public source diagnostics. This is deliberately not
+  // presented as a security boundary: the source data and frontend code remain
+  // public on GitHub. Rotate this token before a public product launch.
+  sourceAdminToken: 'UFRPLVNvdXJjZXMtN0txOS1SMm1WLTIwMjc=',
+  sourceAdminSessionMinutes: 20,
+
   githubOAuthProxy: '',
   githubClientId: '',
   githubOAuthScopes: 'read:user user:email',
@@ -101,6 +113,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v07.js');
     await loadPtoScript('enhancements-v09.js');
     await loadPtoScript('enhancements-v11.js');
+    await loadPtoScript('enhancements-v12.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
