@@ -8,23 +8,28 @@ on:
     branches: [main]
     paths:
       - 'scripts/pdd_official_harvester.py'
+      - 'scripts/didi_official_harvester.py'
       - 'scripts/priority_direct_feed.py'
       - 'scripts/direct_china_official.py'
       - 'sources/official_position_seeds.json'
       - 'sources/domestic_direct_sources.json'
       - 'enhancements-v11.js'
+      - 'enhancements-v12.js'
       - 'config.js'
       - '.github/workflows/refresh-priority-official.yml'
   pull_request:
     paths:
       - 'scripts/pdd_official_harvester.py'
+      - 'scripts/didi_official_harvester.py'
       - 'scripts/priority_direct_feed.py'
       - 'scripts/direct_china_official.py'
       - 'sources/official_position_seeds.json'
       - 'sources/domestic_direct_sources.json'
       - 'enhancements-v11.js'
+      - 'enhancements-v12.js'
       - 'config.js'
       - 'tests/test_pdd_official_harvester.py'
+      - 'tests/test_didi_official_harvester.py'
       - 'tests/priority_feed_browser_smoke.py'
       - '.github/workflows/refresh-priority-official.yml'
 
@@ -38,10 +43,11 @@ concurrency:
 jobs:
   refresh-and-verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    # Scheduled upstream failures are best-effort and must not generate recurring
-    # failure mail. Pull requests and manual runs remain strict for release gates.
+    timeout-minutes: 28
     continue-on-error: ${{ github.event_name == 'schedule' }}
+    env:
+      PTO_DIDI_MAX_PAGES: '80'
+      PTO_DIDI_DETAIL_WORKERS: '16'
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -49,11 +55,11 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
-      - name: Unit-test the exact PDD adapter
-        run: PYTHONPATH=. python -m unittest -v tests.test_pdd_official_harvester
+      - name: Unit-test employer adapters
+        run: PYTHONPATH=. python -m unittest -v tests.test_pdd_official_harvester tests.test_didi_official_harvester
       - name: Collect priority employer-owned sources
         run: PYTHONPATH=. python scripts/priority_direct_feed.py
-      - name: Enforce exact PDD position and category breadth
+      - name: Enforce PDD and DiDi first-party gates
         run: |
           python - <<'PY'
           import json
@@ -63,18 +69,20 @@ jobs:
           status=json.loads(Path('data/priority_source_status.json').read_text(encoding='utf-8'))
           jobs=feed.get('jobs',[])
           exact=[j for j in jobs if pid in str(j.get('z',''))+str(j.get('u',''))+str(j.get('n',''))]
-          assert exact, 'exact PDD position UUID missing'
-          assert exact[0].get('r') == 'AI Infra研发工程师', exact[0]
+          assert exact and exact[0].get('r') == 'AI Infra研发工程师', exact
           assert 'positionId='+pid in exact[0].get('u','')
           assert exact[0].get('q') == 7 and exact[0].get('s') == 'direct-official:pdd'
-          assert status.get('exact_pdd_position_ok') is True, status
-          pdd=next((s for s in status.get('sources',[]) if s.get('name')=='pdd-direct-official'),None)
-          assert pdd and pdd.get('count',0)>=20, pdd
+          assert status.get('exact_pdd_position_ok') is True
+          sources={s.get('name'):s for s in status.get('sources',[]) if isinstance(s,dict)}
+          pdd=sources.get('pdd-direct-official'); assert pdd and pdd.get('count',0)>=20, pdd
           categories=dict((pdd.get('diagnostics') or {}).get('categories') or [])
           for category in ['技术','产品','职能']:
               assert category in categories, categories
-          print('exact PDD:', exact[0].get('r'), exact[0].get('u'))
-          print('PDD rows/categories:', pdd.get('count'), categories)
+          didi=sources.get('didi-direct-official'); assert didi and didi.get('ok') and didi.get('count',0)>=16, didi
+          didi_rows=[j for j in jobs if j.get('s')=='direct-official:didi']
+          assert didi_rows and all(j.get('u','').startswith('https://talent.didiglobal.com/') for j in didi_rows)
+          print('PDD:',pdd.get('count'),categories)
+          print('DiDi:',didi.get('count'),(didi.get('diagnostics') or {}).get('batches'))
           PY
       - name: Browser-test priority feed merge and official apply link
         run: |
