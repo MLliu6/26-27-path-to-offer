@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "policy": "Browse only employer-owned public career pages or their explicitly public recruiting tenants. Capture concrete public job rows without login, CAPTCHA solving, proxy rotation or access-control bypass. All job types may be retained; 2026-2027 campus and internship rows receive higher downstream priority.",
+  "sources_per_run": 10,
+  "sources": [
+    {
+      "id": "didi",
+      "company": "滴滴",
+      "company_type": "民营/互联网/出行",
+      "start_urls": ["https://talent.didiglobal.com/"],
+      "allowed_hosts": ["talent.didiglobal.com", "didiglobal.com"],
+      "always": true,
+      "priority_locations": ["北京", "上海", "杭州", "深圳"]
+    },
+    {
+      "id": "galbot",
+      "company": "银河通用",
+      "company_type": "民营/具身智能初创",
+      "start_urls": ["https://www.galbot.com/careers"],
+      "allowed_hosts": ["galbot.com", "www.galbot.com"],
+      "always": true,
+      "priority_locations": ["北京", "深圳", "苏州"]
+    },
+    {
+      "id": "rhino",
+      "company": "辉羲智能",
+      "company_type": "民营/AI芯片/具身智能",
+      "start_urls": ["https://www.rhino.auto/ShouYe"],
+      "allowed_hosts": ["rhino.auto", "www.rhino.auto"],
+      "always": true,
+      "priority_locations": ["北京", "上海", "杭州", "合肥"]
+    },
+    {
+      "id": "baidu",
+      "company": "百度",
+      "company_type": "民营/互联网/AI",
+      "start_urls": ["https://talent.baidu.com/jobs/list?projectType=1"],
+      "allowed_hosts": ["talent.baidu.com"],
+      "priority_locations": ["北京", "上海", "深圳"]
+    },
+    {
+      "id": "xiaomi",
+      "company": "小米",
+      "company_type": "民营/互联网/智能硬件",
+      "start_urls": ["https://hr.xiaomi.com/website/opportunities.html"],
+      "allowed_hosts": ["hr.xiaomi.com"],
+      "priority_locations": ["北京", "上海", "深圳", "武汉", "南京"]
+    },
+    {
+      "id": "dji",
+      "company": "大疆",
+      "company_type": "民营/机器人/智能硬件",
+      "start_urls": ["https://we.dji.com/zh-CN/campus"],
+      "allowed_hosts": ["we.dji.com"],
+      "priority_locations": ["深圳", "北京", "上海"]
+    },
+    {
+      "id": "alibaba",
+      "company": "阿里巴巴",
+      "company_type": "民营/互联网/AI",
+      "start_urls": ["https://talent.alibaba.com/campus/position-list"],
+      "allowed_hosts": ["talent.alibaba.com"],
+      "priority_locations": ["北京", "杭州", "上海", "深圳"]
+    },
+    {
+      "id": "jd",
+      "company": "京东",
+      "company_type": "民营/互联网/零售",
+      "start_urls": ["https://zhaopin.jd.com/"],
+      "allowed_hosts": ["zhaopin.jd.com"],
+      "priority_locations": ["北京", "上海", "深圳", "成都"]
+    },
+    {
+      "id": "bytedance",
+      "company": "字节跳动",
+      "company_type": "民营/互联网/AI",
+      "start_urls": ["https://jobs.bytedance.com/campus/position"],
+      "allowed_hosts": ["jobs.bytedance.com"],
+      "priority_locations": ["北京", "上海", "深圳", "杭州", "广州"]
+    },
+    {
+      "id": "horizon",
+      "company": "地平线",
+      "company_type": "民营/AI芯片/智驾",
+      "start_urls": ["https://www.horizon.auto/"],
+      "allowed_hosts": ["horizon.auto", "www.horizon.auto"]
+    },
+    {
+      "id": "cambricon",
+      "company": "寒武纪",
+      "company_type": "民营/AI芯片",
+      "start_urls": ["https://www.cambricon.com/"],
+      "allowed_hosts": ["cambricon.com", "www.cambricon.com"]
+    },
+    {
+      "id": "mthreads",
+      "company": "摩尔线程",
+      "company_type": "民营/GPU/AI芯片",
+      "start_urls": ["https://www.mthreads.com/"],
+      "allowed_hosts": ["mthreads.com", "www.mthreads.com"]
+    },
+    {
+      "id": "metax",
+      "company": "沐曦",
+      "company_type": "民营/GPU/AI芯片",
+      "start_urls": ["https://www.metax-tech.com/"],
+      "allowed_hosts": ["metax-tech.com", "www.metax-tech.com"]
+    },
+    {
+      "id": "biren",
+      "company": "壁仞科技",
+      "company_type": "民营/GPU/AI芯片",
+      "start_urls": ["https://www.birentech.com/"],
+      "allowed_hosts": ["birentech.com", "www.birentech.com"]
+    },
+    {
+      "id": "enflame",
+      "company": "燧原科技",
+      "company_type": "民营/AI芯片",
+      "start_urls": ["https://www.enflame-tech.com/"],
+      "allowed_hosts": ["enflame-tech.com", "www.enflame-tech.com"]
+    },
+    {
+      "id": "hygon",
+      "company": "海光信息",
+      "company_type": "上市/CPU/DCU芯片",
+      "start_urls": ["https://www.hygon.cn/"],
+      "allowed_hosts": ["hygon.cn", "www.hygon.cn"]
+    },
+    {
+      "id": "zhipu",
+      "company": "智谱AI",
+      "company_type": "民营/大模型/AI",
+      "start_urls": ["https://www.zhipuai.cn/"],
+      "allowed_hosts": ["zhipuai.cn", "www.zhipuai.cn"]
+    },
+    {
+      "id": "minimax",
+      "company": "MiniMax",
+      "company_type": "民营/大模型/AI",
+      "start_urls": ["https://www.minimaxi.com/"],
+      "allowed_hosts": ["minimaxi.com", "www.minimaxi.com"]
+    },
+    {
+      "id": "moonshot",
+      "company": "月之暗面",
+      "company_type": "民营/大模型/AI",
+      "start_urls": ["https://www.moonshot.cn/"],
+      "allowed_hosts": ["moonshot.cn", "www.moonshot.cn"]
+    },
+    {
+      "id": "stepfun",
+      "company": "阶跃星辰",
+      "company_type": "民营/大模型/AI",
+      "start_urls": ["https://www.stepfun.com/"],
+      "allowed_hosts": ["stepfun.com", "www.stepfun.com"]
+    },
+    {
+      "id": "sensetime",
+      "company": "商汤科技",
+      "company_type": "民营/人工智能",
+      "start_urls": ["https://www.sensetime.com/"],
+      "allowed_hosts": ["sensetime.com", "www.sensetime.com"]
+    },
+    {
+      "id": "momenta",
+      "company": "Momenta",
+      "company_type": "民营/自动驾驶/AI",
+      "start_urls": ["https://www.momenta.cn/"],
+      "allowed_hosts": ["momenta.cn", "www.momenta.cn"]
+    },
+    {
+      "id": "nio",
+      "company": "蔚来",
+      "company_type": "民营/新能源汽车/AI",
+      "start_urls": ["https://www.nio.cn/careers"],
+      "allowed_hosts": ["nio.cn", "www.nio.cn"]
+    },
+    {
+      "id": "li-auto",
+      "company": "理想汽车",
+      "company_type": "民营/新能源汽车/AI",
+      "start_urls": ["https://www.lixiang.com/"],
+      "allowed_hosts": ["lixiang.com", "www.lixiang.com"]
+    }
+  ]
+}
