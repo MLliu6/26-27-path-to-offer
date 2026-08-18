@@ -1,9 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
   buildVersion: '1.2.0-local-vault-admin-source',
-  // Keep the stable logical feed name for compatibility. After enhancement
-  // bundles load, fetch() prefers the smaller China-first official feed and
-  // falls back to the global catalogue if a refresh has not published it yet.
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -106,6 +103,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v11.js');
     await loadPtoScript('account-vault.js');
     await loadPtoScript('enhancements-v12.js');
+    await loadPtoScript('enhancements-v12-hotfix.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
