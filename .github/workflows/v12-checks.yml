@@ -1,0 +1,103 @@
+name: v1.2-privacy-source-checks
+
+on:
+  pull_request:
+    paths:
+      - 'account-vault.js'
+      - 'enhancements-v12.js'
+      - 'enhancements-v12-hotfix.js'
+      - 'config.js'
+      - 'scripts/didi_official_harvester.py'
+      - 'scripts/official_source_graph.py'
+      - 'scripts/official_source_sampler.py'
+      - 'sources/official_source_registry_v12.json'
+      - 'tests/account_vault.mjs'
+      - 'tests/test_didi_official_harvester.py'
+      - 'tests/v12_browser_smoke.py'
+      - '.github/workflows/v12-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'account-vault.js'
+      - 'enhancements-v12.js'
+      - 'enhancements-v12-hotfix.js'
+      - 'config.js'
+      - 'scripts/didi_official_harvester.py'
+      - 'scripts/official_source_graph.py'
+      - 'scripts/official_source_sampler.py'
+      - 'sources/official_source_registry_v12.json'
+      - 'tests/account_vault.mjs'
+      - 'tests/test_didi_official_harvester.py'
+      - 'tests/v12_browser_smoke.py'
+      - '.github/workflows/v12-checks.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v12-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
+      - name: Syntax, crypto and adapter tests
+        run: |
+          node --check account-vault.js
+          node --check enhancements-v12.js
+          node --check enhancements-v12-hotfix.js
+          node tests/account_vault.mjs
+          python -m py_compile scripts/didi_official_harvester.py scripts/official_source_graph.py scripts/official_source_sampler.py tests/test_didi_official_harvester.py tests/v12_browser_smoke.py
+          PYTHONPATH=. python -m unittest -v tests.test_didi_official_harvester
+      - name: Privacy and source invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          vault=Path('account-vault.js').read_text(encoding='utf-8')
+          ui=Path('enhancements-v12.js').read_text(encoding='utf-8')
+          hotfix=Path('enhancements-v12-hotfix.js').read_text(encoding='utf-8')
+          didi=Path('scripts/didi_official_harvester.py').read_text(encoding='utf-8')
+          graph=Path('scripts/official_source_graph.py').read_text(encoding='utf-8')
+          sampler=Path('scripts/official_source_sampler.py').read_text(encoding='utf-8')
+          registry=json.loads(Path('sources/official_source_registry_v12.json').read_text(encoding='utf-8'))
+          config=Path('config.js').read_text(encoding='utf-8')
+          for token in ['AES-GCM-256','PBKDF2-SHA256','sanitizeState','fetchGithubVault','putGithubVault']:
+              assert token in vault, token
+          for token in ['company-avatar','管理员信息已雾化','本地解析审计','跨设备 GitHub 实验同步','优先 ${esc(j.priority']:
+              assert token in ui, token
+          assert 'source.onclick' in hotfix and 'inspect.onclick' in hotfix
+          for token in ['recruit-portal-service/api/job/front/list','front/view/{jd_id}','direct-official:didi','repeated page signature']:
+              assert token in didi, token
+          for token in ['observed-job','official_source_catalog.json','ATS_HOST_HINTS','priority-registry']:
+              assert token in graph, token
+          for token in ['JobPosting','robots.txt','SAMPLE_SITES','bounded-official-source-graph','reachable-no-concrete-job']:
+              assert token in sampler, token
+          companies={x.get('company') for x in registry.get('sources',[])}
+          assert len(companies)>=90, len(companies)
+          for company in ['滴滴','辉羲智能','银河通用','宁德时代','智谱AI','宇树科技','中信证券']:
+              assert company in companies, company
+          assert "buildVersion: '1.2.0-local-vault-admin-source'" in config
+          assert 'account-vault.js' in config and 'enhancements-v12.js' in config and 'enhancements-v12-hotfix.js' in config
+          forbidden=''.join(Path(path).read_text(encoding='utf-8') for path in ['account-vault.js','enhancements-v12.js','config.js'])
+          assert 'PRIVATE RESUME TEXT' not in forbidden
+          print('Path to Offer v1.2 privacy/account/source invariants: PASS')
+          PY
+      - name: Browser acceptance
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/pto-v12-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 1
+          python tests/v12_browser_smoke.py
