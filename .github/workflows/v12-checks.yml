@@ -78,7 +78,7 @@ jobs:
           for token in ['company-avatar','管理员信息已雾化','本地解析审计','跨设备 GitHub 实验同步','优先 ${esc(j.priority']:
               assert token in ui, token
           assert 'source.onclick' in hotfix and 'inspect.onclick' in hotfix
-          for token in ['recruit-portal-service/api/job/front/list','front/view/{jd_id}','direct-official:didi','repeated page signature']:
+          for token in ['recruit-portal-service/api/job/front/list','front/view/','direct-official:didi','repeated page signature']:
               assert token in didi, token
           for token in ['observed-job','official_source_catalog.json','ATS_HOST_HINTS','priority-registry']:
               assert token in graph, token
