@@ -1,12 +1,15 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
+  buildVersion: '1.1.0-pdd-source-fix',
   // Keep the stable logical feed name for compatibility. After enhancement
   // bundles load, fetch() prefers the smaller China-first official feed and
   // falls back to the global catalogue if a refresh has not published it yet.
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
+  priorityJobsFeed: './data/jobs_priority.json',
   sourceStatusFeed: './data/source_status.json',
+  prioritySourceStatusFeed: './data/priority_source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
   githubOAuthProxy: '',
   githubClientId: '',
@@ -77,7 +80,7 @@ window.addEventListener('load', () => {
 function loadPtoScript(src) {
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = `${src}?v=${encodeURIComponent(window.PTO_CONFIG.version)}`;
+    s.src = `${src}?v=${encodeURIComponent(window.PTO_CONFIG.buildVersion || window.PTO_CONFIG.version)}`;
     s.onload = resolve;
     s.onerror = () => reject(new Error(`failed to load ${src}`));
     document.head.appendChild(s);
@@ -97,6 +100,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v06.js');
     await loadPtoScript('enhancements-v07.js');
     await loadPtoScript('enhancements-v09.js');
+    await loadPtoScript('enhancements-v11.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {

@@ -9,6 +9,7 @@ on:
       - 'scripts/merge_public_tables.py'
       - 'scripts/federated_harvester.py'
       - 'scripts/direct_china_official.py'
+      - 'scripts/pdd_official_harvester.py'
       - 'scripts/priority_official_harvester.py'
       - 'scripts/official_site_job_spider.py'
       - 'scripts/official_campaign_discovery.py'
@@ -68,6 +69,7 @@ jobs:
           PYTHONPATH=. python scripts/expand_feed.py
           PYTHONPATH=. python scripts/federated_harvester.py
           PYTHONPATH=. python scripts/direct_china_official.py
+          PYTHONPATH=. python scripts/pdd_official_harvester.py
           PYTHONPATH=. python scripts/merge_public_tables.py
           PYTHONPATH=. python scripts/priority_official_harvester.py
           PYTHONPATH=. python scripts/official_site_job_spider.py
@@ -92,11 +94,17 @@ jobs:
           assert status.get('cn_catalog_count') == len(cn_jobs)
           assert global_path.stat().st_size < 40_000_000 and cn_path.stat().st_size < global_path.stat().st_size
           names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')+' '+j.get('x','')) for j in cn_jobs).lower()
-          for q in ['京东','腾讯','字节','北京','美团','航天科工','银河通用','中国银行']:
+          for q in ['京东','腾讯','字节','北京','美团','拼多多','航天科工','银河通用','中国银行']:
               assert q.lower() in names, f'{q} missing from China-first product feed'
           direct=next((s for s in status.get('sources',[]) if s.get('name')=='direct-china-official'),None); assert direct and direct.get('ok')
           direct_companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
           assert direct_companies.get('美团',{}).get('count',0)>=50 and direct_companies.get('腾讯',{}).get('count',0)>=100
+          pdd=next((s for s in status.get('sources',[]) if s.get('name')=='pdd-direct-official'),None)
+          assert pdd and pdd.get('ok') and pdd.get('count',0)>=20, pdd
+          assert (pdd.get('diagnostics') or {}).get('seed_gate_ok') is True, pdd
+          pid='5e4eb6f3-294f-491b-9d39-42895eed98c3'
+          exact=[j for j in cn_jobs if j.get('r')=='AI Infra研发工程师' and pid in (j.get('u','')+j.get('n',''))]
+          assert exact, 'exact PDD AI Infra position missing from deep China feed'
           priority=next((s for s in status.get('sources',[]) if s.get('name')=='priority-official-sources'),None); assert priority and priority.get('ok')
           pdiag=priority.get('diagnostics') or {}; adapters=pdiag.get('adapters') or []; assert pdiag.get('watch_total',0)>=50
           campaigns=lambda company:[x for x in adapters if x.get('company')==company and x.get('type')=='campaign']
@@ -123,6 +131,7 @@ jobs:
           print('global rows/bytes:',len(jobs),global_path.stat().st_size)
           print('china rows/bytes:',len(cn_jobs),cn_path.stat().st_size,'overseas=',overseas)
           print('direct official:',[(k,v.get('count'),v.get('ok')) for k,v in direct_companies.items()])
+          print('PDD exact:',exact[0].get('r'),exact[0].get('u'))
           print('priority watch:',pdiag.get('watch_ok'),'/',pdiag.get('watch_total'),'root_2027=',pdiag.get('watch_2027'))
           print('site spider:',site_spider.get('count'),site_spider.get('diagnostics'))
           print('NCSS targeted:',ncss.get('count'),ndiag)
