@@ -1,0 +1,84 @@
+name: browser-official-source-scale
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7 */6 * * *'
+  pull_request:
+    paths:
+      - 'scripts/browser_official_scale.py'
+      - 'scripts/browser_official_harvester.py'
+      - 'sources/browser_official_sources.json'
+      - 'tests/test_browser_official_harvester.py'
+      - '.github/workflows/browser-official-scale.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/browser_official_scale.py'
+      - 'scripts/browser_official_harvester.py'
+      - 'sources/browser_official_sources.json'
+      - '.github/workflows/browser-official-scale.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: browser-official-source-scale-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+  cancel-in-progress: true
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 38
+    continue-on-error: ${{ github.event_name == 'schedule' }}
+    env:
+      PTO_BROWSER_SOURCE_RUN: ${{ github.run_number }}
+      PTO_BROWSER_SOURCES_PER_RUN: ${{ github.event_name == 'pull_request' && '5' || '14' }}
+      PTO_BROWSER_PAGES_PER_SOURCE: ${{ github.event_name == 'pull_request' && '2' || '4' }}
+      PTO_BROWSER_SOURCE_TIMEOUT_MS: '40000'
+      PTO_DYNAMIC_EMPLOYER_SOURCES: '5000'
+      PTO_MAX_CATALOG: '60000'
+      PTO_MAX_CN_CATALOG: '30000'
+      PTO_BROWSER_JD_CHARS: '220'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
+      - name: Unit-test record recognition and source replacement
+        run: PYTHONPATH=. python -m unittest -v tests.test_browser_official_harvester
+      - name: Expand prior catalogue
+        run: PYTHONPATH=. python scripts/expand_feed.py
+      - name: Build dynamic source graph and scan one shard
+        run: PYTHONPATH=. python scripts/browser_official_scale.py
+      - name: Rebuild compact feeds
+        run: PYTHONPATH=. python scripts/compact_feed.py
+      - name: Validate scalable registry diagnostics
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
+          group=next((s for s in status.get('sources',[]) if s.get('name')=='browser-official-career-sites'),None)
+          assert group and group.get('ok'), group
+          diag=group.get('diagnostics') or {}
+          assert diag.get('registered_sources',0)>=24, diag
+          assert diag.get('selected_sources',0)>=3, diag
+          print('runtime registered/selected:',diag.get('registered_sources'),diag.get('selected_sources'))
+          print('selected companies:',[(x.get('company'),x.get('count'),x.get('ok')) for x in diag.get('sources',[])])
+          PY
+      - name: Commit concrete discovered jobs
+        if: github.event_name != 'pull_request'
+        run: |
+          if git diff --quiet -- data/jobs.json data/jobs_cn.json data/source_status.json; then
+            echo 'No dynamic-source changes.'
+            exit 0
+          fi
+          git config user.name 'path-to-offer-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/jobs.json data/jobs_cn.json data/source_status.json
+          git commit -m 'data: scan dynamic employer career-source shard'
+          git pull --rebase origin main
+          git push origin HEAD:main
