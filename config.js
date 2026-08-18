@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
-  buildVersion: '1.1.0-pdd-source-fix',
+  buildVersion: '1.2.0-local-vault-admin-source',
   // Keep the stable logical feed name for compatibility. After enhancement
   // bundles load, fetch() prefers the smaller China-first official feed and
   // falls back to the global catalogue if a refresh has not published it yet.
@@ -11,6 +11,9 @@ window.PTO_CONFIG = Object.freeze({
   sourceStatusFeed: './data/source_status.json',
   prioritySourceStatusFeed: './data/priority_source_status.json',
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
+  vaultRepositoryOwner: 'MLliu6',
+  vaultRepositoryName: '26-27-path-to-offer',
+  adminAccount: 'MLliu6',
   githubOAuthProxy: '',
   githubClientId: '',
   githubOAuthScopes: 'read:user user:email',
@@ -101,6 +104,8 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v07.js');
     await loadPtoScript('enhancements-v09.js');
     await loadPtoScript('enhancements-v11.js');
+    await loadPtoScript('account-vault.js');
+    await loadPtoScript('enhancements-v12.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
