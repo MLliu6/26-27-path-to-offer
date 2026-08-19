@@ -54,7 +54,7 @@ def main() -> int:
 
         page.route("**/*", route_handler)
         page.goto(BASE, wait_until="domcontentloaded")
-        page.wait_for_function("() => !!window.PTO_ACCOUNT_UI && window.PTO_ENHANCEMENTS_READY === true", timeout=20_000)
+        page.wait_for_function("() => !!window.PTO_SECURE_ACCOUNT_V2 && window.PTO_V12_RENDERFIX_READY === true && window.PTO_ENHANCEMENTS_READY === true", timeout=25_000)
 
         # Add a real pipeline record with the default B priority. The visual
         # monogram must come from the company, not from the priority value.
@@ -64,14 +64,14 @@ def main() -> int:
         page.locator('#jobForm input[name="location"]').fill("北京")
         page.locator('#jobForm button[type="submit"]').click()
         page.locator('button.nav-item[data-view="pipeline"]').click()
-        page.wait_for_selector(".job-card")
+        page.wait_for_selector(".job-card .company-avatar")
         assert page.locator(".company-avatar").first.inner_text() == "辉"
         assert "优先 B" in page.locator(".job-priority-badge").first.inner_text()
 
         # The detailed source panel must start in a blurred admin-gated state.
         page.locator('button.nav-item[data-view="discover"]').click()
         page.locator("#openSourcePanel").click()
-        page.wait_for_selector("#adminSourcePassword")
+        page.wait_for_selector(".admin-source-gate")
         assert page.locator(".admin-source-blur").count() == 1
         assert "管理员信息已雾化" in page.locator("#quickModal").inner_text()
         page.locator("#closeModal").click()
@@ -80,25 +80,26 @@ def main() -> int:
         # unlock it again with the same credentials. Plain legacy storage must
         # not hold the active account state.
         page.locator("#githubLoginBtn").click()
-        page.locator("#localAccountName").fill("qa-candidate")
-        page.locator("#localAccountPassword").fill("strong-password-2027")
-        page.locator("#localCreate").click()
+        page.locator("#secureLocalUser").fill("qa-candidate")
+        page.locator("#secureLocalPass").fill("strong-password-2027")
+        page.locator("#secureLocalCreate").click()
         page.wait_for_function("() => window.PTO_ACCOUNT_SESSION?.username === 'qa-candidate'", timeout=12_000)
         assert page.evaluate("localStorage.getItem('pathToOffer.v0.2')") is None
         page.locator("#githubLoginBtn").click()
-        page.locator("#accountLogout").click()
+        page.locator("#secureLogout").click()
         page.wait_for_function("() => !window.PTO_ACCOUNT_SESSION")
         page.locator('button.nav-item[data-view="pipeline"]').click()
         assert page.locator(".job-card").count() == 0
 
         page.locator("#githubLoginBtn").click()
-        page.locator("#localAccountName").fill("qa-candidate")
-        page.locator("#localAccountPassword").fill("strong-password-2027")
-        page.locator("#localLogin").click()
+        page.locator("#secureLocalUser").fill("qa-candidate")
+        page.locator("#secureLocalPass").fill("strong-password-2027")
+        page.locator("#secureLocalUnlock").click()
         page.wait_for_function("() => window.PTO_ACCOUNT_SESSION?.username === 'qa-candidate'", timeout=12_000)
         page.locator('button.nav-item[data-view="pipeline"]').click()
-        page.wait_for_selector(".job-card")
+        page.wait_for_selector(".job-card .company-avatar")
         assert "辉羲智能" in page.locator(".job-card").first.inner_text()
+        assert page.locator(".company-avatar").first.inner_text() == "辉"
 
         # Resume parsing is audited locally. The browser can show and download
         # exactly what it extracted without committing plaintext to GitHub.
@@ -123,7 +124,7 @@ def main() -> int:
 
         context.close()
         browser.close()
-    print("Path to Offer v1.2 local-vault/admin/avatar browser smoke: PASS")
+    print("Path to Offer v1.2.2 local-vault/admin/avatar browser smoke: PASS")
     return 0
 
 
