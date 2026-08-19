@@ -22,10 +22,11 @@
   }
   function bytesToHex(bytes){return [...new Uint8Array(bytes)].map(value=>value.toString(16).padStart(2,'0')).join('');}
   async function digest(value){return new Uint8Array(await cryptoApi().subtle.digest('SHA-256',te.encode(String(value||''))));}
+  async function sha256(value){return bytesToHex(await digest(value));}
   async function accountId(username){
     const normalized=normalizeAccount(username);
     if(!normalized)throw new Error('账号不能为空');
-    return bytesToHex(await digest(`path-to-offer:${normalized}`));
+    return sha256(`path-to-offer:${normalized}`);
   }
   async function deriveKey(password,salt,iterations=KDF_ITERATIONS){
     assertPassword(password);
@@ -98,5 +99,5 @@
     const path=vaultPath(id);const response=await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path}`,{method:'DELETE',headers:{...githubHeaders(token),'Content-Type':'application/json'},body:JSON.stringify({message:`vault: remove encrypted account ${id.slice(0,8)}`,sha,branch})});
     if(!response.ok)throw new Error(`删除 GitHub 加密账户失败：HTTP ${response.status}`);return true;
   }
-  return {VERSION,KDF_ITERATIONS,normalizeAccount,accountId,encryptJson,decryptJson,sanitizeState,vaultPath,fetchGithubVault,putGithubVault,deleteGithubVault,verifyGithubToken,bytesToBase64,base64ToBytes,bytesToHex};
+  return {VERSION,KDF_ITERATIONS,normalizeAccount,sha256,accountId,encryptJson,decryptJson,sanitizeState,vaultPath,fetchGithubVault,putGithubVault,deleteGithubVault,verifyGithubToken,bytesToBase64,base64ToBytes,bytesToHex};
 });
