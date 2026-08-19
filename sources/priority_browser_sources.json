@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "policy": "Open only anonymous employer-owned recruiting pages or the public ATS destinations linked by the employer. Observe normal browser XHR/fetch responses and rendered/current job pages; never log in, solve CAPTCHA, replay private cookies, or bypass access controls. A zero/blocked refresh preserves previously validated rows for that source.",
   "sources": [
     {
@@ -57,6 +57,31 @@
       "id": "zhipu", "company": "智谱AI", "category": "大模型/AI", "company_type": "民营/大模型/AI",
       "start_url": "https://zhipu-ai.jobs.feishu.cn/zhipucampus/position/list", "url": "https://zhipu-ai.jobs.feishu.cn/zhipucampus/position/list", "official_url": "https://www.zhipuai.cn/zh/joinus",
       "priority": 97, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 12
+    },
+    {
+      "id": "moonshot", "company": "月之暗面", "category": "大模型/AI", "company_type": "民营/大模型/AI",
+      "start_url": "https://careers.kimi.com/campus", "url": "https://careers.kimi.com/campus", "official_url": "https://careers.kimi.com/",
+      "priority": 96, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 10
+    },
+    {
+      "id": "minimax", "company": "MiniMax", "category": "大模型/AI", "company_type": "民营/大模型/AI",
+      "start_url": "https://vrfi1sk8a0.jobs.feishu.cn/379481/?category=&current=1&functionCategory=&job_hot_flag=&keywords=&limit=10&location=&project=7495675705720965415&tag=&type=", "url": "https://vrfi1sk8a0.jobs.feishu.cn/379481/?current=1&limit=10&project=7495675705720965415", "official_url": "https://www.minimaxi.com/careers",
+      "priority": 96, "modes": ["browser-public-ui"], "batch": "2027校园招聘", "max_pages": 12
+    },
+    {
+      "id": "stepfun", "company": "阶跃星辰", "category": "大模型/AI", "company_type": "民营/大模型/AI",
+      "start_url": "https://app.mokahr.com/campus-recruitment/step/141903#/jobs", "url": "https://app.mokahr.com/campus-recruitment/step/141903#/jobs", "official_url": "https://www.stepfun.com/",
+      "priority": 96, "modes": ["browser-public-ui"], "batch": "2027校园招聘", "max_pages": 12
+    },
+    {
+      "id": "enflame", "company": "燧原科技", "category": "AI芯片", "company_type": "民营/AI芯片",
+      "start_url": "https://app.mokahr.com/campus-recruitment/enflame/168420#/jobs", "url": "https://app.mokahr.com/campus-recruitment/enflame/168420#/jobs", "official_url": "https://www.enflame-tech.com/",
+      "priority": 96, "modes": ["browser-public-ui"], "batch": "2027校园招聘", "max_pages": 12
+    },
+    {
+      "id": "unitree", "company": "宇树科技", "category": "具身智能/机器人", "company_type": "民营/具身智能机器人",
+      "start_url": "https://www.unitree.com/cn/position/", "url": "https://www.unitree.com/cn/position/", "official_url": "https://www.unitree.com/cn/position/",
+      "priority": 96, "modes": ["browser-public-ui", "browser-rendered-dom"], "batch": "公开招聘", "max_pages": 8
     }
   ]
 }
