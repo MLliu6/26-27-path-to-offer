@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from scripts import priority_browser_harvester as h
-from scripts.priority_browser_runner import install, normalize_heading, page_job_from_text
+from scripts.priority_browser_runner import install, normalize_heading, page_job_from_text, trusted_response_host
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,15 +29,11 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
         self.assertEqual(h.title_from_json(row, "root.data.items[0]"), "AI Infra研发工程师")
 
     def test_feishu_filter_title_metadata_is_not_a_job(self):
-        # Feishu filter endpoints commonly return generic id/title dictionaries.
-        # These are facets, not positions, even when a title contains role words.
         row = {"id": "101", "title": "算法研发", "value": "101"}
         self.assertFalse(h.json_candidate(row, "root.data[0]"))
         self.assertFalse(h.json_candidate(row, "root.data.filters[0]"))
 
     def test_feishu_job_post_with_generic_title_is_kept(self):
-        # The actual job-post response may use the generic `title` key, so keep
-        # it when the structural path/payload is job-shaped.
         row = {
             "id": "post-101",
             "title": "大模型推理系统工程师",
@@ -45,6 +41,19 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
             "job_category_id": "rd",
         }
         self.assertTrue(h.json_candidate(row, "root.data.job_post_list[0]"))
+
+    def test_browser_json_isolated_to_registered_ats_host(self):
+        feishu = {"start_url": "https://r712him1th.jobs.feishu.cn/huixi/position/list"}
+        self.assertTrue(trusted_response_host(feishu, "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?offset=0"))
+        self.assertFalse(trusted_response_host(feishu, "https://starling.zijieapi.com/check_and_get_text/abc"))
+        self.assertFalse(trusted_response_host(feishu, "https://mon.zijieapi.com/monitor_web/settings/browser-settings"))
+
+        moka = {"start_url": "https://app.mokahr.com/campus-recruitment/moonshot/148507#/jobs"}
+        self.assertTrue(trusted_response_host(moka, "https://app.mokahr.com/api/outer/ats-apply/website/jobs/v2"))
+        self.assertFalse(trusted_response_host(moka, "https://sentry-fe.mokahr.com/api/98/envelope/"))
+
+        reviewed_cross_host = {"start_url": "https://jobs.example.com/", "api_hosts": ["api.example.com"]}
+        self.assertTrue(trusted_response_host(reviewed_cross_host, "https://api.example.com/jobs"))
 
     def test_reviewed_detail_template_preserves_specific_job_url(self):
         entry = {
