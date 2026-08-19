@@ -5,6 +5,9 @@ import unittest
 from pathlib import Path
 
 from scripts import priority_browser_harvester as h
+from scripts.official_source_graph import add as graph_add
+from scripts.official_source_graph import canonical_url as graph_canonical_url
+from scripts.official_source_graph import observed_source_url, source_key
 from scripts.priority_browser_runner import (
     feishu_job_rows,
     feishu_portal_path,
@@ -211,6 +214,51 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
         self.assertEqual(by_id["zhipu"]["start_url"], "https://zhipu-ai.jobs.feishu.cn/zhipucampus/position/list")
         self.assertEqual(by_id["rhino"]["start_url"], "https://r712him1th.jobs.feishu.cn/huixi/position/list")
         self.assertEqual(by_id["kunlunxin"]["start_url"], "https://kunlunxin.zhiye.com/xiangqing?jobId=151190919")
+
+
+class OfficialSourceGraphTests(unittest.TestCase):
+    def test_reviewed_url_canonicalization_keeps_specific_page(self):
+        url = "https://jobs.ashbyhq.com/applied/11111111-1111-1111-1111-111111111111/application?utm_source=x"
+        self.assertEqual(
+            graph_canonical_url(url),
+            "https://jobs.ashbyhq.com/applied/11111111-1111-1111-1111-111111111111/application",
+        )
+
+    def test_shared_ats_position_urls_collapse_to_company_boards(self):
+        cases = [
+            ("https://jobs.ashbyhq.com/applied/11111111-1111-1111-1111-111111111111/application", "https://jobs.ashbyhq.com/applied"),
+            ("https://jobs.lever.co/company/abc-123", "https://jobs.lever.co/company"),
+            ("https://jobs.smartrecruiters.com/Company/123456-job-title", "https://jobs.smartrecruiters.com/Company"),
+            ("https://job-boards.greenhouse.io/company/jobs/123456", "https://job-boards.greenhouse.io/company"),
+            ("https://company.recruitee.com/o/senior-ai-infra-engineer", "https://company.recruitee.com/"),
+        ]
+        for raw, expected in cases:
+            with self.subTest(raw=raw):
+                self.assertEqual(observed_source_url(raw), expected)
+
+    def test_two_ashby_positions_create_one_graph_node(self):
+        rows = {}
+        for job_id in ["11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222"]:
+            graph_add(
+                rows,
+                company="Applied Intuition",
+                url=f"https://jobs.ashbyhq.com/applied/{job_id}/application",
+                category="自动驾驶/AI",
+                priority=42,
+                origin="observed-job",
+            )
+        self.assertEqual(len(rows), 1)
+        row = next(iter(rows.values()))
+        self.assertEqual(row["url"], "https://jobs.ashbyhq.com/applied")
+
+    def test_feishu_source_key_does_not_include_position_id(self):
+        one = "https://company.jobs.feishu.cn/campus/position/111/detail"
+        two = "https://company.jobs.feishu.cn/campus/position/222/detail"
+        self.assertEqual(source_key("测试公司", one), source_key("测试公司", two))
+
+    def test_non_ats_career_url_is_not_overcollapsed(self):
+        url = "https://careers.example.com/jobs/ai-infra-engineer"
+        self.assertEqual(observed_source_url(url), url)
 
 
 if __name__ == "__main__":
