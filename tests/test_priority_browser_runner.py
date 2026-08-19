@@ -28,6 +28,24 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
         self.assertTrue(h.json_candidate(row, "root.data.items[0]"))
         self.assertEqual(h.title_from_json(row, "root.data.items[0]"), "AI Infra研发工程师")
 
+    def test_feishu_filter_title_metadata_is_not_a_job(self):
+        # Feishu filter endpoints commonly return generic id/title dictionaries.
+        # These are facets, not positions, even when a title contains role words.
+        row = {"id": "101", "title": "算法研发", "value": "101"}
+        self.assertFalse(h.json_candidate(row, "root.data[0]"))
+        self.assertFalse(h.json_candidate(row, "root.data.filters[0]"))
+
+    def test_feishu_job_post_with_generic_title_is_kept(self):
+        # The actual job-post response may use the generic `title` key, so keep
+        # it when the structural path/payload is job-shaped.
+        row = {
+            "id": "post-101",
+            "title": "大模型推理系统工程师",
+            "location": {"name": "北京"},
+            "job_category_id": "rd",
+        }
+        self.assertTrue(h.json_candidate(row, "root.data.job_post_list[0]"))
+
     def test_reviewed_detail_template_preserves_specific_job_url(self):
         entry = {
             "id": "mthreads",
