@@ -104,7 +104,6 @@
     state=normalize(clone(payload.state||{}));
     if(typeof STORAGE_KEY!=='undefined')localStorage.removeItem(STORAGE_KEY);
     if(typeof LEGACY_KEY!=='undefined')localStorage.removeItem(LEGACY_KEY);
-    persistEncryptedLocal().catch(console.warn);
     setAccountButton();renderAll();
   }
 
@@ -114,6 +113,11 @@
     if(localStorage.getItem(key)&&!confirm('该本机账户已存在。用当前页面数据覆盖？'))return;
     const payload={username:spec.username,state:VAULT.sanitizeState(state,{includeResumeText}),includeResumeText,mode:'local',revision:1,updatedAt:new Date().toISOString()};
     activate(payload,{...spec,mode:'local',password,includeResumeText});
+    // Do not expose a successful account session before its encrypted snapshot
+    // actually exists. This also closes the crash/reload window between UI
+    // activation and asynchronous localStorage encryption.
+    await persistEncryptedLocal();
+    session.dirty=false;
     toast('本机加密账户已创建');closeModal();
   }
   async function unlockLocal(username,password){
@@ -122,6 +126,8 @@
     if(!raw)throw new Error('此设备没有该本机账户；跨设备数据请使用右侧 GitHub 加密仓库');
     const payload=await VAULT.decryptJson(JSON.parse(raw),password,`local:${spec.id}`);
     activate(payload,{...spec,mode:'local',password,includeResumeText:!!payload.includeResumeText});
+    await persistEncryptedLocal();
+    session.dirty=false;
     toast('本机账户已解锁');closeModal();
   }
 
@@ -143,6 +149,7 @@
     const vault=await VAULT.encryptJson(payload,password,remoteContext(spec));
     const saved=await VAULT.putGithubVault({...spec,token,vault,sha:remote?.sha||''});
     activate(payload,{...spec,mode:'github',password,token,remoteSha:saved.sha,remoteUpdatedAt:payload.updatedAt,remoteVerified:true,includeResumeText,portableWrite});
+    await persistEncryptedLocal();
     adminUnlocked=spec.username===ADMIN_ACCOUNT&&spec.owner.toLowerCase()===APP_OWNER.toLowerCase()&&spec.repo.toLowerCase()===APP_REPO.toLowerCase();
     toast('用户自有 GitHub 加密仓库已初始化');closeModal();
   }
@@ -155,6 +162,7 @@
     const localToken=token||payload.writeToken||'';
     if(activateAccount){
       activate(payload,{...spec,mode:'github',password,token:localToken,remoteSha:remote.sha,remoteUpdatedAt:payload.updatedAt,remoteVerified:true,includeResumeText:!!payload.includeResumeText,portableWrite:!!payload.portableWrite});
+      await persistEncryptedLocal();
       adminUnlocked=spec.username===ADMIN_ACCOUNT&&spec.owner.toLowerCase()===APP_OWNER.toLowerCase()&&spec.repo.toLowerCase()===APP_REPO.toLowerCase();
       toast('跨设备加密账户已解锁');closeModal();
     }
@@ -185,12 +193,15 @@
     if(session.dirty&&!confirm('当前设备有未同步改动。仍用远端覆盖？'))return;
     const result=await unlockRemote(session,{activateAccount:false});
     activate(result.payload,{...result.spec,mode:'github',password:session.password,token:session.token||result.token,remoteSha:result.remote.sha,remoteUpdatedAt:result.payload.updatedAt,remoteVerified:true,includeResumeText:!!result.payload.includeResumeText,portableWrite:!!result.payload.portableWrite});
+    await persistEncryptedLocal();
     toast('已读取远端加密数据');openSecureAccountModal();
   }
   function logout(){
     session=null;window.PTO_ACCOUNT_SESSION=null;adminUnlocked=false;
     state=normalize(clone(initialGuest));
-    baseSaveState(false);setAccountButton();renderAll();closeModal();toast('已退出账户');
+    if(typeof STORAGE_KEY!=='undefined')localStorage.removeItem(STORAGE_KEY);
+    if(typeof LEGACY_KEY!=='undefined')localStorage.removeItem(LEGACY_KEY);
+    setAccountButton();renderAll();closeModal();toast('已退出账户');
   }
 
   function value(id){return $(id)?.value?.trim()||'';}
