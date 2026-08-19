@@ -230,6 +230,7 @@ class OfficialSourceGraphTests(unittest.TestCase):
             ("https://jobs.lever.co/company/abc-123", "https://jobs.lever.co/company"),
             ("https://jobs.smartrecruiters.com/Company/123456-job-title", "https://jobs.smartrecruiters.com/Company"),
             ("https://job-boards.greenhouse.io/company/jobs/123456", "https://job-boards.greenhouse.io/company"),
+            ("https://boards.greenhouse.io/embed/job_app?for=company&token=123456", "https://boards.greenhouse.io/company"),
             ("https://company.recruitee.com/o/senior-ai-infra-engineer", "https://company.recruitee.com/"),
         ]
         for raw, expected in cases:
