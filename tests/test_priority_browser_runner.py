@@ -5,7 +5,15 @@ import unittest
 from pathlib import Path
 
 from scripts import priority_browser_harvester as h
-from scripts.priority_browser_runner import install, normalize_heading, page_job_from_text, trusted_response_host
+from scripts.priority_browser_runner import (
+    feishu_job_rows,
+    feishu_portal_path,
+    install,
+    normalize_feishu_job,
+    normalize_heading,
+    page_job_from_text,
+    trusted_response_host,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,14 +41,60 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
         self.assertFalse(h.json_candidate(row, "root.data[0]"))
         self.assertFalse(h.json_candidate(row, "root.data.filters[0]"))
 
-    def test_feishu_job_post_with_generic_title_is_kept(self):
+    def test_feishu_direct_job_post_list_excludes_nested_metadata(self):
+        payload = {
+            "code": 0,
+            "data": {
+                "count": 1,
+                "job_post_list": [{
+                    "id": "post-101",
+                    "title": "大模型推理系统工程师",
+                    "city_list": [{"code": "BJ", "name": "北京"}],
+                    "job_function": {"id": "fn-1", "name": "算法研发"},
+                    "recruit_type": {"id": "rt-1", "name": "校园招聘"},
+                    "description": "负责大模型推理系统研发与性能优化",
+                    "requirement": "熟悉CUDA、推理引擎和系统优化",
+                    "publish_time": 1787100000000,
+                }],
+            },
+        }
+        rows = feishu_job_rows(payload)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["id"], "post-101")
+        self.assertNotIn(rows[0]["job_function"], rows)
+        self.assertNotIn(rows[0]["city_list"][0], rows)
+
+    def test_feishu_direct_row_normalizes_specific_detail_url(self):
+        entry = {
+            "id": "rhino",
+            "company": "辉羲智能",
+            "company_type": "民营/AI芯片初创",
+            "category": "AI芯片/具身智能",
+            "start_url": "https://r712him1th.jobs.feishu.cn/huixi/position/list",
+            "official_url": "https://www.rhino.auto/ShouYe",
+            "batch": "公开招聘",
+        }
         row = {
             "id": "post-101",
             "title": "大模型推理系统工程师",
-            "location": {"name": "北京"},
-            "job_category_id": "rd",
+            "city_list": [{"code": "BJ", "name": "北京"}],
+            "job_function": {"id": "fn-1", "name": "算法研发"},
+            "recruit_type": {"id": "rt-1", "name": "校园招聘"},
+            "description": "负责大模型推理系统研发与性能优化",
+            "requirement": "熟悉CUDA、推理引擎和系统优化",
+            "publish_time": 1787100000000,
         }
-        self.assertTrue(h.json_candidate(row, "root.data.job_post_list[0]"))
+        job = normalize_feishu_job(entry, row, "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts", entry["start_url"])
+        self.assertIsNotNone(job)
+        self.assertEqual(job["position_id"], "post-101")
+        self.assertEqual(job["location"], "北京")
+        self.assertEqual(job["department"], "算法研发")
+        self.assertEqual(job["apply_url"], "https://r712him1th.jobs.feishu.cn/huixi/position/post-101/detail")
+        self.assertEqual(job["observed_via"], "browser-public-feishu-job-list")
+
+    def test_feishu_portal_path_handles_root_style_project_portal(self):
+        self.assertEqual(feishu_portal_path({"start_url": "https://vrfi1sk8a0.jobs.feishu.cn/379481/?project=123"}), "379481")
+        self.assertEqual(feishu_portal_path({"start_url": "https://agirobot.jobs.feishu.cn/campusrecruitment"}), "campusrecruitment")
 
     def test_browser_json_isolated_to_registered_ats_host(self):
         feishu = {"start_url": "https://r712him1th.jobs.feishu.cn/huixi/position/list"}
