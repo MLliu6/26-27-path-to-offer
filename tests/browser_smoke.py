@@ -47,10 +47,39 @@ JOBS = {
         },
     ],
 }
+PRIORITY = {
+    "schema_version": 4,
+    "generated_at": "2026-08-19T06:40:00Z",
+    "jobs": [
+        {
+            "i": "didi-priority-fixture",
+            "c": "滴滴",
+            "r": "大模型推理系统研发工程师",
+            "l": "北京",
+            "u": "https://talent.didiglobal.com/campus/p/qa-001",
+            "n": "https://talent.didiglobal.com/campus/p/qa-001",
+            "d": "负责大模型推理、GPU 性能优化、CUDA 与服务系统研发。",
+            "t": "2026-08-19",
+            "b": "校园招聘",
+            "g": "2027届",
+            "y": "民营/互联网/出行",
+            "h": "互联网/出行/人工智能",
+            "x": "滴滴招聘官网 · 浏览器自主直连",
+            "q": 7,
+            "s": "direct-official:didi",
+            "z": "qa-001",
+        }
+    ],
+}
 STATUS = {
     "generated_at": "2026-08-16T07:00:00Z",
     "catalog_count": 2,
     "sources": [{"name": "qa", "label": "Browser QA", "url": "fixture://jobs", "ok": True, "count": 2, "error": ""}],
+}
+PRIORITY_STATUS = {
+    "generated_at": "2026-08-19T06:40:00Z",
+    "catalog_count": 1,
+    "sources": [{"name": "didi-direct-official", "label": "滴滴招聘官网 · 浏览器自主直连", "url": "https://talent.didiglobal.com/", "ok": True, "count": 1, "error": ""}],
 }
 
 
@@ -70,8 +99,12 @@ def main() -> int:
 
         def route_handler(route):
             url = route.request.url
-            if "/data/jobs_cn.json" in url or "/data/jobs.json" in url:
+            if "/data/jobs_priority.json" in url:
+                route.fulfill(status=200, content_type="application/json", body=json.dumps(PRIORITY, ensure_ascii=False))
+            elif "/data/jobs_cn.json" in url or "/data/jobs.json" in url:
                 route.fulfill(status=200, content_type="application/json", body=json.dumps(JOBS, ensure_ascii=False))
+            elif "/data/priority_source_status.json" in url:
+                route.fulfill(status=200, content_type="application/json", body=json.dumps(PRIORITY_STATUS, ensure_ascii=False))
             elif "/data/source_status.json" in url:
                 route.fulfill(status=200, content_type="application/json", body=json.dumps(STATUS, ensure_ascii=False))
             elif url.startswith("https://cdn.jsdelivr.net/"):
@@ -90,6 +123,16 @@ def main() -> int:
         jd_card = page.locator('.market-card[data-market-id="jd-old"]')
         jd_card.wait_for()
         assert "京东" in jd_card.inner_text()
+
+        # Priority employer feed must be merged into the same searchable market.
+        # This is the regression that prevents a valid DiDi crawler result from
+        # disappearing merely because jobs_cn.json has no matching company row.
+        page.locator("#jobSearch").fill("滴滴")
+        didi_card = page.locator('.market-card[data-market-id="didi-priority-fixture"]')
+        didi_card.wait_for(timeout=8_000)
+        assert "滴滴" in didi_card.inner_text() and "大模型推理" in didi_card.inner_text()
+        page.locator("#jobSearch").fill("京东")
+        jd_card.wait_for()
 
         # Regression for the production overlap screenshot: the 4-step flow must
         # live inside the right-hand job market, never as a third grid child that
@@ -210,12 +253,15 @@ def main() -> int:
         page.locator("#closeModal").click()
 
         # Mobile sanity: critical action does not depend on hover and the flow
-        # remains structurally inside the market column.
+        # remains structurally inside the market column. Priority-source merging
+        # must work on the mobile path too.
         mobile = context.new_page()
         mobile.set_viewport_size({"width": 390, "height": 844})
         mobile.route("**/*", route_handler)
         mobile.goto(BASE, wait_until="domcontentloaded")
         mobile.wait_for_selector("#searchPolicy", timeout=12_000)
+        mobile.locator("#jobSearch").fill("滴滴")
+        mobile.locator('.market-card[data-market-id="didi-priority-fixture"]').wait_for(timeout=8_000)
         mobile.locator("#jobSearch").fill("京东")
         mobile.locator('.market-card[data-market-id="jd-old"]').wait_for()
         assert mobile.locator('.market-card[data-market-id="jd-old"] [data-save-job="jd-old"]').is_visible()
