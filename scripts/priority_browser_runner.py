@@ -5,9 +5,9 @@ The generic collector intentionally keeps a conservative field vocabulary so
 filter metadata cannot be mistaken for jobs. This runner adds reviewed schema
 aliases for ATS families observed in employer public UI traffic, rejects known
 metadata-only JSON objects/endpoints, isolates JSON parsing to the registered
-ATS host, and keeps a browser fallback for employer pages whose *current
-document* is itself a job detail. It does not add another transport or bypass
-any access control.
+ATS host, gives Feishu Hire's public `job_post_list` a direct-row adapter, and
+keeps a browser fallback for employer pages whose *current document* is itself
+a job detail. It does not add another transport or bypass any access control.
 """
 from __future__ import annotations
 
@@ -49,6 +49,7 @@ FEISHU_METADATA_PATH_RE = re.compile(
     r"^/api/v1/(?:config/job/filters(?:/|$)|common/setting(?:/|$)|user/mobile/login_status(?:/|$)|ip/location(?:/|$)|csrf/token(?:/|$))",
     re.I,
 )
+FEISHU_JOB_POSTS_PATH_RE = re.compile(r"^/api/v1/search/job/posts(?:/|$)", re.I)
 
 
 def extend(existing, extra):
@@ -64,13 +65,7 @@ def normalize_heading(raw: str) -> str:
 
 
 def trusted_response_host(entry, response_url: str) -> bool:
-    """Accept JSON only from the registered ATS host or explicit API hosts.
-
-    Career pages routinely load telemetry, localization and monitoring JSON from
-    unrelated hosts. Parsing those responses as if they were recruiting APIs can
-    manufacture false job candidates. Cross-host APIs remain possible only when
-    explicitly reviewed and listed in an entry's `api_hosts` field.
-    """
+    """Accept JSON only from the registered ATS host or explicit API hosts."""
     try:
         start_host = (urlparse(h.clean(entry.get("start_url"))).hostname or "").lower()
         response_host = (urlparse(h.clean(response_url)).hostname or "").lower()
@@ -84,6 +79,98 @@ def trusted_response_host(entry, response_url: str) -> bool:
         if host:
             allowed.add(host)
     return response_host in allowed
+
+
+def is_feishu_entry(entry) -> bool:
+    try:
+        return (urlparse(h.clean(entry.get("start_url"))).hostname or "").lower().endswith("jobs.feishu.cn")
+    except Exception:
+        return False
+
+
+def feishu_job_rows(payload) -> list[dict]:
+    """Return only direct Feishu Hire position rows, never their nested metadata."""
+    if not isinstance(payload, dict):
+        return []
+    if payload.get("code") not in (None, 0, "0"):
+        return []
+    data = payload.get("data") or {}
+    if not isinstance(data, dict):
+        return []
+    rows = data.get("job_post_list") or []
+    return [row for row in rows if isinstance(row, dict)] if isinstance(rows, list) else []
+
+
+def feishu_portal_path(entry) -> str:
+    try:
+        parts = [part for part in urlparse(h.clean(entry.get("start_url"))).path.split("/") if part]
+    except Exception:
+        return ""
+    if not parts:
+        return ""
+    # Public Feishu portals use the first path component as `website-path`, e.g.
+    # /huixi, /zhipucampus, /campusrecruitment, /379481.
+    return parts[0]
+
+
+def normalize_feishu_job(entry, row: dict, response_url: str, page_url: str):
+    company = h.clean(entry.get("company"))
+    role = h.clean(row.get("title"))
+    position_id = h.clean(row.get("id"))
+    if not company or not position_id or not h.looks_like_role(role):
+        return None
+
+    city_list = row.get("city_list") or []
+    cities = []
+    if isinstance(city_list, list):
+        for city in city_list:
+            name = h.clean(city.get("name")) if isinstance(city, dict) else h.clean(city)
+            if name and name not in cities:
+                cities.append(name)
+    location = "/".join(cities[:8]) or h.location_from_text(h.flat_text(row, 1800))
+
+    job_function = row.get("job_function") or {}
+    department = h.clean(job_function.get("name")) if isinstance(job_function, dict) else ""
+    recruit_type = row.get("recruit_type") or {}
+    recruit_name = h.clean(recruit_type.get("name")) if isinstance(recruit_type, dict) else ""
+
+    description = h.clean(row.get("description"))
+    requirement = h.clean(row.get("requirement"))
+    jd = "\n".join(part for part in (description, requirement) if part)[: h.MAX_JD] or role
+    signal = " ".join([role, recruit_name, jd])
+    batch = "2027校园招聘" if ("2027" in signal or "27届" in signal) else (recruit_name or h.clean(entry.get("batch")) or "公开招聘")
+
+    parsed = urlparse(h.clean(entry.get("start_url")) or page_url or response_url)
+    portal_path = feishu_portal_path(entry)
+    if parsed.scheme in {"http", "https"} and parsed.netloc and portal_path:
+        detail = f"{parsed.scheme}://{parsed.netloc}/{portal_path}/position/{quote(position_id, safe='')}/detail"
+    else:
+        detail = h.clean(page_url or entry.get("start_url"))
+
+    job = {
+        "source": f"direct-official:browser:{h.clean(entry.get('id'))}",
+        "source_label": f"{company}招聘官网 · 飞书公开职位",
+        "source_url": h.clean(entry.get("official_url") or entry.get("start_url")),
+        "updated_at": h.clean(row.get("publish_time"))[:20],
+        "company": company,
+        "department": department,
+        "role": role[:140],
+        "location": location,
+        "salary": "",
+        "batch": batch,
+        "company_type": h.clean(entry.get("company_type")),
+        "industry": h.clean(entry.get("category")),
+        "graduation": "2027届" if "2027" in batch else "",
+        "education": "",
+        "notice_url": detail,
+        "apply_url": detail,
+        "jd": jd,
+        "tags": ["企业官网/官方ATS", "飞书公开职位", batch],
+        "observed_via": "browser-public-feishu-job-list",
+        "position_id": position_id,
+    }
+    job["id"] = h.stable_id(company, role, location, position_id)
+    return job
 
 
 def page_job_from_text(entry, page_url: str, headings, body: str):
@@ -104,9 +191,6 @@ def page_job_from_text(entry, page_url: str, headings, body: str):
             role = candidate[:140]
             break
     if not role:
-        # A number of older corporate CMS pages render the role immediately
-        # after a generic "Recruitment" heading. Recover only a short fragment
-        # that still contains an explicit role signal; never invent a title.
         snippets = re.split(r"(?:职位描述|岗位职责|工作职责|任职资格|任职要求)", body[:1800], maxsplit=1)
         prefix = snippets[0] if snippets else body[:900]
         candidates = re.split(r"[|｜•·]+|\s{2,}", prefix)
@@ -174,7 +258,6 @@ def install() -> None:
     base_candidate = h.json_candidate
 
     def guarded_json_candidate(row, path=""):
-        """Reject generic `{id,title}` filter/facet objects while keeping real jobs."""
         if not base_candidate(row, path):
             return False
         normalized_path = h.clean(path).lower()
@@ -208,10 +291,32 @@ def install() -> None:
             return
         try:
             parsed = urlparse(response.url)
-            if parsed.hostname and parsed.hostname.endswith("jobs.feishu.cn") and FEISHU_METADATA_PATH_RE.search(parsed.path or ""):
-                return
-        except Exception:
-            pass
+            host = (parsed.hostname or "").lower()
+            path = parsed.path or ""
+            if host.endswith("jobs.feishu.cn"):
+                if FEISHU_METADATA_PATH_RE.search(path):
+                    return
+                if FEISHU_JOB_POSTS_PATH_RE.search(path):
+                    payload = response.json()
+                    rows = feishu_job_rows(payload)
+                    capture.json_responses += 1
+                    if len(capture.response_urls) < 30 and response.url not in capture.response_urls:
+                        capture.response_urls.append(response.url)
+                    # Remove any rendered-link fallback rows captured before the
+                    # XHR arrived. Once the official list response is available,
+                    # it is the authoritative transport for this Feishu source.
+                    capture.jobs = {
+                        key: value for key, value in capture.jobs.items()
+                        if value.get("observed_via") != "browser-rendered-dom"
+                    }
+                    for row in rows:
+                        capture.json_candidates += 1
+                        capture.add(normalize_feishu_job(entry, row, response.url, page.url))
+                    return
+        except Exception as exc:
+            if len(capture.errors) < 20:
+                capture.errors.append(f"feishu response {type(exc).__name__}: {h.clean(exc)[:160]}")
+            return
         return base_response_handler(entry, page, capture, response)
 
     h.response_handler = guarded_response_handler
@@ -242,6 +347,11 @@ def install() -> None:
     def collect_dom(entry, page, capture):
         before = len(capture.jobs)
         capture.add(current_page_job(entry, page))
+        # For Feishu, once a concrete public job_post_list response is parsed,
+        # DOM cards are only a second rendering of the same rows and would double
+        # count them. Keep DOM as a fallback only when no list response arrived.
+        if is_feishu_entry(entry) and capture.json_responses > 0:
+            return len(capture.jobs) - before
         base_collect_dom(entry, page, capture)
         return len(capture.jobs) - before
 
