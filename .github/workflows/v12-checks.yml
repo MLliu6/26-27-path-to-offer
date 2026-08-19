@@ -6,14 +6,18 @@ on:
       - 'account-vault.js'
       - 'enhancements-v12.js'
       - 'enhancements-v12-hotfix.js'
+      - 'enhancements-v12-security.js'
+      - 'enhancements-v12-renderfix.js'
       - 'config.js'
       - 'scripts/didi_official_harvester.py'
       - 'scripts/official_source_graph.py'
       - 'scripts/official_source_sampler.py'
       - 'sources/official_source_registry_v12.json'
       - 'tests/account_vault.mjs'
+      - 'tests/account_vault_security.mjs'
       - 'tests/test_didi_official_harvester.py'
       - 'tests/v12_browser_smoke.py'
+      - 'tests/v12_security_browser_smoke.py'
       - '.github/workflows/v12-checks.yml'
   push:
     branches: [main]
@@ -21,14 +25,18 @@ on:
       - 'account-vault.js'
       - 'enhancements-v12.js'
       - 'enhancements-v12-hotfix.js'
+      - 'enhancements-v12-security.js'
+      - 'enhancements-v12-renderfix.js'
       - 'config.js'
       - 'scripts/didi_official_harvester.py'
       - 'scripts/official_source_graph.py'
       - 'scripts/official_source_sampler.py'
       - 'sources/official_source_registry_v12.json'
       - 'tests/account_vault.mjs'
+      - 'tests/account_vault_security.mjs'
       - 'tests/test_didi_official_harvester.py'
       - 'tests/v12_browser_smoke.py'
+      - 'tests/v12_security_browser_smoke.py'
       - '.github/workflows/v12-checks.yml'
 
 permissions:
@@ -41,7 +49,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 18
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -57,8 +65,11 @@ jobs:
           node --check account-vault.js
           node --check enhancements-v12.js
           node --check enhancements-v12-hotfix.js
+          node --check enhancements-v12-security.js
+          node --check enhancements-v12-renderfix.js
           node tests/account_vault.mjs
-          python -m py_compile scripts/didi_official_harvester.py scripts/official_source_graph.py scripts/official_source_sampler.py tests/test_didi_official_harvester.py tests/v12_browser_smoke.py
+          node tests/account_vault_security.mjs
+          python -m py_compile scripts/didi_official_harvester.py scripts/official_source_graph.py scripts/official_source_sampler.py tests/test_didi_official_harvester.py tests/v12_browser_smoke.py tests/v12_security_browser_smoke.py
           PYTHONPATH=. python -m unittest -v tests.test_didi_official_harvester
       - name: Privacy and source invariants
         run: |
@@ -67,18 +78,21 @@ jobs:
           from pathlib import Path
           vault=Path('account-vault.js').read_text(encoding='utf-8')
           ui=Path('enhancements-v12.js').read_text(encoding='utf-8')
+          security=Path('enhancements-v12-security.js').read_text(encoding='utf-8')
+          renderfix=Path('enhancements-v12-renderfix.js').read_text(encoding='utf-8')
           hotfix=Path('enhancements-v12-hotfix.js').read_text(encoding='utf-8')
           didi=Path('scripts/didi_official_harvester.py').read_text(encoding='utf-8')
           graph=Path('scripts/official_source_graph.py').read_text(encoding='utf-8')
           sampler=Path('scripts/official_source_sampler.py').read_text(encoding='utf-8')
           registry=json.loads(Path('sources/official_source_registry_v12.json').read_text(encoding='utf-8'))
           config=Path('config.js').read_text(encoding='utf-8')
-          for token in ['AES-GCM-256','PBKDF2-SHA256','sanitizeState','fetchGithubVault','putGithubVault']:
+          for token in ['AES-GCM-256','PBKDF2-SHA256','sanitizeState','fetchGithubVault','putGithubVault','verifyGithubToken']:
               assert token in vault, token
-          for token in ['company-avatar','管理员信息已雾化','本地解析审计','跨设备 GitHub 实验同步','优先 ${esc(j.priority']:
-              assert token in ui, token
+          for token in ['company-avatar','管理员信息已雾化','companyInitial','优先 ${escaped(job.priority','用户自有 GitHub 加密仓库']:
+              assert token in security, token
+          assert 'renderAll()' in renderfix and 'PTO_V12_RENDERFIX_READY' in renderfix
           assert 'source.onclick' in hotfix and 'inspect.onclick' in hotfix
-          for token in ['recruit-portal-service/api/job/front/list','front/view/','direct-official:didi','repeated page signature']:
+          for token in ['recruit-portal-service/api/job/front/list','front/view/','direct-official:didi','browser-same-origin-fallback']:
               assert token in didi, token
           for token in ['observed-job','official_source_catalog.json','ATS_HOST_HINTS','priority-registry']:
               assert token in graph, token
@@ -88,11 +102,12 @@ jobs:
           assert len(companies)>=90, len(companies)
           for company in ['滴滴','辉羲智能','银河通用','宁德时代','智谱AI','宇树科技','中信证券']:
               assert company in companies, company
-          assert "buildVersion: '1.2.0-local-vault-admin-source'" in config
-          assert 'account-vault.js' in config and 'enhancements-v12.js' in config and 'enhancements-v12-hotfix.js' in config
-          forbidden=''.join(Path(path).read_text(encoding='utf-8') for path in ['account-vault.js','enhancements-v12.js','config.js'])
+          assert "buildVersion: '1.2.2-production-fix'" in config
+          for script in ['account-vault.js','enhancements-v12.js','enhancements-v12-hotfix.js','enhancements-v12-security.js','enhancements-v12-renderfix.js']:
+              assert script in config, script
+          forbidden=''.join(Path(path).read_text(encoding='utf-8') for path in ['account-vault.js','enhancements-v12.js','enhancements-v12-security.js','config.js'])
           assert 'PRIVATE RESUME TEXT' not in forbidden
-          print('Path to Offer v1.2 privacy/account/source invariants: PASS')
+          print('Path to Offer v1.2.2 privacy/account/source invariants: PASS')
           PY
       - name: Browser acceptance
         run: |
@@ -101,3 +116,4 @@ jobs:
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           sleep 1
           python tests/v12_browser_smoke.py
+          python tests/v12_security_browser_smoke.py
