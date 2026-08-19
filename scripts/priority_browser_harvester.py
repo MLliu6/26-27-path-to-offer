@@ -136,7 +136,7 @@ def json_candidate(row: dict[str, Any], path: str = "") -> bool:
     title = flat_text(first_value(row, TITLE_KEYS), 180)
     if not looks_like_role(title):
         # `name` is too generic to be a global title key; only use it when the
-        # object/path is already clearly job-shaped.
+        # structural object path (not the request URL) is clearly job-shaped.
         name = flat_text(row.get("name"), 180)
         if not looks_like_role(name):
             return False
@@ -332,7 +332,10 @@ def response_handler(entry: dict[str, Any], page: Page, capture: Capture, respon
         if len(capture.response_urls) < 30 and url not in capture.response_urls:
             capture.response_urls.append(url)
         seen = 0
-        for row, path in walk_json(payload, path=url):
+        # Keep structural JSON paths independent of the endpoint URL.  An API
+        # URL such as `/job/list` must not make every nested `{id,name}` filter
+        # option look job-shaped merely because the request path contains job.
+        for row, path in walk_json(payload, path="root"):
             seen += 1
             capture.add(normalize_json_job(entry, row, path, url, page.url))
             if seen >= 2500:
@@ -388,7 +391,6 @@ def safe_click_labels(page: Page, labels: list[str], capture: Capture) -> None:
             locator.first.click(timeout=2500)
             page.wait_for_timeout(800)
             capture.pages_advanced += int(page.url != old)
-            collect_dom({}, page, capture) if False else None
         except Exception as exc:
             if len(capture.errors) < 20:
                 capture.errors.append(f"click {label}: {type(exc).__name__}: {clean(exc)[:120]}")
