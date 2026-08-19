@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
-  buildVersion: '1.2.6-priority-url-dedupe',
+  buildVersion: '1.2.7-priority-safe-url-dedupe',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -29,7 +29,10 @@ function ptoCanonicalUrl(value) {
   try {
     const url = new URL(raw, window.location.href);
     url.hash = '';
-    const removable = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','source','from'];
+    // Remove only standard UTM tracking parameters. Generic query keys such as
+    // `source` or `from` may be part of an ATS's business routing semantics and
+    // must not be dropped during cross-feed identity construction.
+    const removable = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'];
     removable.forEach(key => url.searchParams.delete(key));
     return `${url.origin}${url.pathname.replace(/\/+$/, '') || '/'}${url.search}`.toLowerCase();
   } catch (_) {
@@ -155,7 +158,7 @@ window.addEventListener('load', () => {
     form.elements.id.value = id || '';
     document.querySelector('#statusSelect').innerHTML = stages.map(([v,n]) => `<option value="${v}">${n}</option>`).join('');
     const resumeSelect = document.querySelector('#jobResumeSelect');
-    resumeSelect.innerHTML = '<option value="">未绑定</option>' + state.resumes.map(r => `<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('');
+    resumeSelect.innerHTML = '<option value="">未绑定</option>' + state.resumes.map(r=>`<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('');
     const job = state.jobs.find(j => j.id === id);
     if (job) {
       Object.entries(job).forEach(([k,v]) => {
@@ -178,7 +181,7 @@ window.addEventListener('load', () => {
   if (del) del.onclick = () => {
     const id = document.querySelector('#jobForm').elements.id.value;
     if (!id) return;
-    state.jobs = state.jobs.filter(j => j.id !== id);
+    state.jobs = state.jobs.filter(j=>j.id !== id);
     saveState();
     closeDrawer();
     toast('岗位已删除');
