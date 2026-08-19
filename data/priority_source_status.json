@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-08-19T05:56:00Z",
+  "catalog_count": 2,
+  "refresh_class": "priority-employer-direct",
+  "nominal_interval_minutes": 10,
+  "exact_pdd_position_id": "5e4eb6f3-294f-491b-9d39-42895eed98c3",
+  "exact_pdd_position_ok": true,
+  "sources": [
+    {
+      "name": "didi-direct-official",
+      "label": "滴滴招聘官网 · 浏览器自主直连",
+      "url": "https://talent.didiglobal.com/",
+      "ok": true,
+      "count": 1,
+      "fresh_count": 1,
+      "preserved_previous": false,
+      "diagnostics": {
+        "transport": "browser-ui-navigation",
+        "bootstrap": true,
+        "note": "This bootstrap row was observed from DiDi's anonymous public recruiting UI; the scheduled source job expands it."
+      },
+      "error": ""
+    },
+    {
+      "name": "pdd-direct-official",
+      "label": "拼多多校园招聘官网 · 自主直连",
+      "url": "https://careers.pddglobalhr.com/campus/grad",
+      "ok": true,
+      "count": 1,
+      "fresh_count": 1,
+      "preserved_previous": false,
+      "diagnostics": {
+        "bootstrap": true,
+        "seed_gate_ok": true
+      },
+      "error": ""
+    }
+  ]
+}
