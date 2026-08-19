@@ -11,6 +11,7 @@ on:
       - 'scripts/direct_china_official.py'
       - 'scripts/priority_official_harvester.py'
       - 'scripts/priority_browser_harvester.py'
+      - 'scripts/priority_browser_runner.py'
       - 'scripts/official_site_job_spider.py'
       - 'scripts/official_campaign_discovery.py'
       - 'scripts/soe_directory_harvester.py'
@@ -78,7 +79,7 @@ jobs:
           PYTHONPATH=. python scripts/merge_public_tables.py
           PYTHONPATH=. python scripts/priority_official_harvester.py
           PYTHONPATH=. python scripts/official_site_job_spider.py
-          PYTHONPATH=. python scripts/priority_browser_harvester.py
+          PYTHONPATH=. python scripts/priority_browser_runner.py
           PYTHONPATH=. python scripts/official_campaign_discovery.py
           PYTHONPATH=. python scripts/soe_directory_harvester.py
           PYTHONPATH=. python scripts/university_2027_discovery.py
