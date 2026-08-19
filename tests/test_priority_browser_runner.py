@@ -11,7 +11,9 @@ from scripts.official_source_graph import observed_source_url, source_key
 from scripts.priority_browser_runner import (
     feishu_job_rows,
     feishu_portal_path,
+    has_feishu_job_posts,
     install,
+    mark_feishu_job_posts,
     normalize_feishu_job,
     normalize_heading,
     page_job_from_text,
@@ -43,6 +45,15 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
         row = {"id": "101", "title": "算法研发", "value": "101"}
         self.assertFalse(h.json_candidate(row, "root.data[0]"))
         self.assertFalse(h.json_candidate(row, "root.data.filters[0]"))
+
+    def test_generic_json_does_not_disable_feishu_fallback(self):
+        capture = h.Capture()
+        capture.json_responses = 3
+        self.assertFalse(has_feishu_job_posts(capture))
+        mark_feishu_job_posts(capture)
+        self.assertTrue(has_feishu_job_posts(capture))
+        self.assertEqual(capture.json_responses, 3)
+        self.assertEqual(getattr(capture, "_feishu_job_post_responses", 0), 1)
 
     def test_feishu_direct_job_post_list_excludes_nested_metadata(self):
         payload = {
