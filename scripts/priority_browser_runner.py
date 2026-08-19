@@ -39,10 +39,20 @@ EXTRA_UPDATED_KEYS = (
 DUTY_RE = re.compile(r"岗位职责|工作职责|职位职责|职位描述|工作内容|responsibilit|job\s*description", re.I)
 QUAL_RE = re.compile(r"任职要求|任职资格|职位要求|岗位要求|基本要求|qualifications?|requirements?", re.I)
 NOISE_HEADING_RE = re.compile(r"^(?:recruitment|招聘|招聘信息|人才招聘|加入我们|校园招聘|社会招聘)$", re.I)
+BRACKET_META_RE = re.compile(r"^[〖【\[]\s*(?:全职|实习|校招|社招)(?:[-—–/|｜]\s*)?([^〗】\]]{0,24})[〗】\]]\s*", re.I)
+PREFIX_META_RE = re.compile(r"^(?:全职|实习|校招|社招)(?:[-—–/|｜]\s*)?(?:(?:北京|上海|深圳|广州|杭州|合肥|南京|苏州|成都)\s*)?", re.I)
 
 
 def extend(existing, extra):
     return tuple(dict.fromkeys([*existing, *extra]))
+
+
+def normalize_heading(raw: str) -> str:
+    candidate = h.clean(raw).strip(" -—–|｜:：")
+    candidate = BRACKET_META_RE.sub("", candidate)
+    candidate = candidate.strip(" -—–|｜:：[]【】〖〗")
+    candidate = PREFIX_META_RE.sub("", candidate).strip(" -—–|｜:：[]【】〖〗")
+    return candidate
 
 
 def page_job_from_text(entry, page_url: str, headings, body: str):
@@ -56,8 +66,7 @@ def page_job_from_text(entry, page_url: str, headings, body: str):
 
     role = ""
     for raw in headings or []:
-        candidate = h.clean(raw).strip(" -—–|｜:：[]【】")
-        candidate = re.sub(r"^(?:全职|实习)[-—–\s]*", "", candidate, flags=re.I)
+        candidate = normalize_heading(raw)
         if NOISE_HEADING_RE.fullmatch(candidate):
             continue
         if h.looks_like_role(candidate, strict=True):
@@ -65,17 +74,20 @@ def page_job_from_text(entry, page_url: str, headings, body: str):
             break
     if not role:
         # A number of older corporate CMS pages render the role immediately
-        # after a generic "Recruitment" heading. Recover only a short line that
-        # still contains an explicit role signal; never invent a title.
-        for candidate in re.split(r"[\n|｜•·]+", body[:1800]):
-            candidate = h.clean(candidate).strip(" -—–|｜:：[]【】")
+        # after a generic "Recruitment" heading. Recover only a short fragment
+        # that still contains an explicit role signal; never invent a title.
+        snippets = re.split(r"(?:职位描述|岗位职责|工作职责|任职资格|任职要求)", body[:1800], maxsplit=1)
+        prefix = snippets[0] if snippets else body[:900]
+        candidates = re.split(r"[|｜•·]+|\s{2,}", prefix)
+        for candidate in candidates[-20:]:
+            candidate = normalize_heading(candidate)
             if h.looks_like_role(candidate, strict=True):
                 role = candidate[:140]
                 break
     if not role:
         return None
 
-    location = h.location_from_text(" ".join([role, body[:2500]]))
+    location = h.location_from_text(" ".join([h.clean(" ".join(headings or [])), body[:2500]]))
     batch = "2027校园招聘" if ("2027" in body or "27届" in body) else h.clean(entry.get("batch")) or "公开招聘"
     source = f"direct-official:browser:{h.clean(entry.get('id'))}"
     job = {
