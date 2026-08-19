@@ -49,8 +49,8 @@ jobs:
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
           node tests/ranking_calibration.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py scripts/priority_browser_harvester.py scripts/official_site_job_spider.py scripts/official_campaign_discovery.py scripts/soe_directory_harvester.py scripts/university_2027_discovery.py scripts/ncss_public_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py tests/test_direct_china_official.py tests/test_ncss_public_harvester.py tests/test_priority_browser_harvester.py
-          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official tests.test_ncss_public_harvester tests.test_priority_browser_harvester
+          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py scripts/priority_browser_harvester.py scripts/priority_browser_runner.py scripts/official_site_job_spider.py scripts/official_campaign_discovery.py scripts/soe_directory_harvester.py scripts/university_2027_discovery.py scripts/ncss_public_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py tests/test_direct_china_official.py tests/test_ncss_public_harvester.py tests/test_priority_browser_harvester.py tests/test_priority_browser_runner.py
+          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official tests.test_ncss_public_harvester tests.test_priority_browser_harvester tests.test_priority_browser_runner
       - name: Check product invariants
         run: |
           python - <<'PY'
@@ -71,6 +71,7 @@ jobs:
           direct=Path('scripts/direct_china_official.py').read_text(encoding='utf-8')
           priority=Path('scripts/priority_official_harvester.py').read_text(encoding='utf-8')
           priority_browser=Path('scripts/priority_browser_harvester.py').read_text(encoding='utf-8')
+          priority_runner=Path('scripts/priority_browser_runner.py').read_text(encoding='utf-8')
           site_spider=Path('scripts/official_site_job_spider.py').read_text(encoding='utf-8')
           campaign=Path('scripts/official_campaign_discovery.py').read_text(encoding='utf-8')
           soe=Path('scripts/soe_directory_harvester.py').read_text(encoding='utf-8')
@@ -122,6 +123,8 @@ jobs:
               assert token in priority, token
           for token in ['browser-public-xhr','browser-rendered-dom','walk_json','click_next','direct-official:browser:']:
               assert token in priority_browser, token
+          for token in ['jobadname','jobadid','detail_url_template','normalize_json_job']:
+              assert token in priority_runner.lower(), token
           for token in ['bounded-employer-site-spider','direct-official:site','JOB_RE','max_pages']:
               assert token in site_spider, token
           for token in ['employer-visible-campaign-link','official-campaign-discovery','2027']:
@@ -136,6 +139,10 @@ jobs:
               assert token in priority_registry, token
           for token in ['辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI']:
               assert token in priority_browser_registry, token
+          assert 'r712him1th.jobs.feishu.cn/huixi' in priority_browser_registry
+          assert 'campus-recruitment/cambricon/44201' in priority_browser_registry
+          assert 'zhipu-ai.jobs.feishu.cn/zhipucampus/position/list' in priority_browser_registry
+          assert 'detail?jobAdId={position_id}' in priority_browser_registry
           assert priority_browser_registry.count('"id"') >= 9
           assert priority_registry.count('"company"') >= 50
           assert university_registry.count('"url"') >= 6
