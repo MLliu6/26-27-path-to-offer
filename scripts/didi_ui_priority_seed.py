@@ -1,30 +1,33 @@
 #!/usr/bin/env python3
-"""Seed the fast priority feed from DiDi's public browser UI collector.
+"""Seed the ten-minute feed from DiDi's employer-owned public UI.
 
-The ten-minute lane is intentionally bounded so one deep employer cannot occupy
-or cancel the next scheduled refresh. The two-hour deep catalogue keeps the
-larger traversal budget. The priority lane still checks every recruitment scope
-and enough pages to make DiDi immediately searchable while preserving prior
-validated DiDi rows when the live surface temporarily shrinks.
+The fast lane intentionally scans the active social-recruiting list only. That
+public route is verified to emit concrete job XHRs on hosted runners and makes
+DiDi searchable within a predictable budget. Campus/intern/overseas discovery
+remains enabled in the deeper employer crawl, where longer route probing cannot
+cause the next ten-minute refresh to cancel the current one.
+
+Previously verified DiDi rows are retained, so every fast run adds/replaces the
+current front window without deleting jobs discovered by the deep pass.
 """
 from __future__ import annotations
 
 import json
 import os
 
-# This must be set before importing the browser collector because that module
-# resolves its traversal budget at import time. Operators may override it with
-# PTO_DIDI_PRIORITY_MAX_PAGES, but the default is intentionally small enough for
-# a ten-minute schedule.
-os.environ["PTO_DIDI_BROWSER_MAX_PAGES"] = os.getenv("PTO_DIDI_PRIORITY_MAX_PAGES", "12")
+os.environ["PTO_DIDI_BROWSER_MAX_PAGES"] = os.getenv("PTO_DIDI_PRIORITY_MAX_PAGES", "6")
 
 from scripts.aggregate_jobs import clean
-from scripts.didi_browser_ui_harvester import BASE, collect_didi_via_ui
+import scripts.didi_browser_ui_harvester as didi_ui
 from scripts.priority_direct_feed import OUT, STATUS, canonical_compact, encode, now
+
+# The broad collector still owns all four scopes. Only this fast lane narrows the
+# active traversal to the route proven to return a real public job list quickly.
+didi_ui.SCOPES[:] = [scope for scope in didi_ui.SCOPES if scope.get("slug") == "social"]
 
 
 def main() -> int:
-    jobs, diagnostics = collect_didi_via_ui()
+    jobs, diagnostics = didi_ui.collect_didi_via_ui()
     encoded = [row for job in jobs for row in [encode(job)] if row]
     previous: list[dict] = []
     try:
@@ -33,9 +36,6 @@ def main() -> int:
     except Exception:
         pass
 
-    # Preserve previously verified DiDi rows that are outside the bounded fast
-    # window. Fresh rows replace matching canonical URLs, so the fast feed grows
-    # toward full coverage instead of oscillating between page windows.
     merged: dict[str, dict] = {}
     for row in previous:
         key = canonical_compact(row)
@@ -55,16 +55,22 @@ def main() -> int:
         status = json.loads(STATUS.read_text(encoding="utf-8"))
     except Exception:
         pass
+    didi_rows = [row for row in merged.values() if clean(row.get("s")) == "direct-official:didi"]
     group = {
         "name": "didi-direct-official",
         "label": "滴滴招聘官网 · 浏览器自主直连",
-        "url": BASE,
-        "ok": True,
-        "count": len([row for row in merged.values() if clean(row.get("s")) == "direct-official:didi"]),
+        "url": didi_ui.BASE,
+        "ok": bool(didi_rows),
+        "count": len(didi_rows),
         "fresh_count": len(encoded),
-        "preserved_previous": any(clean(row.get("s")) == "direct-official:didi" for row in previous),
-        "diagnostics": {**diagnostics, "priority_page_budget": int(os.environ["PTO_DIDI_BROWSER_MAX_PAGES"])},
-        "error": "",
+        "preserved_previous": len(didi_rows) > len(encoded),
+        "diagnostics": {
+            **diagnostics,
+            "priority_mode": "social-first",
+            "priority_page_budget": int(os.environ["PTO_DIDI_BROWSER_MAX_PAGES"]),
+            "deep_scan_scopes": ["social", "campus", "intern", "overseas"],
+        },
+        "error": "" if didi_rows else "public UI returned zero concrete jobs",
     }
     sources = [source for source in status.get("sources", []) if not isinstance(source, dict) or source.get("name") != group["name"]]
     sources.insert(0, group)
@@ -76,7 +82,7 @@ def main() -> int:
         "sources": sources,
     })
     STATUS.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"didi_priority_rows": group["count"], "fresh": len(encoded), "page_budget": group["diagnostics"]["priority_page_budget"], "batches": diagnostics.get("batches")}, ensure_ascii=False))
+    print(json.dumps({"didi_priority_rows": len(didi_rows), "fresh": len(encoded), "mode": "social-first", "page_budget": group["diagnostics"]["priority_page_budget"], "batches": diagnostics.get("batches")}, ensure_ascii=False))
     return 0
 
 
