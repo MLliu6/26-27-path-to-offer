@@ -10,6 +10,10 @@ For companies listed in ``priority_browser_sources.json`` the browser-reviewed
 endpoint is authoritative. Older guessed ATS seeds for the same company are not
 kept in the rotation graph; this prevents the plain-HTTP sampler from repeatedly
 spending its bounded budget on known 403/404 legacy portals.
+
+Observed *job-detail* URLs from shared ATS products are normalized back to the
+employer's public job-board root before entering the graph. A source graph is a
+catalogue of recruiting surfaces, not a second copy of every position URL.
 """
 from __future__ import annotations
 
@@ -39,7 +43,10 @@ EXCLUDED_HOSTS = {
     "gitee.com", "mp.weixin.qq.com", "weixin.qq.com",
 }
 EXCLUDED_SUFFIXES = (".edu.cn", ".gov.cn")
-ATS_HOST_HINTS = ("jobs.feishu.cn", "zhiye.com", "mokahr.com", "mokahr.com.cn", "hotjob.cn", "smartrecruiters.com", "greenhouse.io", "lever.co", "ashbyhq.com", "recruitee.com")
+ATS_HOST_HINTS = (
+    "jobs.feishu.cn", "zhiye.com", "mokahr.com", "mokahr.com.cn", "hotjob.cn",
+    "smartrecruiters.com", "greenhouse.io", "lever.co", "ashbyhq.com", "recruitee.com",
+)
 CAREER_HINT = re.compile(r"career|careers|campus|recruit|recruitment|job|jobs|join|talent|zhaopin|hr|招聘|校招", re.I)
 
 
@@ -52,6 +59,7 @@ def clean(value: Any) -> str:
 
 
 def canonical_url(value: Any) -> str:
+    """Canonicalize one reviewed/source URL without changing its semantic page."""
     text = clean(value)
     if not text.startswith(("http://", "https://")):
         return ""
@@ -69,16 +77,57 @@ def canonical_url(value: Any) -> str:
         return ""
 
 
+def observed_source_url(value: Any) -> str:
+    """Collapse observed ATS *position* URLs to a company-level public board.
+
+    Job rows keep their specific apply/detail URL. Only the secondary source
+    graph is normalized, otherwise Ashby/Lever/SmartRecruiters style URLs create
+    one source node per job UUID and exhaust the bounded rotation budget on one
+    employer. Reviewed registry URLs are never passed through this function.
+    """
+    target = canonical_url(value)
+    if not target:
+        return ""
+    parsed = urlparse(target)
+    host = (parsed.hostname or "").lower()
+    parts = [part for part in (parsed.path or "/").split("/") if part]
+    scheme = parsed.scheme.lower()
+    netloc = parsed.netloc.lower()
+
+    # These shared ATS products encode the employer tenant in the first path
+    # segment and the individual job id/slug after it.
+    if any(suffix in host for suffix in ("ashbyhq.com", "lever.co", "smartrecruiters.com", "greenhouse.io")):
+        if parts:
+            return urlunparse((scheme, netloc, f"/{parts[0]}", "", "", ""))
+        return urlunparse((scheme, netloc, "/", "", "", ""))
+
+    # Recruitee tenant identity lives in the hostname itself.
+    if "recruitee.com" in host:
+        return urlunparse((scheme, netloc, "/", "", "", ""))
+
+    return target
+
+
 def source_key(company: str, url: str) -> str:
-    host = (urlparse(url).hostname or "").lower()
-    path = (urlparse(url).path or "/").strip("/").split("/")[:2]
-    tenant = "/".join(path) if any(hint in host for hint in ATS_HOST_HINTS) else ""
+    parsed = urlparse(url)
+    host = (parsed.hostname or "").lower()
+    parts = [part for part in (parsed.path or "/").strip("/").split("/") if part]
+    tenant = ""
+    if any(suffix in host for suffix in ("ashbyhq.com", "lever.co", "smartrecruiters.com", "greenhouse.io")):
+        tenant = parts[0] if parts else ""
+    elif "recruitee.com" in host:
+        tenant = ""
+    elif host.endswith("jobs.feishu.cn"):
+        # /website-path/position/<job-id> -> one public portal per website path.
+        tenant = parts[0] if parts else ""
+    elif any(hint in host for hint in ATS_HOST_HINTS):
+        tenant = "/".join(parts[:2])
     return f"{clean(company).lower()}|{host}|{tenant}"
 
 
 def add(rows: dict[str, dict[str, Any]], *, company: Any, url: Any, category: Any = "", priority: Any = 50, origin: str, modes: Any = None, contact: Any = "") -> None:
     company_name = clean(company)
-    target = canonical_url(url)
+    target = observed_source_url(url) if origin == "observed-job" else canonical_url(url)
     if not company_name or not target:
         return
     host = (urlparse(target).hostname or "").lower()
@@ -193,18 +242,24 @@ def main() -> int:
         if key in health:
             item["health"] = health[key]
         sources.append(item)
-    sources.sort(key=lambda item: (-int(item.get("priority", 0)), item.get("company", ""), item.get("host", "")))
+    sources.sort(key=lambda item: (-int(item.get("priority", 0)), item.get("company", ""), item.get("host", ""), item.get("url", "")))
     payload = {
-        "version": 1,
+        "version": 2,
         "generated_at": now(),
         "source_count": len(sources),
         "learned_from_jobs": learned,
         "browser_authoritative_companies": len(browser_companies()),
+        "observed_job_board_normalization": True,
         "sources": sources,
     }
     DATA.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"official_sources": len(sources), "learned_from_jobs": learned, "browser_authoritative_companies": payload["browser_authoritative_companies"]}, ensure_ascii=False))
+    print(json.dumps({
+        "official_sources": len(sources),
+        "learned_from_jobs": learned,
+        "browser_authoritative_companies": payload["browser_authoritative_companies"],
+        "observed_job_board_normalization": True,
+    }, ensure_ascii=False))
     return 0
 
 
