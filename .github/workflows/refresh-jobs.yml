@@ -15,6 +15,7 @@ on:
       - 'scripts/didi_ui_priority_seed.py'
       - 'scripts/priority_official_harvester.py'
       - 'scripts/priority_browser_harvester.py'
+      - 'scripts/priority_browser_runner.py'
       - 'scripts/official_site_job_spider.py'
       - 'scripts/official_campaign_discovery.py'
       - 'scripts/official_source_graph.py'
@@ -117,7 +118,7 @@ jobs:
 
       - name: Priority employer real-browser ATS observation
         continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
-        run: PYTHONPATH=. python scripts/priority_browser_harvester.py
+        run: PYTHONPATH=. python scripts/priority_browser_runner.py
 
       - name: Official campaign discovery
         continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
