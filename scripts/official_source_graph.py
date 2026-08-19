@@ -22,7 +22,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import parse_qs, urlparse, urlunparse
+from urllib.parse import parse_qs, parse_qsl, urlencode, urlparse, urlunparse
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -58,6 +58,21 @@ def clean(value: Any) -> str:
     return re.sub(r"\s+", " ", str(value or "")).strip()
 
 
+def semantic_query(parsed, host: str) -> str:
+    """Keep only query keys that select an ATS project/job, never tracking data."""
+    allowed: set[str] = set()
+    if "hotjob.cn" in host:
+        allowed |= {"projectcode"}
+    if host.endswith("jobs.feishu.cn"):
+        allowed |= {"project"}
+    if "zhiye.com" in host:
+        allowed |= {"jobid", "jobadid", "projectid", "projectcode"}
+    if not allowed:
+        return ""
+    pairs = [(key, value) for key, value in parse_qsl(parsed.query, keep_blank_values=False) if key.lower() in allowed]
+    return urlencode(pairs, doseq=True)
+
+
 def canonical_url(value: Any) -> str:
     """Canonicalize one reviewed/source URL without changing its semantic page."""
     text = clean(value)
@@ -69,9 +84,7 @@ def canonical_url(value: Any) -> str:
         if not host or host in EXCLUDED_HOSTS or host.endswith(EXCLUDED_SUFFIXES):
             return ""
         path = re.sub(r"/{2,}", "/", parsed.path or "/")
-        # Queries are usually tracking noise, but HotJob's projectCode selects
-        # the actual employer project and must remain part of the canonical seed.
-        query = parsed.query if "hotjob.cn" in host else ""
+        query = semantic_query(parsed, host)
         return urlunparse((parsed.scheme.lower(), parsed.netloc.lower(), path.rstrip("/") or "/", "", query, ""))
     except Exception:
         return ""
@@ -92,7 +105,7 @@ def observed_source_url(value: Any) -> str:
         raw_path = re.sub(r"/{2,}", "/", raw_parsed.path or "/")
         # Greenhouse legacy embed forms encode the board tenant in `for=` rather
         # than in the path. Recover it before generic canonicalization drops
-        # tracking/query parameters.
+        # non-semantic query parameters.
         if "greenhouse.io" in raw_host and raw_path.startswith("/embed/"):
             tenant = clean((parse_qs(raw_parsed.query).get("for") or [""])[0]).strip("/")
             if tenant:
