@@ -7,8 +7,9 @@ import shutil
 from playwright.sync_api import sync_playwright
 
 BASE="http://127.0.0.1:8000"
-EMPTY={"schema_version":3,"generated_at":"2026-08-16T10:00:00Z","jobs":[]}
-STATUS={"generated_at":"2026-08-16T10:00:00Z","catalog_count":0,"catalog_target":10000,"sources":[]}
+EMPTY={"schema_version":4,"generated_at":"2026-08-16T10:00:00Z","jobs":[]}
+STATUS={"generated_at":"2026-08-16T10:00:00Z","catalog_count":0,"cn_catalog_count":0,"catalog_target":10000,"sources":[]}
+PRIORITY_STATUS={"generated_at":"2026-08-16T10:00:00Z","catalog_count":0,"sources":[]}
 
 
 def browser_path():
@@ -19,14 +20,19 @@ def browser_path():
 
 
 def main():
+    empty=json.dumps(EMPTY,ensure_ascii=False)
+    status=json.dumps(STATUS,ensure_ascii=False)
+    priority_status=json.dumps(PRIORITY_STATUS,ensure_ascii=False)
     with sync_playwright() as p:
         browser=p.chromium.launch(headless=True,executable_path=browser_path(),args=["--no-sandbox","--disable-dev-shm-usage"])
         context=browser.new_context(viewport={"width":1280,"height":900})
         page=context.new_page()
         def route(route):
             u=route.request.url
-            if "/data/jobs.json" in u: route.fulfill(status=200,content_type="application/json",body=json.dumps(EMPTY))
-            elif "/data/source_status.json" in u: route.fulfill(status=200,content_type="application/json",body=json.dumps(STATUS))
+            if "/data/jobs_priority.json" in u: route.fulfill(status=200,content_type="application/json",body=empty)
+            elif "/data/jobs_cn.json" in u or "/data/jobs.json" in u: route.fulfill(status=200,content_type="application/json",body=empty)
+            elif "/data/priority_source_status.json" in u: route.fulfill(status=200,content_type="application/json",body=priority_status)
+            elif "/data/source_status.json" in u: route.fulfill(status=200,content_type="application/json",body=status)
             elif u.startswith("https://cdn.jsdelivr.net/"): route.abort()
             else: route.continue_()
         page.route("**/*",route)
