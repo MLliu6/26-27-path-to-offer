@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
-  buildVersion: '1.2.3-source-admin-gate',
+  buildVersion: '1.2.4-priority-merge-ci',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -18,9 +18,41 @@ window.PTO_CONFIG = Object.freeze({
 
 window.PTO_ENHANCEMENTS_READY = false;
 const PTO_NATIVE_FETCH = window.fetch.bind(window);
+
+function ptoJobKey(job) {
+  if (!job || typeof job !== 'object') return '';
+  return String(job.i || job.id || job.u || job.apply_url || job.n || job.notice_url || [job.c || job.company || '', job.r || job.role || job.position || '', job.l || job.location || ''].join('|')).trim().toLowerCase();
+}
+
+function ptoMergeJobs(priorityJobs, domesticJobs) {
+  const merged = [];
+  const seen = new Set();
+  for (const job of [...(Array.isArray(priorityJobs) ? priorityJobs : []), ...(Array.isArray(domesticJobs) ? domesticJobs : [])]) {
+    const key = ptoJobKey(job);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(job);
+  }
+  return merged;
+}
+
+function ptoMergeSources(priorityStatus, domesticStatus) {
+  const merged = [];
+  const seen = new Set();
+  for (const source of [...(priorityStatus?.sources || []), ...(domesticStatus?.sources || [])]) {
+    if (!source || typeof source !== 'object') continue;
+    const key = String(source.name || source.label || source.url || '').trim().toLowerCase();
+    if (key && seen.has(key)) continue;
+    if (key) seen.add(key);
+    merged.push(source);
+  }
+  return merged;
+}
+
 window.fetch = function ptoBootstrapFetch(input, init) {
   const url = typeof input === 'string' ? input : (input && input.url) || '';
   const globalPath = String(window.PTO_CONFIG.jobsFeed || './data/jobs.json').replace(/^\.\//, '');
+  const statusPath = String(window.PTO_CONFIG.sourceStatusFeed || './data/source_status.json').replace(/^\.\//, '');
   if (!window.PTO_ENHANCEMENTS_READY && globalPath && String(url).includes(globalPath)) {
     return Promise.resolve(new Response(JSON.stringify({schema_version:4, generated_at:null, jobs:[]}), {
       status: 200,
@@ -29,8 +61,53 @@ window.fetch = function ptoBootstrapFetch(input, init) {
   }
   if (window.PTO_ENHANCEMENTS_READY && globalPath && String(url).includes(globalPath)) {
     const domestic = String(window.PTO_CONFIG.domesticJobsFeed || './data/jobs_cn.json');
+    const priority = String(window.PTO_CONFIG.priorityJobsFeed || './data/jobs_priority.json');
     const suffix = String(url).includes('?') ? String(url).slice(String(url).indexOf('?')) : '';
-    return PTO_NATIVE_FETCH(`${domestic}${suffix}`, init).then(r => r.ok ? r : PTO_NATIVE_FETCH(input, init)).catch(() => PTO_NATIVE_FETCH(input, init));
+    return PTO_NATIVE_FETCH(`${domestic}${suffix}`, {...(init || {}), cache:'no-store'}).then(async domesticResponse => {
+      if (!domesticResponse.ok) return PTO_NATIVE_FETCH(input, init);
+      const domesticPayload = await domesticResponse.json();
+      let priorityPayload = {jobs:[]};
+      try {
+        const priorityResponse = await PTO_NATIVE_FETCH(`${priority}${suffix}`, {...(init || {}), cache:'no-store'});
+        if (priorityResponse.ok) priorityPayload = await priorityResponse.json();
+      } catch (err) {
+        console.warn('Priority job feed unavailable; continuing with domestic feed.', err);
+      }
+      const payload = {
+        ...domesticPayload,
+        jobs: ptoMergeJobs(priorityPayload?.jobs, domesticPayload?.jobs),
+        priority_generated_at: priorityPayload?.generated_at || null,
+      };
+      return new Response(JSON.stringify(payload), {
+        status: 200,
+        headers: {'Content-Type':'application/json', 'Cache-Control':'no-store'}
+      });
+    }).catch(() => PTO_NATIVE_FETCH(input, init));
+  }
+  if (window.PTO_ENHANCEMENTS_READY && statusPath && String(url).includes(statusPath)) {
+    const base = String(window.PTO_CONFIG.sourceStatusFeed || './data/source_status.json');
+    const priority = String(window.PTO_CONFIG.prioritySourceStatusFeed || './data/priority_source_status.json');
+    const suffix = String(url).includes('?') ? String(url).slice(String(url).indexOf('?')) : '';
+    return PTO_NATIVE_FETCH(`${base}${suffix}`, {...(init || {}), cache:'no-store'}).then(async domesticResponse => {
+      if (!domesticResponse.ok) return domesticResponse;
+      const domesticStatus = await domesticResponse.json();
+      let priorityStatus = {sources:[]};
+      try {
+        const priorityResponse = await PTO_NATIVE_FETCH(`${priority}${suffix}`, {...(init || {}), cache:'no-store'});
+        if (priorityResponse.ok) priorityStatus = await priorityResponse.json();
+      } catch (err) {
+        console.warn('Priority source status unavailable; continuing with primary source status.', err);
+      }
+      return new Response(JSON.stringify({
+        ...domesticStatus,
+        sources: ptoMergeSources(priorityStatus, domesticStatus),
+        priority_generated_at: priorityStatus?.generated_at || null,
+        priority_catalog_count: priorityStatus?.catalog_count || 0,
+      }), {
+        status: 200,
+        headers: {'Content-Type':'application/json', 'Cache-Control':'no-store'}
+      });
+    }).catch(() => PTO_NATIVE_FETCH(input, init));
   }
   return PTO_NATIVE_FETCH(input, init);
 };
