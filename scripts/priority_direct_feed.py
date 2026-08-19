@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
-"""Build the high-priority employer-direct browser feed.
+"""Build the fast employer-direct browser feed.
 
-The nationwide catalogue is deeper and slower. This file powers a separate
-nominal ten-minute loop for employer-owned public sources: PDD, DiDi, Meituan
-and Tencent. The browser loads this feed before the broader China catalogue and
-deduplicates on stable position ID / canonical employer URL.
-
-Each source fails independently. When one employer is temporarily unavailable,
-its last valid rows are preserved from the previous priority feed rather than
-being replaced by an empty result. No login, CAPTCHA bypass, private credential
-or stealth automation is used.
+This first stage refreshes the inexpensive proven APIs (PDD, Meituan, Tencent)
+and preserves every other previously valid direct row. DiDi is deliberately not
+queried here: GitHub-hosted runners may intercept its direct HTTP transport, so
+the immediately following `didi_ui_priority_seed.py` drives DiDi's public UI
+once, without wasting the ten-minute budget on a doomed direct retry path.
 """
 from __future__ import annotations
 
@@ -21,7 +17,6 @@ from typing import Any, Callable
 from urllib.parse import parse_qs, urlparse
 
 from scripts.aggregate_jobs import clean
-from scripts.didi_official_harvester import collect_didi
 from scripts.direct_china_official import CONFIG_PATH as DIRECT_CONFIG_PATH
 from scripts.direct_china_official import ADAPTERS as LEGACY_DIRECT_ADAPTERS
 from scripts.pdd_official_harvester import collect_pdd
@@ -183,12 +178,6 @@ def main() -> int:
         collector=collect_pdd, validator=validate_pdd, old_by_source=old_by_source,
         fresh_by_source=fresh_by_source, source_runs=source_runs,
     )
-    record_special_source(
-        source_id="direct-official:didi", name="didi-direct-official",
-        label="滴滴招聘官网 · 全量自主直连", url="https://talent.didiglobal.com/",
-        collector=collect_didi, old_by_source=old_by_source,
-        fresh_by_source=fresh_by_source, source_runs=source_runs,
-    )
 
     for source_id, company, function, config in collect_legacy_direct():
         try:
@@ -203,6 +192,9 @@ def main() -> int:
             fresh_by_source[source_id] = kept
             source_runs.append({"name": source_id.replace("direct-official:", "") + "-direct-official", "label": f"{company}招聘官网 · 自主直连", "url": clean(config.get("official_url")), "ok": bool(kept), "count": len(kept), "preserved_previous": bool(kept), "diagnostics": {}, "error": f"{type(exc).__name__}: {short(exc, 260)}"})
 
+    # DiDi and any future specialist source are carried forward untouched here;
+    # their dedicated browser stage runs immediately afterwards and refreshes
+    # them with the transport that actually works on hosted runners.
     for source_id, rows in old_by_source.items():
         if source_id and source_id not in fresh_by_source:
             fresh_by_source[source_id] = rows
