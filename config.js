@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
-  buildVersion: '1.2.4-priority-merge-ci',
+  buildVersion: '1.2.5-priority-canonical-dedupe',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -19,9 +19,39 @@ window.PTO_CONFIG = Object.freeze({
 window.PTO_ENHANCEMENTS_READY = false;
 const PTO_NATIVE_FETCH = window.fetch.bind(window);
 
+function ptoCanonicalText(value) {
+  return String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+function ptoCanonicalUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  try {
+    const url = new URL(raw, window.location.href);
+    url.hash = '';
+    const removable = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','source','from'];
+    removable.forEach(key => url.searchParams.delete(key));
+    return `${url.origin}${url.pathname.replace(/\/+$/, '') || '/'}${url.search}`.toLowerCase();
+  } catch (_) {
+    return raw.replace(/#.*$/, '').replace(/\/+$/, '').toLowerCase();
+  }
+}
+
 function ptoJobKey(job) {
   if (!job || typeof job !== 'object') return '';
-  return String(job.i || job.id || job.u || job.apply_url || job.n || job.notice_url || [job.c || job.company || '', job.r || job.role || job.position || '', job.l || job.location || ''].join('|')).trim().toLowerCase();
+  const company = ptoCanonicalText(job.c || job.company);
+  const role = ptoCanonicalText(job.r || job.role || job.position);
+  const location = ptoCanonicalText(job.l || job.location);
+  const positionId = ptoCanonicalText(job.z || job.position_id);
+  const applyUrl = ptoCanonicalUrl(job.u || job.apply_url || job.url);
+  const noticeUrl = ptoCanonicalUrl(job.n || job.notice_url);
+  // Cross-feed IDs are source-specific, so prefer employer position IDs and
+  // canonical employer URLs. Priority rows are iterated first and therefore win.
+  if (positionId && company) return `position:${company}|${positionId}`;
+  if (applyUrl && company && role) return `apply:${applyUrl}|${company}|${role}`;
+  if (noticeUrl && company && role) return `notice:${noticeUrl}|${company}|${role}`;
+  if (company && role) return `fallback:${company}|${role}|${location}`;
+  return ptoCanonicalText(job.i || job.id || applyUrl || noticeUrl);
 }
 
 function ptoMergeJobs(priorityJobs, domesticJobs) {
@@ -125,7 +155,7 @@ window.addEventListener('load', () => {
     document.querySelector('#statusSelect').innerHTML = stages.map(([v,n]) => `<option value="${v}">${n}</option>`).join('');
     const resumeSelect = document.querySelector('#jobResumeSelect');
     resumeSelect.innerHTML = '<option value="">未绑定</option>' + state.resumes.map(r => `<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('');
-    const job = state.jobs.find(j => j.id === id);
+    const job = state.jobs.find(j =>j.id === id);
     if (job) {
       Object.entries(job).forEach(([k,v]) => {
         if (form.elements[k] && typeof v !== 'object') form.elements[k].value = v ?? '';
