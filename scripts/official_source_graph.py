@@ -22,7 +22,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import parse_qs, urlparse, urlunparse
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -85,7 +85,22 @@ def observed_source_url(value: Any) -> str:
     one source node per job UUID and exhaust the bounded rotation budget on one
     employer. Reviewed registry URLs are never passed through this function.
     """
-    target = canonical_url(value)
+    raw = clean(value)
+    try:
+        raw_parsed = urlparse(raw)
+        raw_host = (raw_parsed.hostname or "").lower()
+        raw_path = re.sub(r"/{2,}", "/", raw_parsed.path or "/")
+        # Greenhouse legacy embed forms encode the board tenant in `for=` rather
+        # than in the path. Recover it before generic canonicalization drops
+        # tracking/query parameters.
+        if "greenhouse.io" in raw_host and raw_path.startswith("/embed/"):
+            tenant = clean((parse_qs(raw_parsed.query).get("for") or [""])[0]).strip("/")
+            if tenant:
+                return urlunparse((raw_parsed.scheme.lower(), raw_parsed.netloc.lower(), f"/{tenant}", "", "", ""))
+    except Exception:
+        pass
+
+    target = canonical_url(raw)
     if not target:
         return ""
     parsed = urlparse(target)
