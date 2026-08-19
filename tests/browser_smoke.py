@@ -13,6 +13,7 @@ import shutil
 from playwright.sync_api import sync_playwright
 
 BASE = "http://127.0.0.1:8000"
+DIDI_DETAIL = "https://talent.didiglobal.com/campus/p/qa-001"
 
 JOBS = {
     "schema_version": 2,
@@ -45,6 +46,21 @@ JOBS = {
             "updated_at": "2026-08-15",
             "jd": "vLLM CUDA KV Cache 多模态大模型推理",
         },
+        {
+            "id": "didi-domestic-duplicate-id",
+            "source": "domestic-fixture",
+            "source_label": "国内聚合重复行",
+            "company": "滴滴",
+            "role": "大模型推理系统研发工程师",
+            "location": "北京",
+            "industry": "互联网/出行/人工智能",
+            "batch": "校园招聘",
+            "graduation": "2027届",
+            "updated_at": "2026-08-18",
+            "jd": "同一官网岗位的较低优先级聚合副本。",
+            "apply_url": DIDI_DETAIL + "?utm_source=domestic-fixture",
+            "notice_url": DIDI_DETAIL,
+        },
     ],
 }
 PRIORITY = {
@@ -56,8 +72,8 @@ PRIORITY = {
             "c": "滴滴",
             "r": "大模型推理系统研发工程师",
             "l": "北京",
-            "u": "https://talent.didiglobal.com/campus/p/qa-001",
-            "n": "https://talent.didiglobal.com/campus/p/qa-001",
+            "u": DIDI_DETAIL,
+            "n": DIDI_DETAIL,
             "d": "负责大模型推理、GPU 性能优化、CUDA 与服务系统研发。",
             "t": "2026-08-19",
             "b": "校园招聘",
@@ -73,8 +89,8 @@ PRIORITY = {
 }
 STATUS = {
     "generated_at": "2026-08-16T07:00:00Z",
-    "catalog_count": 2,
-    "sources": [{"name": "qa", "label": "Browser QA", "url": "fixture://jobs", "ok": True, "count": 2, "error": ""}],
+    "catalog_count": 3,
+    "sources": [{"name": "qa", "label": "Browser QA", "url": "fixture://jobs", "ok": True, "count": 3, "error": ""}],
 }
 PRIORITY_STATUS = {
     "generated_at": "2026-08-19T06:40:00Z",
@@ -125,12 +141,14 @@ def main() -> int:
         assert "京东" in jd_card.inner_text()
 
         # Priority employer feed must be merged into the same searchable market.
-        # This is the regression that prevents a valid DiDi crawler result from
-        # disappearing merely because jobs_cn.json has no matching company row.
+        # A lower-priority domestic duplicate intentionally uses a different ID
+        # and tracking query; canonical URL/role identity must still collapse it.
         page.locator("#jobSearch").fill("滴滴")
         didi_card = page.locator('.market-card[data-market-id="didi-priority-fixture"]')
         didi_card.wait_for(timeout=8_000)
         assert "滴滴" in didi_card.inner_text() and "大模型推理" in didi_card.inner_text()
+        assert page.locator('.market-card[data-market-id="didi-domestic-duplicate-id"]').count() == 0
+        assert page.locator('.market-card').count() == 1
         page.locator("#jobSearch").fill("京东")
         jd_card.wait_for()
 
@@ -262,6 +280,7 @@ def main() -> int:
         mobile.wait_for_selector("#searchPolicy", timeout=12_000)
         mobile.locator("#jobSearch").fill("滴滴")
         mobile.locator('.market-card[data-market-id="didi-priority-fixture"]').wait_for(timeout=8_000)
+        assert mobile.locator('.market-card[data-market-id="didi-domestic-duplicate-id"]').count() == 0
         mobile.locator("#jobSearch").fill("京东")
         mobile.locator('.market-card[data-market-id="jd-old"]').wait_for()
         assert mobile.locator('.market-card[data-market-id="jd-old"] [data-save-job="jd-old"]').is_visible()
