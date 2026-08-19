@@ -3,14 +3,15 @@
 
 The generic collector intentionally keeps a conservative field vocabulary so
 filter metadata cannot be mistaken for jobs. This runner adds reviewed schema
-aliases for ATS families observed in employer public UI traffic and a browser
-fallback for employer pages whose *current document* is itself a job detail.
+aliases for ATS families observed in employer public UI traffic, rejects known
+metadata-only JSON objects/endpoints, and keeps a browser fallback for employer
+pages whose *current document* is itself a job detail.
 It does not add another transport or bypass any access control.
 """
 from __future__ import annotations
 
 import re
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 from scripts import priority_browser_harvester as h
 
@@ -41,6 +42,12 @@ QUAL_RE = re.compile(r"任职要求|任职资格|职位要求|岗位要求|基�
 NOISE_HEADING_RE = re.compile(r"^(?:recruitment|招聘|招聘信息|人才招聘|加入我们|校园招聘|社会招聘)$", re.I)
 BRACKET_META_RE = re.compile(r"^[〖【\[]\s*(?:全职|实习|校招|社招)(?:[-—–/|｜]\s*)?([^〗】\]]{0,24})[〗】\]]\s*", re.I)
 PREFIX_META_RE = re.compile(r"^(?:全职|实习|校招|社招)(?:[-—–/|｜]\s*)?(?:(?:北京|上海|深圳|广州|杭州|合肥|南京|苏州|成都)\s*)?", re.I)
+META_PATH_RE = re.compile(r"(?:^|[.\[_-])(?:filters?|facets?|options?|settings?|config|dictionary|dictionaries)(?:$|[.\]_-])", re.I)
+JOBISH_KEY_RE = re.compile(r"(?:job|position|post|recruit|career|vacan)", re.I)
+FEISHU_METADATA_PATH_RE = re.compile(
+    r"^/api/v1/(?:config/job/filters(?:/|$)|common/setting(?:/|$)|user/mobile/login_status(?:/|$)|ip/location(?:/|$)|csrf/token(?:/|$))",
+    re.I,
+)
 
 
 def extend(existing, extra):
@@ -139,6 +146,58 @@ def install() -> None:
     h.DEPARTMENT_KEYS = extend(h.DEPARTMENT_KEYS, EXTRA_DEPARTMENT_KEYS)
     h.JD_KEYS = extend(h.JD_KEYS, EXTRA_JD_KEYS)
     h.UPDATED_KEYS = extend(h.UPDATED_KEYS, EXTRA_UPDATED_KEYS)
+
+    base_candidate = h.json_candidate
+
+    def guarded_json_candidate(row, path=""):
+        """Reject generic `{id,title}` filter/facet objects while keeping real jobs.
+
+        Feishu and several ATS families return filter dictionaries beside the job
+        list. Their objects often carry `id` + `title`, which satisfies the base
+        candidate heuristic but is not a position. Generic `title`/`name` rows
+        therefore need either a job-shaped structural path or concrete payload
+        evidence such as location, URL, JD fields, or multiple job-specific keys.
+        Reviewed strong title keys (`jobName`, `positionName`, `jobAdName`, ...)
+        remain accepted by the base heuristic.
+        """
+        if not base_candidate(row, path):
+            return False
+        strong_title_keys = tuple(key for key in h.TITLE_KEYS if key.lower() not in {"title"})
+        strong_title = h.flat_text(h.first_value(row, strong_title_keys), 180)
+        if h.looks_like_role(strong_title):
+            return True
+
+        generic_title = h.flat_text(h.first_value(row, ("title",)), 180) or h.flat_text(row.get("name"), 180)
+        if not h.looks_like_role(generic_title):
+            return False
+
+        normalized_path = h.clean(path).lower()
+        if META_PATH_RE.search(normalized_path):
+            return False
+
+        mapping = h.lower_map(row)
+        jobish_keys = sum(1 for key in mapping if JOBISH_KEY_RE.search(key))
+        path_jobish = bool(JOBISH_KEY_RE.search(normalized_path))
+        has_location = h.first_value(row, h.LOCATION_KEYS) not in (None, "", [], {})
+        has_url = h.first_value(row, h.URL_KEYS) not in (None, "", [], {})
+        has_jd = h.first_value(row, h.JD_KEYS) not in (None, "", [], {})
+        has_payload_signal = has_location or has_url or has_jd or jobish_keys >= 2
+        return bool(path_jobish or has_payload_signal)
+
+    h.json_candidate = guarded_json_candidate
+
+    base_response_handler = h.response_handler
+
+    def guarded_response_handler(entry, page, capture, response):
+        try:
+            parsed = urlparse(response.url)
+            if parsed.hostname and parsed.hostname.endswith("jobs.feishu.cn") and FEISHU_METADATA_PATH_RE.search(parsed.path or ""):
+                return
+        except Exception:
+            pass
+        return base_response_handler(entry, page, capture, response)
+
+    h.response_handler = guarded_response_handler
 
     base_normalize = h.normalize_json_job
 
