@@ -53,7 +53,7 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
 
     def test_current_employer_page_with_duty_and_qualification_is_a_job(self):
         entry = {
-            "id": "rhino-site-soc",
+            "id": "company-job-page",
             "company": "辉羲智能",
             "company_type": "民营/AI芯片初创",
             "category": "AI芯片/具身智能",
@@ -82,18 +82,19 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
         body = "加入我们 公司介绍 工作地点 北京 上海 联系方式 招聘邮箱 hr@example.com"
         self.assertIsNone(page_job_from_text(entry, "https://example.com/join", ["加入我们"], body))
 
-    def test_priority_browser_registry_keeps_first_and_second_tier_targets(self):
+    def test_priority_browser_registry_keeps_distinct_priority_companies(self):
         payload = json.loads(REGISTRY.read_text(encoding="utf-8"))
         sources = [row for row in payload.get("sources", []) if isinstance(row, dict)]
-        self.assertGreaterEqual(len(sources), 16)
         companies = {row.get("company") for row in sources}
         required = {
             "辉羲智能", "银河通用", "智元机器人", "地平线", "寒武纪", "摩尔线程", "沐曦", "壁仞科技", "智谱AI",
-            "月之暗面", "MiniMax", "阶跃星辰", "燧原科技", "宇树科技",
+            "月之暗面", "MiniMax", "阶跃星辰", "燧原科技", "宇树科技", "昆仑芯",
         }
+        self.assertEqual(len(sources), len(companies), "priority browser registry should use one authoritative live entry per company")
+        self.assertGreaterEqual(len(companies), 15)
         self.assertTrue(required.issubset(companies), required - companies)
         by_id = {row.get("id"): row for row in sources}
-        self.assertEqual(by_id["moonshot"]["start_url"], "https://careers.kimi.com/campus")
+        self.assertEqual(by_id["moonshot"]["start_url"], "https://app.mokahr.com/campus-recruitment/moonshot/148507#/jobs")
         self.assertIn("project=7495675705720965415", by_id["minimax"]["start_url"])
         self.assertIn("campus-recruitment/step/141903", by_id["stepfun"]["start_url"])
         self.assertIn("campus-recruitment/enflame/168420", by_id["enflame"]["start_url"])
@@ -102,7 +103,8 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
         self.assertIn("jobAdId={position_id}", by_id["mthreads"]["detail_url_template"])
         self.assertEqual(by_id["cambricon"]["start_url"], "https://app.mokahr.com/campus-recruitment/cambricon/44201")
         self.assertEqual(by_id["zhipu"]["start_url"], "https://zhipu-ai.jobs.feishu.cn/zhipucampus/position/list")
-        self.assertEqual(by_id["rhino"]["start_url"], "https://r712him1th.jobs.feishu.cn/huixi")
+        self.assertEqual(by_id["rhino"]["start_url"], "https://r712him1th.jobs.feishu.cn/huixi/position/list")
+        self.assertEqual(by_id["kunlunxin"]["start_url"], "https://kunlunxin.zhiye.com/xiangqing?jobId=151190919")
 
 
 if __name__ == "__main__":
