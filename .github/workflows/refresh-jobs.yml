@@ -11,6 +11,8 @@ on:
       - 'scripts/direct_china_official.py'
       - 'scripts/pdd_official_harvester.py'
       - 'scripts/didi_official_harvester.py'
+      - 'scripts/didi_browser_ui_harvester.py'
+      - 'scripts/didi_ui_priority_seed.py'
       - 'scripts/priority_official_harvester.py'
       - 'scripts/official_site_job_spider.py'
       - 'scripts/official_campaign_discovery.py'
@@ -53,6 +55,7 @@ jobs:
       PTO_OFFICIAL_PAGES_PER_SITE: '5'
       PTO_DIDI_MAX_PAGES: '80'
       PTO_DIDI_DETAIL_WORKERS: '12'
+      PTO_DIDI_BROWSER_MAX_PAGES: '80'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -74,7 +77,11 @@ jobs:
           PYTHONPATH=. python scripts/federated_harvester.py
           PYTHONPATH=. python scripts/direct_china_official.py
           PYTHONPATH=. python scripts/pdd_official_harvester.py
-          PYTHONPATH=. python scripts/didi_official_harvester.py
+          # Direct JSON transport is fast when accepted. The browser-UI pass
+          # immediately after it is the authoritative fallback on runners where
+          # DiDi intercepts direct HTTP while serving its public browser UI.
+          PYTHONPATH=. python scripts/didi_official_harvester.py || true
+          PYTHONPATH=. python scripts/didi_browser_ui_harvester.py
           PYTHONPATH=. python scripts/merge_public_tables.py
           PYTHONPATH=. python scripts/priority_official_harvester.py
           PYTHONPATH=. python scripts/official_site_job_spider.py
@@ -114,6 +121,7 @@ jobs:
           pdd=by_name.get('pdd-direct-official'); assert pdd and pdd.get('count',0)>=20
           assert (pdd.get('diagnostics') or {}).get('seed_gate_ok') is True
           didi=by_name.get('didi-direct-official'); assert didi and didi.get('ok') and didi.get('count',0)>=16, didi
+          assert (didi.get('diagnostics') or {}).get('transport') == 'browser-ui-navigation', didi
           pid='5e4eb6f3-294f-491b-9d39-42895eed98c3'
           exact=[j for j in cn_jobs if j.get('r')=='AI Infra研发工程师' and pid in (j.get('u','')+j.get('n',''))]
           assert exact, 'exact PDD AI Infra position missing'
