@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import json
 import unittest
+from pathlib import Path
 
 from scripts import priority_browser_harvester as h
 from scripts.priority_browser_runner import install, normalize_heading, page_job_from_text
+
+
+ROOT = Path(__file__).resolve().parents[1]
+REGISTRY = ROOT / "sources" / "priority_browser_sources.json"
 
 
 class PriorityBrowserRunnerTests(unittest.TestCase):
@@ -27,7 +33,7 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
             "id": "mthreads",
             "company": "摩尔线程",
             "company_type": "民营/GPU/AI芯片",
-            "start_url": "https://mthreads.zhiye.com/campus",
+            "start_url": "https://mthreads.zhiye.com/campus/jobs",
             "official_url": "https://www.mthreads.com/jobs",
             "batch": "校园招聘",
             "detail_url_template": "https://mthreads.zhiye.com/campus/detail?jobAdId={position_id}",
@@ -75,6 +81,28 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
         entry = {"id": "x", "company": "测试公司", "official_url": "https://example.com"}
         body = "加入我们 公司介绍 工作地点 北京 上海 联系方式 招聘邮箱 hr@example.com"
         self.assertIsNone(page_job_from_text(entry, "https://example.com/join", ["加入我们"], body))
+
+    def test_priority_browser_registry_keeps_first_and_second_tier_targets(self):
+        payload = json.loads(REGISTRY.read_text(encoding="utf-8"))
+        sources = [row for row in payload.get("sources", []) if isinstance(row, dict)]
+        self.assertGreaterEqual(len(sources), 16)
+        companies = {row.get("company") for row in sources}
+        required = {
+            "辉羲智能", "银河通用", "智元机器人", "地平线", "寒武纪", "摩尔线程", "沐曦", "壁仞科技", "智谱AI",
+            "月之暗面", "MiniMax", "阶跃星辰", "燧原科技", "宇树科技",
+        }
+        self.assertTrue(required.issubset(companies), required - companies)
+        by_id = {row.get("id"): row for row in sources}
+        self.assertEqual(by_id["moonshot"]["start_url"], "https://careers.kimi.com/campus")
+        self.assertIn("project=7495675705720965415", by_id["minimax"]["start_url"])
+        self.assertIn("campus-recruitment/step/141903", by_id["stepfun"]["start_url"])
+        self.assertIn("campus-recruitment/enflame/168420", by_id["enflame"]["start_url"])
+        self.assertEqual(by_id["unitree"]["start_url"], "https://www.unitree.com/cn/position/")
+        self.assertEqual(by_id["mthreads"]["start_url"], "https://mthreads.zhiye.com/campus/jobs")
+        self.assertIn("jobAdId={position_id}", by_id["mthreads"]["detail_url_template"])
+        self.assertEqual(by_id["cambricon"]["start_url"], "https://app.mokahr.com/campus-recruitment/cambricon/44201")
+        self.assertEqual(by_id["zhipu"]["start_url"], "https://zhipu-ai.jobs.feishu.cn/zhipucampus/position/list")
+        self.assertEqual(by_id["rhino"]["start_url"], "https://r712him1th.jobs.feishu.cn/huixi")
 
 
 if __name__ == "__main__":
