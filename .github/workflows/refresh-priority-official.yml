@@ -44,9 +44,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 28
     # Scheduled refreshes and main-branch source updates can encounter upstream
-    # rate limits or transient employer outages. PR validation remains strict;
-    # production refreshes preserve the previous valid catalogue instead of
-    # creating failure-notification storms.
+    # rate limits or transient employer outages. PR/manual validation remains strict.
     continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
     env:
       PTO_DIDI_MAX_PAGES: '80'
@@ -59,13 +57,28 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
+
       - name: Unit-test employer adapters
+        id: unit
+        continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: PYTHONPATH=. python -m unittest -v tests.test_pdd_official_harvester tests.test_didi_official_harvester
+
       - name: Collect fast direct sources
+        id: fast
+        continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: PYTHONPATH=. python scripts/priority_direct_feed.py
+
+      # If DiDi is transiently unavailable, priority_direct_feed.py has already
+      # carried forward the previous validated DiDi rows. Do not discard fresh
+      # PDD/Meituan/Tencent data merely because this browser pass timed out.
       - name: Repair DiDi through employer public UI navigation
+        id: didi
+        continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: PYTHONPATH=. python scripts/didi_ui_priority_seed.py
+
       - name: Enforce PDD and DiDi first-party gates
+        id: gates
+        continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: |
           python - <<'PY'
           import json
@@ -90,15 +103,22 @@ jobs:
           print('PDD:',pdd.get('count'),categories)
           print('DiDi UI:',didi.get('count'),(didi.get('diagnostics') or {}).get('batches'))
           PY
+
       - name: Browser-test priority feed merge and official apply link
+        id: browser
+        continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: |
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/pto-priority-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           sleep 1
           python tests/priority_feed_browser_smoke.py
+
+      # Automatic runs commit whichever validated/carry-forward catalogue was
+      # successfully produced. Manual dispatch commits only when strict gates and
+      # the browser regression both pass. Pull requests never write data.
       - name: Commit refreshed priority feed
-        if: github.event_name != 'pull_request'
+        if: ${{ always() && github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || (steps.fast.outcome == 'success' && steps.gates.outcome == 'success' && steps.browser.outcome == 'success')) }}
         run: |
           if git diff --quiet -- data/jobs_priority.json data/priority_source_status.json; then
             echo 'No priority-feed changes.'
