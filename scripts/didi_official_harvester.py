@@ -1,26 +1,34 @@
 #!/usr/bin/env python3
 """First-party DiDi recruiting adapter.
 
-DiDi's employer-owned recruiting frontend exposes anonymous public list and job
-detail endpoints. This adapter enumerates every observed recruitment scope,
-continues pagination until an empty/repeated page (the upstream `total` field is
-currently unreliable), enriches each row from the public detail endpoint, and
-normalizes concrete employer-direct jobs for Path to Offer.
+DiDi exposes anonymous public recruiting list/detail JSON endpoints on its own
+`talent.didiglobal.com` origin. Plain `requests` calls are occasionally answered
+with an interception payload on GitHub-hosted runners even though the same
+anonymous endpoints succeed in a normal browser session. This adapter therefore
+uses a two-stage transport:
 
-The adapter covers social, campus, internship and overseas scopes when the
-corresponding public endpoint returns rows. It never creates a row from a portal
-name alone. No login, account cookie, CAPTCHA solving, proxy rotation, stealth
-automation or access-control bypass is used.
+1. fast HTTP requests when the public endpoint accepts them;
+2. a real headless Chrome session on the employer-owned public site when the
+   requests transport is intercepted.
+
+The browser fallback does not log in, replay cookies from a user, solve CAPTCHA,
+rotate proxies, or bypass access controls. It only executes the same anonymous
+same-origin `fetch()` calls that the public recruiting UI performs.
+
+All observed recruitment scopes are retained (social, campus, internship and
+overseas) when they return concrete positions. Details are enriched from the
+public job-detail endpoint and the employer's own detail URL is the canonical
+application link.
 """
 from __future__ import annotations
 
 import json
 import os
 import re
+import shutil
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import datetime
 from typing import Any, Iterable
 from urllib.parse import urlencode
 
@@ -40,8 +48,6 @@ MAX_PAGES = max(2, min(160, int(os.getenv("PTO_DIDI_MAX_PAGES", "80"))))
 DETAIL_WORKERS = max(2, min(20, int(os.getenv("PTO_DIDI_DETAIL_WORKERS", "10"))))
 MAX_JD = max(800, min(14000, int(os.getenv("PTO_DIDI_JD_CHARS", "7000"))))
 
-# The numeric route IDs are visible in DiDi's public URL/API contract. Rows are
-# retained only when the corresponding list endpoint actually returns jobs.
 SCOPES = [
     {"code": "1", "slug": "social", "label": "社会招聘"},
     {"code": "2", "slug": "campus", "label": "校园招聘"},
@@ -66,25 +72,117 @@ def public_session() -> requests.Session:
     return session
 
 
+def validate_payload(payload: Any) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        raise RuntimeError("invalid JSON payload")
+    meta = payload.get("meta") or {}
+    code = meta.get("code") if isinstance(meta, dict) else 0
+    if code not in (None, 0, "0"):
+        raise RuntimeError(compact(meta.get("message"), 220) or f"upstream code {code}")
+    return payload
+
+
 def get_json(session: requests.Session, url: str) -> dict[str, Any]:
     last: Exception | None = None
     for attempt in range(3):
         try:
             response = session.get(url, timeout=TIMEOUT)
             response.raise_for_status()
-            payload = response.json()
-            if not isinstance(payload, dict):
-                raise RuntimeError("invalid JSON payload")
-            meta = payload.get("meta") or {}
-            code = meta.get("code") if isinstance(meta, dict) else 0
-            if code not in (None, 0, "0"):
-                raise RuntimeError(compact(meta.get("message"), 220) or f"upstream code {code}")
-            return payload
+            return validate_payload(response.json())
         except Exception as exc:
             last = exc
             if attempt < 2:
                 time.sleep(0.7 * (attempt + 1))
     raise RuntimeError(str(last) if last else "DiDi request failed")
+
+
+def browser_path() -> str:
+    for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
+        path = shutil.which(name)
+        if path:
+            return path
+    raise RuntimeError("Chrome/Chromium unavailable for DiDi browser fallback")
+
+
+class BrowserJsonClient:
+    """Same-origin JSON transport backed by the public DiDi browser session."""
+
+    def __init__(self) -> None:
+        from playwright.sync_api import sync_playwright
+
+        self._pw = sync_playwright().start()
+        self._browser = self._pw.chromium.launch(
+            headless=True,
+            executable_path=browser_path(),
+            args=["--no-sandbox", "--disable-dev-shm-usage"],
+        )
+        self._context = self._browser.new_context(
+            viewport={"width": 1365, "height": 900},
+            locale="zh-CN",
+        )
+        self._page = self._context.new_page()
+        self._page.goto(f"{BASE}/social/list/1", wait_until="domcontentloaded", timeout=60_000)
+        self._page.wait_for_timeout(1200)
+
+    def close(self) -> None:
+        try:
+            self._context.close()
+        finally:
+            try:
+                self._browser.close()
+            finally:
+                self._pw.stop()
+
+    def __enter__(self) -> "BrowserJsonClient":
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.close()
+
+    def get_json(self, url: str) -> dict[str, Any]:
+        result = self._page.evaluate(
+            """async (url) => {
+              const response = await fetch(url, {credentials:'same-origin', cache:'no-store'});
+              const text = await response.text();
+              return {status: response.status, text};
+            }""",
+            url,
+        )
+        status = int(result.get("status") or 0)
+        if status < 200 or status >= 300:
+            raise RuntimeError(f"browser HTTP {status}")
+        try:
+            return validate_payload(json.loads(result.get("text") or "{}"))
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"browser invalid JSON: {exc}") from exc
+
+    def get_many(self, urls: list[str], chunk_size: int = 24) -> dict[str, dict[str, Any]]:
+        out: dict[str, dict[str, Any]] = {}
+        for offset in range(0, len(urls), chunk_size):
+            chunk = urls[offset : offset + chunk_size]
+            results = self._page.evaluate(
+                """async (urls) => Promise.all(urls.map(async (url) => {
+                  try {
+                    const response = await fetch(url, {credentials:'same-origin', cache:'no-store'});
+                    return {url, status: response.status, text: await response.text()};
+                  } catch (error) {
+                    return {url, status: 0, text: '', error: String(error)};
+                  }
+                }))""",
+                chunk,
+            )
+            for result in results:
+                url = str(result.get("url") or "")
+                status = int(result.get("status") or 0)
+                if not url or status < 200 or status >= 300:
+                    continue
+                try:
+                    out[url] = validate_payload(json.loads(result.get("text") or "{}"))
+                except Exception:
+                    continue
+            if offset + chunk_size < len(urls):
+                self._page.wait_for_timeout(80)
+        return out
 
 
 def parse_date(value: Any) -> str:
@@ -123,7 +221,7 @@ def detail_url(jd_id: str, scope: dict[str, str]) -> str:
     return f"{BASE}/{scope['slug']}/p/{jd_id}"
 
 
-def list_scope(session: requests.Session, scope: dict[str, str]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def list_scope_with_getter(getter, scope: dict[str, str]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     jobs: dict[str, dict[str, Any]] = {}
     page_signatures: set[tuple[str, ...]] = set()
     page_sizes: list[int] = []
@@ -132,7 +230,7 @@ def list_scope(session: requests.Session, scope: dict[str, str]) -> tuple[list[d
     pages = 0
     for page in range(1, MAX_PAGES + 1):
         query = urlencode({"page": page, "recruitType": scope["code"], "size": PAGE_SIZE})
-        payload = get_json(session, f"{LIST_ENDPOINT}?{query}")
+        payload = getter(f"{LIST_ENDPOINT}?{query}")
         data = payload.get("data") or {}
         rows = data.get("items") or data.get("list") or []
         try:
@@ -158,14 +256,25 @@ def list_scope(session: requests.Session, scope: dict[str, str]) -> tuple[list[d
                 row = dict(raw)
                 row["_scope"] = scope
                 jobs[jd_id] = row
+        # Upstream `total` has historically returned zero despite live rows.
+        # When a positive total is trustworthy we can stop; otherwise the first
+        # empty/repeated page is the authoritative end condition.
         if reported_total and len(jobs) >= reported_total:
             break
-        time.sleep(0.04)
+        time.sleep(0.035)
     return list(jobs.values()), {
-        "scope": scope["label"], "code": scope["code"], "pages": pages,
-        "reported_total": reported_total, "unique": len(jobs),
-        "observed_page_sizes": page_sizes, "errors": errors[:10],
+        "scope": scope["label"],
+        "code": scope["code"],
+        "pages": pages,
+        "reported_total": reported_total,
+        "unique": len(jobs),
+        "observed_page_sizes": page_sizes,
+        "errors": errors[:10],
     }
+
+
+def list_scope(session: requests.Session, scope: dict[str, str]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    return list_scope_with_getter(lambda url: get_json(session, url), scope)
 
 
 def fetch_detail(jd_id: str) -> dict[str, Any]:
@@ -198,8 +307,10 @@ def normalize(raw: dict[str, Any]) -> dict[str, Any] | None:
     matched_scope = next((item for item in SCOPES if item["code"] == recruit_code), scope)
     batch = matched_scope["label"]
     jd = compact("；".join(part for part in [
-        department and f"部门：{department}", category and f"职位类别：{category}",
-        duties and f"岗位职责：{duties}", qualification and f"任职要求：{qualification}",
+        department and f"部门：{department}",
+        category and f"职位类别：{category}",
+        duties and f"岗位职责：{duties}",
+        qualification and f"任职要求：{qualification}",
     ] if part) or role)
     blob = " ".join([role, jd, batch])
     url = detail_url(jd_id, matched_scope)
@@ -231,12 +342,38 @@ def normalize(raw: dict[str, Any]) -> dict[str, Any] | None:
     return job
 
 
-def collect_didi(session: requests.Session | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    active = session or public_session()
+def finalize_jobs(raw_jobs: dict[str, dict[str, Any]], details: dict[str, dict[str, Any]], scope_diagnostics: list[dict[str, Any]], transport: str, transport_error: str = "") -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    jobs: dict[str, dict[str, Any]] = {}
+    departments: dict[str, int] = {}
+    batches: dict[str, int] = {}
+    for jd_id, raw in raw_jobs.items():
+        job = normalize(merge_detail(raw, details.get(jd_id, {})))
+        if not job:
+            continue
+        jobs[jd_id] = job
+        department = job["department"] or "未分类"
+        departments[department] = departments.get(department, 0) + 1
+        batches[job["batch"]] = batches.get(job["batch"], 0) + 1
+    diagnostics = {
+        "official_url": BASE,
+        "list_endpoint": LIST_ENDPOINT,
+        "detail_endpoint": DETAIL_ENDPOINT,
+        "transport": transport,
+        "transport_error": transport_error,
+        "scopes": scope_diagnostics,
+        "unique_jobs": len(jobs),
+        "detail_success": len(details),
+        "departments": sorted(departments.items(), key=lambda item: (-item[1], item[0]))[:30],
+        "batches": sorted(batches.items(), key=lambda item: (-item[1], item[0])),
+    }
+    return list(jobs.values()), diagnostics
+
+
+def collect_requests(session: requests.Session) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     raw_jobs: dict[str, dict[str, Any]] = {}
-    scope_diagnostics = []
+    scope_diagnostics: list[dict[str, Any]] = []
     for scope in SCOPES:
-        rows, diagnostics = list_scope(active, scope)
+        rows, diagnostics = list_scope(session, scope)
         scope_diagnostics.append(diagnostics)
         for row in rows:
             raw_jobs[clean(row.get("jdId") or row.get("id"))] = row
@@ -251,36 +388,54 @@ def collect_didi(session: requests.Session | None = None) -> tuple[list[dict[str
                 details[jd_id] = future.result()
             except Exception as exc:
                 detail_errors.append(f"{jd_id}: {type(exc).__name__}: {compact(exc, 160)}")
+    jobs, diagnostics = finalize_jobs(raw_jobs, details, scope_diagnostics, "requests")
+    diagnostics["detail_errors"] = detail_errors[:30]
+    return jobs, diagnostics
 
-    jobs: dict[str, dict[str, Any]] = {}
-    categories: dict[str, int] = {}
-    batches: dict[str, int] = {}
-    for jd_id, raw in raw_jobs.items():
-        job = normalize(merge_detail(raw, details.get(jd_id, {})))
-        if not job:
-            continue
-        jobs[jd_id] = job
-        categories[job["department"] or "未分类"] = categories.get(job["department"] or "未分类", 0) + 1
-        batches[job["batch"]] = batches.get(job["batch"], 0) + 1
 
-    diagnostics = {
-        "official_url": BASE,
-        "list_endpoint": LIST_ENDPOINT,
-        "detail_endpoint": DETAIL_ENDPOINT,
-        "scopes": scope_diagnostics,
-        "unique_jobs": len(jobs),
-        "detail_success": len(details),
-        "detail_errors": detail_errors[:30],
-        "departments": sorted(categories.items(), key=lambda item: (-item[1], item[0]))[:30],
-        "batches": sorted(batches.items(), key=lambda item: (-item[1], item[0])),
-    }
-    return list(jobs.values()), diagnostics
+def collect_browser(request_error: str = "") -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    raw_jobs: dict[str, dict[str, Any]] = {}
+    scope_diagnostics: list[dict[str, Any]] = []
+    with BrowserJsonClient() as client:
+        for scope in SCOPES:
+            rows, diagnostics = list_scope_with_getter(client.get_json, scope)
+            scope_diagnostics.append(diagnostics)
+            for row in rows:
+                raw_jobs[clean(row.get("jdId") or row.get("id"))] = row
+        detail_urls = {jd_id: DETAIL_ENDPOINT.format(jd_id=jd_id) for jd_id in raw_jobs}
+        payloads = client.get_many(list(detail_urls.values()))
+        details: dict[str, dict[str, Any]] = {}
+        for jd_id, url in detail_urls.items():
+            payload = payloads.get(url) or {}
+            data = payload.get("data")
+            if isinstance(data, dict):
+                details[jd_id] = data
+    jobs, diagnostics = finalize_jobs(raw_jobs, details, scope_diagnostics, "browser-same-origin-fallback", request_error)
+    diagnostics["detail_errors"] = []
+    return jobs, diagnostics
+
+
+def collect_didi(session: requests.Session | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    # Tests and callers that provide a session intentionally exercise the HTTP
+    # path only. Production gets a browser fallback when HTTP is intercepted.
+    if session is not None:
+        return collect_requests(session)
+    try:
+        jobs, diagnostics = collect_requests(public_session())
+        if jobs:
+            return jobs, diagnostics
+        raise RuntimeError("requests transport returned zero concrete positions")
+    except Exception as exc:
+        request_error = f"{type(exc).__name__}: {compact(exc, 220)}"
+        return collect_browser(request_error)
 
 
 def identity(job: dict[str, Any]) -> tuple[str, str, str, str]:
     return (
-        clean(job.get("company")).lower(), clean(job.get("role")).lower(),
-        clean(job.get("location")).lower(), clean(job.get("position_id") or job.get("apply_url")).lower(),
+        clean(job.get("company")).lower(),
+        clean(job.get("role")).lower(),
+        clean(job.get("location")).lower(),
+        clean(job.get("position_id") or job.get("apply_url")).lower(),
     )
 
 
@@ -312,12 +467,20 @@ def main() -> int:
     JOBS_PATH.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
 
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8")) if STATUS_PATH.exists() else {}
-    group = {"name": "didi-direct-official", "label": "滴滴招聘官网 · 全量自主直连", "url": BASE, "ok": True, "count": len(jobs), "error": "", "diagnostics": diagnostics}
+    group = {
+        "name": "didi-direct-official",
+        "label": "滴滴招聘官网 · 全量自主直连",
+        "url": BASE,
+        "ok": True,
+        "count": len(jobs),
+        "error": "",
+        "diagnostics": diagnostics,
+    }
     sources = [source for source in status.get("sources", []) if not isinstance(source, dict) or source.get("name") != group["name"]]
     sources.insert(0, group)
     status.update({"sources": sources, "catalog_count": len(merged), "generated_at": utc_now()})
     STATUS_PATH.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"didi_jobs": len(jobs), "batches": diagnostics["batches"], "details": diagnostics["detail_success"]}, ensure_ascii=False))
+    print(json.dumps({"didi_jobs": len(jobs), "transport": diagnostics.get("transport"), "batches": diagnostics["batches"], "details": diagnostics["detail_success"]}, ensure_ascii=False))
     return 0
 
 
