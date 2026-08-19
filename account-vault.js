@@ -20,19 +20,38 @@
     if(typeof Buffer!=='undefined')return new Uint8Array(Buffer.from(String(value||''),'base64'));
     const raw=atob(String(value||''));const out=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out;
   }
+  function bytesToHex(bytes){return [...new Uint8Array(bytes)].map(value=>value.toString(16).padStart(2,'0')).join('');}
   async function digest(value){return new Uint8Array(await cryptoApi().subtle.digest('SHA-256',te.encode(String(value||''))));}
-  async function accountId(username){const normalized=normalizeAccount(username);if(!normalized)throw new Error('账号不能为空');return bytesToBase64(await digest(`path-to-offer:${normalized}`)).replace(/[+/=]/g,'').slice(0,32).toLowerCase();}
+  async function accountId(username){
+    const normalized=normalizeAccount(username);
+    if(!normalized)throw new Error('账号不能为空');
+    return bytesToHex(await digest(`path-to-offer:${normalized}`));
+  }
   async function deriveKey(password,salt,iterations=KDF_ITERATIONS){
     assertPassword(password);
     const base=await cryptoApi().subtle.importKey('raw',te.encode(String(password)),{name:'PBKDF2'},false,['deriveKey']);
     return cryptoApi().subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt,iterations},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
   }
-  async function encryptJson(value,password,context='path-to-offer'){const salt=cryptoApi().getRandomValues(new Uint8Array(16));const iv=cryptoApi().getRandomValues(new Uint8Array(12));const key=await deriveKey(password,salt);const plain=te.encode(JSON.stringify(value));const cipher=await cryptoApi().subtle.encrypt({name:'AES-GCM',iv,additionalData:te.encode(context)},key,plain);return {schema:'pto-encrypted-vault',version:VERSION,kdf:'PBKDF2-SHA256',iterations:KDF_ITERATIONS,cipher:'AES-GCM-256',salt:bytesToBase64(salt),iv:bytesToBase64(iv),context,ciphertext:bytesToBase64(new Uint8Array(cipher)),updatedAt:new Date().toISOString()};}
+  async function encryptJson(value,password,context='path-to-offer'){
+    const salt=cryptoApi().getRandomValues(new Uint8Array(16));
+    const iv=cryptoApi().getRandomValues(new Uint8Array(12));
+    const key=await deriveKey(password,salt);
+    const plain=te.encode(JSON.stringify(value));
+    const cipher=await cryptoApi().subtle.encrypt({name:'AES-GCM',iv,additionalData:te.encode(context)},key,plain);
+    return {schema:'pto-encrypted-vault',version:VERSION,kdf:'PBKDF2-SHA256',iterations:KDF_ITERATIONS,cipher:'AES-GCM-256',salt:bytesToBase64(salt),iv:bytesToBase64(iv),context,ciphertext:bytesToBase64(new Uint8Array(cipher)),updatedAt:new Date().toISOString()};
+  }
   async function decryptJson(vault,password,context=vault?.context||'path-to-offer'){
     if(!vault||vault.schema!=='pto-encrypted-vault')throw new Error('远端账户文件格式无效');
+    if(context&&vault.context&&String(context)!==String(vault.context))throw new Error('账户数据上下文不匹配');
     const salt=base64ToBytes(vault.salt),iv=base64ToBytes(vault.iv),cipher=base64ToBytes(vault.ciphertext);
-    try{const key=await deriveKey(password,salt,Number(vault.iterations)||KDF_ITERATIONS);const plain=await cryptoApi().subtle.decrypt({name:'AES-GCM',iv,additionalData:te.encode(context)},key,cipher);return JSON.parse(td.decode(plain));}
-    catch(_){throw new Error('账号或密码不正确，或者加密数据已损坏');}
+    try{
+      const key=await deriveKey(password,salt,Number(vault.iterations)||KDF_ITERATIONS);
+      const plain=await cryptoApi().subtle.decrypt({name:'AES-GCM',iv,additionalData:te.encode(context)},key,cipher);
+      return JSON.parse(td.decode(plain));
+    }catch(error){
+      if(String(error?.message||'').includes('上下文不匹配'))throw error;
+      throw new Error('账号或密码不正确，或者加密数据已损坏');
+    }
   }
   function sanitizeState(value,{includeResumeText=false}={}){
     const clone=JSON.parse(JSON.stringify(value||{}));
@@ -79,5 +98,5 @@
     const path=vaultPath(id);const response=await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path}`,{method:'DELETE',headers:{...githubHeaders(token),'Content-Type':'application/json'},body:JSON.stringify({message:`vault: remove encrypted account ${id.slice(0,8)}`,sha,branch})});
     if(!response.ok)throw new Error(`删除 GitHub 加密账户失败：HTTP ${response.status}`);return true;
   }
-  return {VERSION,KDF_ITERATIONS,normalizeAccount,accountId,encryptJson,decryptJson,sanitizeState,vaultPath,fetchGithubVault,putGithubVault,deleteGithubVault,verifyGithubToken,bytesToBase64,base64ToBytes};
+  return {VERSION,KDF_ITERATIONS,normalizeAccount,accountId,encryptJson,decryptJson,sanitizeState,vaultPath,fetchGithubVault,putGithubVault,deleteGithubVault,verifyGithubToken,bytesToBase64,base64ToBytes,bytesToHex};
 });
