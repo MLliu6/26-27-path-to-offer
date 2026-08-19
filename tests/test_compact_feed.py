@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from scripts.compact_feed import encode_job, encode_jobs, compact_text, clean_status
+from scripts.compact_feed import encode_job, encode_jobs, compact_text, clean_status, is_domestic, domestic_priority
 
 
 class CompactFeedTests(unittest.TestCase):
@@ -20,6 +20,29 @@ class CompactFeedTests(unittest.TestCase):
         self.assertIn('u',row)
         self.assertNotIn('company',row)
         self.assertLessEqual(len(row['d']),221)
+
+    def test_browser_direct_job_survives_china_first_compaction(self):
+        job={
+            'id':'mthreads:abc-123',
+            'company':'摩尔线程',
+            'role':'GPU软件研发工程师',
+            'location':'北京',
+            'apply_url':'https://mthreads.zhiye.com/campus/detail?jobAdId=abc-123',
+            'notice_url':'https://mthreads.zhiye.com/campus/detail?jobAdId=abc-123',
+            'jd':'GPU 软件栈 CUDA 编译器 runtime 性能优化',
+            'updated_at':'2026-08-19',
+            'source':'direct-official:browser:mthreads',
+            'source_label':'摩尔线程招聘官网 · 浏览器自主直连',
+            'company_type':'民营/GPU/AI芯片',
+            'batch':'校园招聘',
+        }
+        self.assertTrue(is_domestic(job))
+        self.assertLess(domestic_priority(job)[0], -140)
+        row=encode_job(job)
+        self.assertEqual(row['c'],'摩尔线程')
+        self.assertEqual(row['q'],7)
+        self.assertEqual(row['u'],'https://mthreads.zhiye.com/campus/detail?jobAdId=abc-123')
+        self.assertIn('招聘官网',row['x'])
 
     def test_compact_encoding_is_idempotent(self):
         row={'i':'1','c':'腾讯','r':'后台开发','d':'Python '*200,'x':'中国企业官方招聘'}
