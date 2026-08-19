@@ -5,6 +5,7 @@ on:
     paths:
       - 'account-vault.js'
       - 'enhancements-v12-security.js'
+      - 'enhancements-v12-renderfix.js'
       - 'enhancements-v12.js'
       - 'enhancements-v12-hotfix.js'
       - 'config.js'
@@ -16,6 +17,7 @@ on:
     paths:
       - 'account-vault.js'
       - 'enhancements-v12-security.js'
+      - 'enhancements-v12-renderfix.js'
       - 'config.js'
       - 'tests/account_vault_security.mjs'
       - 'tests/v12_security_browser_smoke.py'
@@ -46,6 +48,7 @@ jobs:
         run: |
           node --check account-vault.js
           node --check enhancements-v12-security.js
+          node --check enhancements-v12-renderfix.js
           node --check config.js
           node tests/account_vault.mjs
           node tests/account_vault_security.mjs
@@ -56,15 +59,17 @@ jobs:
           from pathlib import Path
           vault=Path('account-vault.js').read_text(encoding='utf-8')
           ui=Path('enhancements-v12-security.js').read_text(encoding='utf-8')
+          renderfix=Path('enhancements-v12-renderfix.js').read_text(encoding='utf-8')
           config=Path('config.js').read_text(encoding='utf-8')
           for token in ['verifyGithubToken','expectedLogin','PBKDF2-SHA256','AES-GCM-256','sanitizeState']:
               assert token in vault, token
           for token in ['用户自有 GitHub 加密仓库','零明文原则','管理员信息已雾化','companyInitial','优先 ${escaped(job.priority','portableWrite']:
               assert token in ui, token
-          assert "buildVersion: '1.2.1-local-vault-user-owned-sync'" in config
-          assert "enhancements-v12-security.js" in config
+          assert "buildVersion: '1.2.2-production-fix'" in config
+          assert 'enhancements-v12-security.js' in config and 'enhancements-v12-renderfix.js' in config
+          assert 'renderAll()' in renderfix
           assert '明文简历' not in ui.split('不会把明文简历')[0]
-          print('v1.2.1 security invariants: PASS')
+          print('v1.2.2 security invariants: PASS')
           PY
       - name: Browser account/admin/company-mark regression
         run: |
