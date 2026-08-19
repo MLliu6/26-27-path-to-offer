@@ -50,7 +50,7 @@
       return JSON.parse(td.decode(plain));
     }catch(error){
       if(String(error?.message||'').includes('上下文不匹配'))throw error;
-      throw new Error('账号或密码不正确，或者加密数据已损坏');
+      throw new Error('账号或密码错误，或者加密数据已损坏');
     }
   }
   function sanitizeState(value,{includeResumeText=false}={}){
