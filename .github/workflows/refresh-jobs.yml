@@ -14,6 +14,7 @@ on:
       - 'scripts/didi_browser_ui_harvester.py'
       - 'scripts/didi_ui_priority_seed.py'
       - 'scripts/priority_official_harvester.py'
+      - 'scripts/priority_browser_harvester.py'
       - 'scripts/official_site_job_spider.py'
       - 'scripts/official_campaign_discovery.py'
       - 'scripts/official_source_graph.py'
@@ -39,6 +40,8 @@ jobs:
   aggregate:
     runs-on: ubuntu-24.04
     timeout-minutes: 88
+    # Automatic refreshes are best-effort because employer sites are external,
+    # non-deterministic dependencies. Manual dispatch stays strict for debugging.
     continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
@@ -56,6 +59,8 @@ jobs:
       PTO_DIDI_MAX_PAGES: '80'
       PTO_DIDI_DETAIL_WORKERS: '12'
       PTO_DIDI_BROWSER_MAX_PAGES: '80'
+      PTO_PRIORITY_BROWSER_TIMEOUT_MS: '26000'
+      PTO_PRIORITY_BROWSER_JD_CHARS: '5000'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -85,6 +90,9 @@ jobs:
           PYTHONPATH=. python scripts/merge_public_tables.py
           PYTHONPATH=. python scripts/priority_official_harvester.py
           PYTHONPATH=. python scripts/official_site_job_spider.py
+          # Real browser -> public XHR/fetch observation -> rendered DOM fallback
+          # for priority employers/official ATS tenants that static HTTP misses.
+          PYTHONPATH=. python scripts/priority_browser_harvester.py
           PYTHONPATH=. python scripts/official_campaign_discovery.py
           PYTHONPATH=. python scripts/soe_directory_harvester.py
           PYTHONPATH=. python scripts/university_2027_discovery.py
@@ -132,6 +140,11 @@ jobs:
           assert sum(x.get('count',0) for x in campaigns('航天科工集团'))>=9
           assert sum(x.get('count',0) for x in campaigns('银河通用'))>=6
           assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3
+          browser_group=by_name.get('priority-browser-official'); assert browser_group is not None
+          bdiag=browser_group.get('diagnostics') or {}; assert bdiag.get('target_count',0)>=9, bdiag
+          browser_companies={x.get('company') for x in bdiag.get('sources',[]) if isinstance(x,dict)}
+          for company in ['辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI']:
+              assert company in browser_companies, company
           ncss=by_name.get('ncss-2027-public'); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500
           graph_group=by_name.get('official-source-graph'); assert graph_group is not None
           assert graph.get('source_count',0)>=100, graph.get('source_count')
@@ -144,6 +157,7 @@ jobs:
           print('china:',len(cn_jobs),cn_path.stat().st_size,'overseas=',overseas)
           print('PDD exact:',exact[0].get('u'))
           print('DiDi:',didi.get('count'),(didi.get('diagnostics') or {}).get('batches'))
+          print('priority browser:',browser_group.get('count'),bdiag.get('fresh_companies'),[(x.get('company'),x.get('count'),x.get('preserved_previous')) for x in bdiag.get('sources',[])])
           print('official graph:',graph.get('source_count'),graph_group.get('diagnostics'))
           PY
       - name: Commit refreshed feed when changed
