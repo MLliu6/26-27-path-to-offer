@@ -61,7 +61,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install crawler dependencies
-        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
       - name: Fetch pinned fallback adapter library
         run: |
           rm -rf "$PTO_HIRING_RADAR_DIR"
