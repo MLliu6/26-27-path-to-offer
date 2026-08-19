@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
-  buildVersion: '1.2.5-priority-canonical-dedupe',
+  buildVersion: '1.2.6-priority-url-dedupe',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -45,11 +45,12 @@ function ptoJobKey(job) {
   const positionId = ptoCanonicalText(job.z || job.position_id);
   const applyUrl = ptoCanonicalUrl(job.u || job.apply_url || job.url);
   const noticeUrl = ptoCanonicalUrl(job.n || job.notice_url);
-  // Cross-feed IDs are source-specific, so prefer employer position IDs and
-  // canonical employer URLs. Priority rows are iterated first and therefore win.
-  if (positionId && company) return `position:${company}|${positionId}`;
+  // Cross-feed IDs and position-id availability differ by collector. Concrete
+  // employer detail URLs are the strongest shared identity; priority rows are
+  // iterated first and therefore win when a domestic duplicate has another ID.
   if (applyUrl && company && role) return `apply:${applyUrl}|${company}|${role}`;
   if (noticeUrl && company && role) return `notice:${noticeUrl}|${company}|${role}`;
+  if (positionId && company) return `position:${company}|${positionId}`;
   if (company && role) return `fallback:${company}|${role}|${location}`;
   return ptoCanonicalText(job.i || job.id || applyUrl || noticeUrl);
 }
@@ -155,7 +156,7 @@ window.addEventListener('load', () => {
     document.querySelector('#statusSelect').innerHTML = stages.map(([v,n]) => `<option value="${v}">${n}</option>`).join('');
     const resumeSelect = document.querySelector('#jobResumeSelect');
     resumeSelect.innerHTML = '<option value="">未绑定</option>' + state.resumes.map(r => `<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('');
-    const job = state.jobs.find(j =>j.id === id);
+    const job = state.jobs.find(j => j.id === id);
     if (job) {
       Object.entries(job).forEach(([k,v]) => {
         if (form.elements[k] && typeof v !== 'object') form.elements[k].value = v ?? '';
