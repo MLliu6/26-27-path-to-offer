@@ -138,7 +138,10 @@ def normalize_feishu_job(entry, row: dict, response_url: str, page_url: str):
     requirement = h.clean(row.get("requirement"))
     jd = "\n".join(part for part in (description, requirement) if part)[: h.MAX_JD] or role
     signal = " ".join([role, recruit_name, jd])
-    batch = "2027校园招聘" if ("2027" in signal or "27届" in signal) else (recruit_name or h.clean(entry.get("batch")) or "公开招聘")
+    entry_batch = h.clean(entry.get("batch"))
+    batch = "2027校园招聘" if (
+        "2027" in signal or "27届" in signal or "2027" in entry_batch or "27届" in entry_batch
+    ) else (recruit_name or entry_batch or "公开招聘")
 
     parsed = urlparse(h.clean(entry.get("start_url")) or page_url or response_url)
     portal_path = feishu_portal_path(entry)
