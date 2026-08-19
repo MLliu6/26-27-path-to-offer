@@ -193,12 +193,14 @@ jobs:
           assert sum(x.get('count',0) for x in campaigns('银河通用'))>=6
           assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3
           browser_group=by_name.get('priority-browser-official'); assert browser_group is not None
-          bdiag=browser_group.get('diagnostics') or {}; assert bdiag.get('target_count',0)>=9, bdiag
-          browser_companies={x.get('company') for x in bdiag.get('sources',[]) if isinstance(x,dict)}
-          for company in ['辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI']:
-              assert company in browser_companies, company
+          bdiag=browser_group.get('diagnostics') or {}; assert bdiag.get('target_count',0)>=15, bdiag
+          browser_companies={x.get('company') for x in bdiag.get('sources',[]) if isinstance(x,dict) and x.get('company')}
+          required_browser={'辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI','月之暗面','MiniMax','阶跃星辰','燧原科技','宇树科技','昆仑芯'}
+          assert required_browser.issubset(browser_companies), required_browser-browser_companies
           ncss=by_name.get('ncss-2027-public'); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500
           graph_group=by_name.get('official-source-graph'); assert graph_group is not None
+          assert graph.get('version') == 2, graph.get('version')
+          assert graph.get('observed_job_board_normalization') is True
           assert graph.get('source_count',0)>=100, graph.get('source_count')
           graph_companies={x.get('company') for x in graph.get('sources',[])}
           for company in ['滴滴','辉羲智能','银河通用','地平线','宁德时代']:
