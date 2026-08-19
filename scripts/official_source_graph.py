@@ -23,6 +23,7 @@ DATA = ROOT / "data"
 JOBS = DATA / "jobs.json"
 OUT = DATA / "official_source_catalog.json"
 REGISTRIES = [
+    ROOT / "sources" / "priority_browser_sources.json",
     ROOT / "sources" / "priority_official_sources.json",
     ROOT / "sources" / "official_source_registry_v12.json",
 ]
@@ -35,7 +36,7 @@ EXCLUDED_HOSTS = {
     "gitee.com", "mp.weixin.qq.com", "weixin.qq.com",
 }
 EXCLUDED_SUFFIXES = (".edu.cn", ".gov.cn")
-ATS_HOST_HINTS = ("jobs.feishu.cn", "zhiye.com", "mokahr.com", "mokahr.com.cn", "smartrecruiters.com", "greenhouse.io", "lever.co", "ashbyhq.com", "recruitee.com")
+ATS_HOST_HINTS = ("jobs.feishu.cn", "zhiye.com", "mokahr.com", "mokahr.com.cn", "hotjob.cn", "smartrecruiters.com", "greenhouse.io", "lever.co", "ashbyhq.com", "recruitee.com")
 CAREER_HINT = re.compile(r"career|careers|campus|recruit|recruitment|job|jobs|join|talent|zhaopin|hr|招聘|校招", re.I)
 
 
@@ -108,7 +109,7 @@ def load_registries(rows: dict[str, dict[str, Any]]) -> None:
                 add(rows, company=item.get("company"), url=item.get("url"), category=item.get("category"), priority=95, origin="priority-registry")
         for item in payload.get("sources", []):
             if isinstance(item, dict):
-                add(rows, company=item.get("company"), url=item.get("url"), category=item.get("category"), priority=item.get("priority", 70), origin="reviewed-registry", modes=item.get("modes"), contact=item.get("contact"))
+                add(rows, company=item.get("company"), url=item.get("url") or item.get("start_url"), category=item.get("category") or item.get("company_type"), priority=item.get("priority", 70), origin="reviewed-registry", modes=item.get("modes"), contact=item.get("contact"))
         for item in payload.get("career_spiders", []):
             if isinstance(item, dict):
                 add(rows, company=item.get("company"), url=item.get("start_url"), category=item.get("company_type"), priority=100, origin="career-spider")
