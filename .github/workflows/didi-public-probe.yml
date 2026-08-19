@@ -19,6 +19,9 @@ jobs:
   probe:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    # External DiDi availability is diagnostic on automatic runs. Manual runs
+    # remain strict when we intentionally want a red/green transport probe.
+    continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
