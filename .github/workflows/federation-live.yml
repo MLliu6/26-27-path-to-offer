@@ -115,10 +115,11 @@ jobs:
           assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3
           browser_group=by_name.get('priority-browser-official'); assert browser_group is not None
           bdiag=browser_group.get('diagnostics') or {}
-          assert bdiag.get('target_count',0)>=9, bdiag
-          browser_companies={x.get('company') for x in bdiag.get('sources',[]) if isinstance(x,dict)}
-          for company in ['辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI']:
-              assert company in browser_companies, company
+          assert bdiag.get('target_count',0)>=15, bdiag
+          browser_companies={x.get('company') for x in bdiag.get('sources',[]) if isinstance(x,dict) and x.get('company')}
+          required_browser={'辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI','月之暗面','MiniMax','阶跃星辰','燧原科技','宇树科技','昆仑芯'}
+          assert len(browser_companies)>=15, browser_companies
+          assert required_browser.issubset(browser_companies), required_browser-browser_companies
           site_spider=by_name.get('employer-site-job-spider'); assert site_spider is not None
           campaign=by_name.get('official-campaign-discovery'); assert campaign and (campaign.get('diagnostics') or {}).get('portals',0)>=50
           soe=by_name.get('central-soe-official-directory'); assert soe is not None
