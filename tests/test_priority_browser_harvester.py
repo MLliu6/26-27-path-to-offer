@@ -42,13 +42,21 @@ class PriorityBrowserHarvesterTests(unittest.TestCase):
                         "requirements": "熟悉 CUDA / C++",
                         "url": "https://jobs.example.com/campus/job/102",
                     },
-                ]
+                ],
+                "filters": {
+                    "cities": [{"id": 1, "name": "北京"}],
+                    "categories": [{"code": "01", "name": "研发"}],
+                },
             }
         }
-        rows = list(walk_json(payload, "https://jobs.example.com/api/job/list"))
+        # response_handler intentionally starts structural traversal from root;
+        # the request URL itself must never leak `/job/list` into object paths.
+        rows = list(walk_json(payload, "root"))
         titles = {r.get("jobName") or r.get("positionName") for r, _ in rows}
         self.assertIn("大模型推理系统工程师", titles)
         self.assertIn("CUDA 算子工程师", titles)
+        self.assertFalse(any(r.get("name") == "北京" and r.get("id") == 1 for r, _ in rows))
+        self.assertFalse(any(r.get("name") == "研发" and r.get("code") == "01" for r, _ in rows))
 
     def test_generic_metadata_name_is_not_a_job(self):
         self.assertFalse(json_candidate({"id": 1, "name": "北京"}, "root.data.cityList[0]"))
