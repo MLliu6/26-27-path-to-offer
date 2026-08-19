@@ -1,11 +1,21 @@
 {
   "version": 1,
-  "policy": "Open only anonymous employer-owned recruiting pages or the public ATS destinations linked by the employer. Observe normal browser XHR/fetch responses and rendered job links; never log in, solve CAPTCHA, replay private cookies, or bypass access controls. A zero/blocked refresh preserves previously validated rows for that company.",
+  "policy": "Open only anonymous employer-owned recruiting pages or the public ATS destinations linked by the employer. Observe normal browser XHR/fetch responses and rendered/current job pages; never log in, solve CAPTCHA, replay private cookies, or bypass access controls. A zero/blocked refresh preserves previously validated rows for that source.",
   "sources": [
     {
       "id": "rhino", "company": "辉羲智能", "category": "AI芯片/具身智能", "company_type": "民营/AI芯片初创",
       "start_url": "https://r712him1th.jobs.feishu.cn/huixi", "url": "https://r712him1th.jobs.feishu.cn/huixi", "official_url": "https://www.rhino.auto/ShouYe",
       "priority": 97, "modes": ["browser-public-ui"], "batch": "公开招聘", "max_pages": 10
+    },
+    {
+      "id": "rhino-site-soc", "company": "辉羲智能", "category": "AI芯片/具身智能", "company_type": "民营/AI芯片初创",
+      "start_url": "https://www.rhino.auto/SoCdesign", "url": "https://www.rhino.auto/SoCdesign", "official_url": "https://www.rhino.auto/",
+      "priority": 96, "modes": ["browser-current-job-page"], "batch": "公开招聘", "max_pages": 1
+    },
+    {
+      "id": "rhino-site-safety", "company": "辉羲智能", "category": "AI芯片/具身智能", "company_type": "民营/AI芯片初创",
+      "start_url": "https://www.rhino.auto/HuiXiZhiNenZhaoPinXinPianGongNenAnQuanGongChengShi", "url": "https://www.rhino.auto/HuiXiZhiNenZhaoPinXinPianGongNenAnQuanGongChengShi", "official_url": "https://www.rhino.auto/",
+      "priority": 96, "modes": ["browser-current-job-page"], "batch": "公开招聘", "max_pages": 1
     },
     {
       "id": "galbot", "company": "银河通用", "category": "具身智能/机器人", "company_type": "民营/具身智能初创",
