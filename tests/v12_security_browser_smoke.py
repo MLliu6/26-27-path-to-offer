@@ -44,11 +44,11 @@ def main():
                 route.continue_()
         page.route('**/*',route_handler)
         page.goto(BASE,wait_until='domcontentloaded')
-        page.wait_for_function("() => window.PTO_SECURE_ACCOUNT_V2 && document.querySelector('#githubLoginBtn').textContent.includes('账户')",timeout=15000)
+        page.wait_for_function("() => window.PTO_SECURE_ACCOUNT_V2 && window.PTO_V12_RENDERFIX_READY && document.querySelector('#githubLoginBtn').textContent.includes('账户')",timeout=20000)
 
         # Priority B remains text; company avatar is the first company character.
         page.locator('button.nav-item[data-view="pipeline"]').click()
-        page.wait_for_selector('.job-card')
+        page.wait_for_selector('.job-card .company-avatar')
         card=page.locator('.job-card').first
         assert card.locator('.company-avatar').inner_text()=='拼'
         assert '优先 B' in card.inner_text()
@@ -64,12 +64,14 @@ def main():
         page.locator('#secureLocalPass').fill('candidate-one-very-strong-password')
         page.locator('#secureLocalCreate').click()
         page.wait_for_function("() => window.PTO_ACCOUNT_SESSION && window.PTO_ACCOUNT_SESSION.username==='candidate-one'",timeout=10000)
+        page.wait_for_function("() => Object.keys(localStorage).some(key => key.startsWith('pto.secure.local.v2.'))",timeout=10000)
 
         # Plain app state is removed and account payload is opaque ciphertext.
         storage=page.evaluate("Object.fromEntries(Object.entries(localStorage))")
         assert 'pathToOffer.v0.2' not in storage
         secure=[v for k,v in storage.items() if k.startswith('pto.secure.local.v2.')]
         assert secure and all('PRIVATE RESUME TEXT' not in value and '拼多多' not in value for value in secure)
+        assert all('ciphertext' in value and 'AES-GCM-256' in value for value in secure)
 
         # Source details are visually gated and blurred before admin verification.
         page.locator('button.nav-item[data-view="discover"]').click()
@@ -88,11 +90,12 @@ def main():
         page.locator('#secureLocalUnlock').click()
         page.wait_for_function("() => window.PTO_ACCOUNT_SESSION && window.PTO_ACCOUNT_SESSION.username==='candidate-one'",timeout=10000)
         page.locator('button.nav-item[data-view="pipeline"]').click()
-        page.wait_for_selector('.job-card')
+        page.wait_for_selector('.job-card .company-avatar')
         assert '拼多多' in page.locator('.job-card').first.inner_text()
+        assert page.locator('.company-avatar').first.inner_text()=='拼'
 
         context.close();browser.close()
-    print('Path to Offer v1.2 security browser smoke: PASS')
+    print('Path to Offer v1.2.2 security browser smoke: PASS')
     return 0
 
 
