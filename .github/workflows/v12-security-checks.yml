@@ -1,0 +1,80 @@
+name: v12-security-checks
+
+on:
+  pull_request:
+    paths:
+      - 'account-vault.js'
+      - 'enhancements-v12-security.js'
+      - 'enhancements-v12-renderfix.js'
+      - 'enhancements-v12.js'
+      - 'enhancements-v12-hotfix.js'
+      - 'config.js'
+      - 'tests/account_vault_security.mjs'
+      - 'tests/v12_security_browser_smoke.py'
+      - '.github/workflows/v12-security-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'account-vault.js'
+      - 'enhancements-v12-security.js'
+      - 'enhancements-v12-renderfix.js'
+      - 'config.js'
+      - 'tests/account_vault_security.mjs'
+      - 'tests/v12_security_browser_smoke.py'
+      - '.github/workflows/v12-security-checks.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v12-security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install browser dependency
+        run: python -m pip install --disable-pip-version-check playwright
+      - name: Syntax and crypto security tests
+        run: |
+          node --check account-vault.js
+          node --check enhancements-v12-security.js
+          node --check enhancements-v12-renderfix.js
+          node --check config.js
+          node tests/account_vault.mjs
+          node tests/account_vault_security.mjs
+          python -m py_compile tests/v12_security_browser_smoke.py
+      - name: Product security invariants
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          vault=Path('account-vault.js').read_text(encoding='utf-8')
+          ui=Path('enhancements-v12-security.js').read_text(encoding='utf-8')
+          renderfix=Path('enhancements-v12-renderfix.js').read_text(encoding='utf-8')
+          config=Path('config.js').read_text(encoding='utf-8')
+          for token in ['verifyGithubToken','expectedLogin','PBKDF2-SHA256','AES-GCM-256','sanitizeState']:
+              assert token in vault, token
+          for token in ['用户自有 GitHub 加密仓库','零明文原则','管理员信息已雾化','companyInitial','优先 ${escaped(job.priority','portableWrite']:
+              assert token in ui, token
+          assert "buildVersion: '1.2.2-production-fix'" in config
+          assert 'enhancements-v12-security.js' in config and 'enhancements-v12-renderfix.js' in config
+          assert 'renderAll()' in renderfix
+          assert '明文简历' not in ui.split('不会把明文简历')[0]
+          print('v1.2.2 security invariants: PASS')
+          PY
+      - name: Browser account/admin/company-mark regression
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/pto-v12-security-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 1
+          python tests/v12_security_browser_smoke.py

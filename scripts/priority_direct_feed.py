@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
-"""Build the small high-priority employer-direct browser feed.
+"""Build the fast employer-direct browser feed.
 
-The nationwide catalogue is intentionally deeper and slower. This file powers a
-separate ten-minute loop for employer-owned public sources, currently PDD plus
-the already proven Meituan and Tencent adapters. The browser loads this feed
-before the broader China catalogue and deduplicates on the canonical job URL.
-
-Each source fails independently. When a source is temporarily unavailable, its
-last valid rows are preserved from the previous priority feed instead of being
-replaced by an empty result. No login, CAPTCHA bypass, private credential or
-stealth automation is used.
+This first stage refreshes the inexpensive proven APIs (PDD, Meituan, Tencent)
+and preserves every other previously valid direct row. DiDi is deliberately not
+queried here: GitHub-hosted runners may intercept its direct HTTP transport, so
+the immediately following `didi_ui_priority_seed.py` drives DiDi's public UI
+once, without wasting the ten-minute budget on a doomed direct retry path.
 """
 from __future__ import annotations
 
@@ -54,6 +50,10 @@ def position_key_from_url(url: str) -> str:
 
 
 def canonical_verbose(job: dict[str, Any]) -> str:
+    position_id = clean(job.get("position_id"))
+    source = clean(job.get("source"))
+    if position_id and source:
+        return f"{source}:{position_id}".lower()
     url = clean(job.get("apply_url") or job.get("notice_url"))
     pdd = position_key_from_url(url)
     if pdd:
@@ -61,13 +61,15 @@ def canonical_verbose(job: dict[str, Any]) -> str:
     if url:
         return f"url:{url.lower().rstrip('/')}"
     return "|".join([
-        clean(job.get("company")).lower(),
-        clean(job.get("role")).lower(),
-        clean(job.get("location")).lower(),
+        clean(job.get("company")).lower(), clean(job.get("role")).lower(), clean(job.get("location")).lower(),
     ])
 
 
 def canonical_compact(row: dict[str, Any]) -> str:
+    position_id = clean(row.get("z"))
+    source = clean(row.get("s"))
+    if position_id and source:
+        return f"{source}:{position_id}".lower()
     url = clean(row.get("u") or row.get("n"))
     pdd = position_key_from_url(url)
     if pdd:
@@ -115,29 +117,45 @@ def previous_rows() -> list[dict[str, Any]]:
     except Exception:
         return []
     rows = payload.get("jobs", []) if isinstance(payload, dict) else []
-    return [x for x in rows if isinstance(x, dict) and clean(x.get("c")) and clean(x.get("r"))]
+    return [row for row in rows if isinstance(row, dict) and clean(row.get("c")) and clean(row.get("r"))]
 
 
 def collect_legacy_direct() -> list[tuple[str, str, Callable[[dict[str, Any]], tuple[list[dict[str, Any]], dict[str, Any]]], dict[str, Any]]]:
     try:
-        cfg = json.loads(DIRECT_CONFIG_PATH.read_text(encoding="utf-8"))
+        config = json.loads(DIRECT_CONFIG_PATH.read_text(encoding="utf-8"))
     except Exception:
         return []
     out = []
-    for source in cfg.get("sources", []):
+    for source in config.get("sources", []):
         if not isinstance(source, dict) or not source.get("enabled", True):
             continue
         adapter = clean(source.get("adapter"))
         if adapter not in {"meituan", "tencent"}:
             continue
-        fn = LEGACY_DIRECT_ADAPTERS.get(adapter)
-        if fn:
-            out.append((f"direct-official:{adapter}", clean(source.get("company")) or adapter, fn, source))
+        function = LEGACY_DIRECT_ADAPTERS.get(adapter)
+        if function:
+            out.append((f"direct-official:{adapter}", clean(source.get("company")) or adapter, function, source))
     return out
 
 
 def source_of_compact(row: dict[str, Any]) -> str:
     return clean(row.get("s"))
+
+
+def record_special_source(*, source_id: str, name: str, label: str, url: str, collector, old_by_source, fresh_by_source, source_runs, validator=None) -> None:
+    try:
+        jobs, diagnostics = collector()
+        if not jobs:
+            raise RuntimeError("zero concrete jobs")
+        if validator:
+            validator(jobs, diagnostics)
+        rows = [encoded for job in jobs for encoded in [encode(job)] if encoded]
+        fresh_by_source[source_id] = rows
+        source_runs.append({"name": name, "label": label, "url": url, "ok": True, "count": len(rows), "preserved_previous": False, "diagnostics": diagnostics, "error": ""})
+    except Exception as exc:
+        kept = old_by_source.get(source_id, [])
+        fresh_by_source[source_id] = kept
+        source_runs.append({"name": name, "label": label, "url": url, "ok": bool(kept), "count": len(kept), "preserved_previous": bool(kept), "diagnostics": {}, "error": f"{type(exc).__name__}: {short(exc, 260)}"})
 
 
 def main() -> int:
@@ -150,79 +168,40 @@ def main() -> int:
     source_runs: list[dict[str, Any]] = []
     fresh_by_source: dict[str, list[dict[str, Any]]] = {}
 
-    # PDD is intentionally independent of the legacy adapter registry because it
-    # has exact-position seeds and stronger completeness gates.
-    try:
-        jobs, diagnostics = collect_pdd()
-        if not jobs:
-            raise RuntimeError("zero concrete PDD jobs")
+    def validate_pdd(jobs, diagnostics):
         if not diagnostics.get("seed_gate_ok"):
             raise RuntimeError(f"exact-position seed failed: {diagnostics.get('seeds')}")
-        rows = [encoded for job in jobs for encoded in [encode(job)] if encoded]
-        fresh_by_source["direct-official:pdd"] = rows
-        source_runs.append({
-            "name": "pdd-direct-official",
-            "label": "拼多多校园招聘官网 · 全量自主直连",
-            "url": "https://careers.pddglobalhr.com/campus/grad",
-            "ok": True,
-            "count": len(rows),
-            "preserved_previous": False,
-            "diagnostics": diagnostics,
-            "error": "",
-        })
-    except Exception as exc:
-        kept = old_by_source.get("direct-official:pdd", [])
-        fresh_by_source["direct-official:pdd"] = kept
-        source_runs.append({
-            "name": "pdd-direct-official",
-            "label": "拼多多校园招聘官网 · 全量自主直连",
-            "url": "https://careers.pddglobalhr.com/campus/grad",
-            "ok": bool(kept),
-            "count": len(kept),
-            "preserved_previous": bool(kept),
-            "diagnostics": {},
-            "error": f"{type(exc).__name__}: {short(exc, 260)}",
-        })
 
-    for source_id, company, fn, config in collect_legacy_direct():
+    record_special_source(
+        source_id="direct-official:pdd", name="pdd-direct-official",
+        label="拼多多校园招聘官网 · 全量自主直连", url="https://careers.pddglobalhr.com/campus/grad",
+        collector=collect_pdd, validator=validate_pdd, old_by_source=old_by_source,
+        fresh_by_source=fresh_by_source, source_runs=source_runs,
+    )
+
+    for source_id, company, function, config in collect_legacy_direct():
         try:
-            jobs, diagnostics = fn(config)
+            jobs, diagnostics = function(config)
             rows = [encoded for job in jobs for encoded in [encode(job)] if encoded]
             if not rows:
                 raise RuntimeError("zero concrete jobs")
             fresh_by_source[source_id] = rows
-            source_runs.append({
-                "name": source_id.replace("direct-official:", "") + "-direct-official",
-                "label": f"{company}招聘官网 · 自主直连",
-                "url": clean(config.get("official_url")),
-                "ok": True,
-                "count": len(rows),
-                "preserved_previous": False,
-                "diagnostics": diagnostics,
-                "error": "",
-            })
+            source_runs.append({"name": source_id.replace("direct-official:", "") + "-direct-official", "label": f"{company}招聘官网 · 自主直连", "url": clean(config.get("official_url")), "ok": True, "count": len(rows), "preserved_previous": False, "diagnostics": diagnostics, "error": ""})
         except Exception as exc:
             kept = old_by_source.get(source_id, [])
             fresh_by_source[source_id] = kept
-            source_runs.append({
-                "name": source_id.replace("direct-official:", "") + "-direct-official",
-                "label": f"{company}招聘官网 · 自主直连",
-                "url": clean(config.get("official_url")),
-                "ok": bool(kept),
-                "count": len(kept),
-                "preserved_previous": bool(kept),
-                "diagnostics": {},
-                "error": f"{type(exc).__name__}: {short(exc, 260)}",
-            })
+            source_runs.append({"name": source_id.replace("direct-official:", "") + "-direct-official", "label": f"{company}招聘官网 · 自主直连", "url": clean(config.get("official_url")), "ok": bool(kept), "count": len(kept), "preserved_previous": bool(kept), "diagnostics": {}, "error": f"{type(exc).__name__}: {short(exc, 260)}"})
 
-    # Preserve any previous source not managed by this version. This makes the
-    # format forward-compatible with future direct adapters.
+    # DiDi and any future specialist source are carried forward untouched here;
+    # their dedicated browser stage runs immediately afterwards and refreshes
+    # them with the transport that actually works on hosted runners.
     for source_id, rows in old_by_source.items():
         if source_id and source_id not in fresh_by_source:
             fresh_by_source[source_id] = rows
 
+    source_order = {"direct-official:pdd": 0, "direct-official:didi": 1, "direct-official:meituan": 2, "direct-official:tencent": 3}
     merged: dict[str, dict[str, Any]] = {}
-    for source_id in sorted(fresh_by_source, key=lambda x: (x != "direct-official:pdd", x)):
+    for source_id in sorted(fresh_by_source, key=lambda value: (source_order.get(value, 99), value)):
         for row in fresh_by_source[source_id]:
             key = canonical_compact(row)
             if key and key not in merged:
@@ -230,7 +209,7 @@ def main() -> int:
 
     rows = list(merged.values())
     exact_id = "5e4eb6f3-294f-491b-9d39-42895eed98c3"
-    exact = [x for x in rows if exact_id in clean(x.get("z") or x.get("u") or x.get("n"))]
+    exact = [row for row in rows if exact_id in clean(row.get("z") or row.get("u") or row.get("n"))]
     exact_ok = bool(exact and "ai infra" in clean(exact[0].get("r")).lower())
     if not exact_ok and not old:
         raise RuntimeError("exact PDD AI Infra position is missing and no previous valid priority feed exists")
@@ -247,7 +226,7 @@ def main() -> int:
         "sources": source_runs,
     }
     STATUS.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"priority_jobs": len(rows), "exact_pdd_position_ok": exact_ok, "sources": [(x["name"], x["count"], x["preserved_previous"]) for x in source_runs]}, ensure_ascii=False))
+    print(json.dumps({"priority_jobs": len(rows), "exact_pdd_position_ok": exact_ok, "sources": [(row["name"], row["count"], row["preserved_previous"]) for row in source_runs]}, ensure_ascii=False))
     return 0
 
 

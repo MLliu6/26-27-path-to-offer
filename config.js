@@ -1,9 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
-  buildVersion: '1.1.0-pdd-source-fix',
-  // Keep the stable logical feed name for compatibility. After enhancement
-  // bundles load, fetch() prefers the smaller China-first official feed and
-  // falls back to the global catalogue if a refresh has not published it yet.
+  buildVersion: '1.2.2-production-fix',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -14,6 +11,9 @@ window.PTO_CONFIG = Object.freeze({
   githubOAuthProxy: '',
   githubClientId: '',
   githubOAuthScopes: 'read:user user:email',
+  vaultRepositoryOwner: 'MLliu6',
+  vaultRepositoryName: '26-27-path-to-offer',
+  adminAccount: 'MLliu6',
 });
 
 window.PTO_ENHANCEMENTS_READY = false;
@@ -101,6 +101,11 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v07.js');
     await loadPtoScript('enhancements-v09.js');
     await loadPtoScript('enhancements-v11.js');
+    await loadPtoScript('account-vault.js');
+    await loadPtoScript('enhancements-v12.js');
+    await loadPtoScript('enhancements-v12-hotfix.js');
+    await loadPtoScript('enhancements-v12-security.js');
+    await loadPtoScript('enhancements-v12-renderfix.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
