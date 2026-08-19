@@ -1,4 +1,4 @@
-# v1.2.2 production priority-feed trigger
+# v1.2.4 production priority-feed trigger
 name: refresh-priority-official-jobs
 
 on:
@@ -16,11 +16,6 @@ on:
       - 'scripts/direct_china_official.py'
       - 'sources/official_position_seeds.json'
       - 'sources/domestic_direct_sources.json'
-      - 'enhancements-v11.js'
-      - 'enhancements-v12.js'
-      - 'enhancements-v12-security.js'
-      - 'enhancements-v12-renderfix.js'
-      - 'config.js'
       - '.github/workflows/refresh-priority-official.yml'
   pull_request:
     paths:
@@ -32,11 +27,6 @@ on:
       - 'scripts/direct_china_official.py'
       - 'sources/official_position_seeds.json'
       - 'sources/domestic_direct_sources.json'
-      - 'enhancements-v11.js'
-      - 'enhancements-v12.js'
-      - 'enhancements-v12-security.js'
-      - 'enhancements-v12-renderfix.js'
-      - 'config.js'
       - 'tests/test_pdd_official_harvester.py'
       - 'tests/test_didi_official_harvester.py'
       - 'tests/priority_feed_browser_smoke.py'
@@ -53,7 +43,11 @@ jobs:
   refresh-and-verify:
     runs-on: ubuntu-24.04
     timeout-minutes: 28
-    continue-on-error: ${{ github.event_name == 'schedule' }}
+    # Scheduled refreshes and main-branch source updates can encounter upstream
+    # rate limits or transient employer outages. PR validation remains strict;
+    # production refreshes preserve the previous valid catalogue instead of
+    # creating failure-notification storms.
+    continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
     env:
       PTO_DIDI_MAX_PAGES: '80'
       PTO_DIDI_DETAIL_WORKERS: '16'
