@@ -2,11 +2,10 @@ name: static-checks
 
 on:
   push:
-    # 定时抓取只会改这三份生成数据；不要因此每两小时再完整跑一遍静态/浏览器 CI。
+    # 所有 data/** 都是抓取器生成或刷新后的运行时数据。数据刷新不应重复触发整套静态/浏览器 CI，
+    # 否则每 10 分钟/2 小时的正常岗位更新会制造无意义的失败邮件。
     paths-ignore:
-      - 'data/jobs.json'
-      - 'data/jobs_cn.json'
-      - 'data/source_status.json'
+      - 'data/**'
   pull_request:
 
 permissions:
@@ -32,6 +31,7 @@ jobs:
       - name: Check JavaScript and Python syntax
         run: |
           node --check app.js
+          node --check config.js
           node --check matching-core.js
           node --check profile-core-v05.js
           node --check enhancements-v04.js
@@ -151,7 +151,7 @@ jobs:
               assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6+enhancement7+enhancement9, f'mock data leaked: {forbidden}'
           assert "version: '0.9.0'" in config
           assert 'ranking-v09.js' in config and 'enhancements-v09.js' in config
-          assert 'domesticJobsFeed' in config and 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
+          assert 'domesticJobsFeed' in config and 'priorityJobsFeed' in config and 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
           assert 'no account credentials' in federation and 'moka' in federation
           print('Path to Offer v0.9 nationwide-source and calibrated-ranking checks passed.')
           PY
