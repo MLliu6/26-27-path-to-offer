@@ -3,7 +3,7 @@ import vm from 'node:vm';
 import {webcrypto} from 'node:crypto';
 
 globalThis.window=globalThis;
-globalThis.crypto=webcrypto;
+if(!globalThis.crypto)Object.defineProperty(globalThis,'crypto',{value:webcrypto,configurable:true});
 vm.runInThisContext(fs.readFileSync('account-vault.js','utf8'),{filename:'account-vault.js'});
 const V=globalThis.PTO_ACCOUNT_VAULT;
 
