@@ -10,6 +10,7 @@ on:
       - 'scripts/federated_harvester.py'
       - 'scripts/direct_china_official.py'
       - 'scripts/priority_official_harvester.py'
+      - 'scripts/priority_browser_harvester.py'
       - 'scripts/official_site_job_spider.py'
       - 'scripts/official_campaign_discovery.py'
       - 'scripts/soe_directory_harvester.py'
@@ -25,6 +26,7 @@ on:
       - 'sources/federated_sources.json'
       - 'sources/domestic_direct_sources.json'
       - 'sources/priority_official_sources.json'
+      - 'sources/priority_browser_sources.json'
       - 'sources/campus_discovery_sources.json'
       - '.github/workflows/federation-live.yml'
   workflow_dispatch:
@@ -39,7 +41,7 @@ concurrency:
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 58
+    timeout-minutes: 68
     # PR 自动验收只作为外部数据源健康提示：站点超时、反爬、结果数量瞬时变化不能把整个 PR 标红并发失败邮件。
     # workflow_dispatch 保持严格模式；手动触发时任何失败仍会得到真正的红灯。
     continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
@@ -54,13 +56,15 @@ jobs:
       PTO_NCSS_MAX_EXPLICIT: '15000'
       PTO_NCSS_PRIORITY_COMPANIES: '80'
       PTO_NCSS_ALL_MAX_ROWS: '12000'
+      PTO_PRIORITY_BROWSER_TIMEOUT_MS: '26000'
+      PTO_PRIORITY_BROWSER_JD_CHARS: '5000'
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
       - name: Fetch pinned fallback adapter library
         run: |
           git clone --quiet --filter=blob:none https://github.com/simonlin1212/Hiring-Radar.git "$PTO_HIRING_RADAR_DIR"
@@ -74,6 +78,7 @@ jobs:
           PYTHONPATH=. python scripts/merge_public_tables.py
           PYTHONPATH=. python scripts/priority_official_harvester.py
           PYTHONPATH=. python scripts/official_site_job_spider.py
+          PYTHONPATH=. python scripts/priority_browser_harvester.py
           PYTHONPATH=. python scripts/official_campaign_discovery.py
           PYTHONPATH=. python scripts/soe_directory_harvester.py
           PYTHONPATH=. python scripts/university_2027_discovery.py
@@ -95,10 +100,11 @@ jobs:
           names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')+' '+j.get('x','')) for j in cn_jobs).lower()
           for q in ['京东','腾讯','字节','北京','美团','航天科工','银河通用','中国银行','宇树','小鹏']:
               assert q.lower() in names, f'{q} missing from China-first feed'
-          direct=next((s for s in status.get('sources',[]) if s.get('name')=='direct-china-official'),None); assert direct and direct.get('ok')
+          by_name={s.get('name'):s for s in status.get('sources',[]) if isinstance(s,dict)}
+          direct=by_name.get('direct-china-official'); assert direct and direct.get('ok')
           companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
           assert companies.get('美团',{}).get('count',0)>=50 and companies.get('腾讯',{}).get('count',0)>=100
-          priority=next((s for s in status.get('sources',[]) if s.get('name')=='priority-official-sources'),None); assert priority and priority.get('ok')
+          priority=by_name.get('priority-official-sources'); assert priority and priority.get('ok')
           pdiag=priority.get('diagnostics') or {}; adapters=pdiag.get('adapters') or []; assert pdiag.get('watch_total',0)>=50
           campaigns=lambda company:[x for x in adapters if x.get('company')==company and x.get('type')=='campaign']
           assert sum(x.get('count',0) for x in campaigns('航天科工集团'))>=9
@@ -106,13 +112,19 @@ jobs:
           assert sum(x.get('count',0) for x in campaigns('宇树科技'))>=7
           assert sum(x.get('count',0) for x in campaigns('小鹏集团'))>=4
           assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3
-          site_spider=next((s for s in status.get('sources',[]) if s.get('name')=='employer-site-job-spider'),None); assert site_spider is not None
-          campaign=next((s for s in status.get('sources',[]) if s.get('name')=='official-campaign-discovery'),None); assert campaign and (campaign.get('diagnostics') or {}).get('portals',0)>=50
-          soe=next((s for s in status.get('sources',[]) if s.get('name')=='central-soe-official-directory'),None); assert soe is not None
-          university=next((s for s in status.get('sources',[]) if s.get('name')=='university-2027-discovery'),None); assert university is not None
-          ncss=next((s for s in status.get('sources',[]) if s.get('name')=='ncss-2027-public'),None); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500, ncss
+          browser_group=by_name.get('priority-browser-official'); assert browser_group is not None
+          bdiag=browser_group.get('diagnostics') or {}
+          assert bdiag.get('target_count',0)>=9, bdiag
+          browser_companies={x.get('company') for x in bdiag.get('sources',[]) if isinstance(x,dict)}
+          for company in ['辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI']:
+              assert company in browser_companies, company
+          site_spider=by_name.get('employer-site-job-spider'); assert site_spider is not None
+          campaign=by_name.get('official-campaign-discovery'); assert campaign and (campaign.get('diagnostics') or {}).get('portals',0)>=50
+          soe=by_name.get('central-soe-official-directory'); assert soe is not None
+          university=by_name.get('university-2027-discovery'); assert university is not None
+          ncss=by_name.get('ncss-2027-public'); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500, ncss
           ndiag=ncss.get('diagnostics') or {}; assert ndiag.get('beijing_technical_rows',0)>=8 and ndiag.get('state_owned_rows',0)>=10, ndiag
-          ncss_all=next((s for s in status.get('sources',[]) if s.get('name')=='ncss-current-all'),None); assert ncss_all and ncss_all.get('ok') and ncss_all.get('count',0)>=100, ncss_all
+          ncss_all=by_name.get('ncss-current-all'); assert ncss_all and ncss_all.get('ok') and ncss_all.get('count',0)>=100, ncss_all
           meituan=[j for j in cn_jobs if '美团' in j.get('c','')]; mt_bj=[j for j in meituan if '北京' in j.get('l','')]
           tech=('大模型','算法','ai','推理','infra','研发','开发','技术','机器学习','多模态')
           mt_bj_tech=[j for j in mt_bj if any(t in (j.get('r','')+' '+j.get('d','')).lower() for t in tech)]; assert mt_bj and mt_bj_tech
@@ -125,6 +137,7 @@ jobs:
           obvious=['united states','germany','france','singapore','tokyo','india']; overseas=sum(1 for j in cn_jobs if any(x in str(j.get('l','')).lower() for x in obvious)); assert overseas <= max(10,len(cn_jobs)//200)
           print('DIRECT_COMPANIES=',[(k,v.get('count'),v.get('ok')) for k,v in companies.items()])
           print('PRIORITY_WATCH=',pdiag.get('watch_ok'),'/',pdiag.get('watch_total'),'root_2027=',pdiag.get('watch_2027'))
+          print('PRIORITY_BROWSER=',browser_group.get('count'),bdiag.get('fresh_companies'),[(x.get('company'),x.get('count'),x.get('preserved_previous')) for x in bdiag.get('sources',[])])
           print('SITE_SPIDER=',site_spider.get('count'),site_spider.get('diagnostics'))
           print('PRIORITY_CAMPAIGNS=',[(x.get('company'),x.get('count'),x.get('ok')) for x in adapters if x.get('type')=='campaign'])
           print('NCSS_TARGETED=',ncss.get('count'),ndiag)
