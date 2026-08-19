@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
-  buildVersion: '1.2.2-production-fix',
+  buildVersion: '1.2.3-source-admin-gate',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -106,6 +106,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v12-hotfix.js');
     await loadPtoScript('enhancements-v12-security.js');
     await loadPtoScript('enhancements-v12-renderfix.js');
+    await loadPtoScript('enhancements-v12-adminfix.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
