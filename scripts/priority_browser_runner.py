@@ -88,6 +88,16 @@ def is_feishu_entry(entry) -> bool:
         return False
 
 
+def mark_feishu_job_posts(capture) -> None:
+    """Record that a concrete Feishu public job-list response was parsed."""
+    setattr(capture, "_feishu_job_post_responses", int(getattr(capture, "_feishu_job_post_responses", 0)) + 1)
+
+
+def has_feishu_job_posts(capture) -> bool:
+    """Return whether the authoritative Feishu job-list endpoint has responded."""
+    return int(getattr(capture, "_feishu_job_post_responses", 0)) > 0
+
+
 def feishu_job_rows(payload) -> list[dict]:
     """Return only direct Feishu Hire position rows, never their nested metadata."""
     if not isinstance(payload, dict):
@@ -303,14 +313,14 @@ def install() -> None:
                     payload = response.json()
                     rows = feishu_job_rows(payload)
                     capture.json_responses += 1
+                    mark_feishu_job_posts(capture)
                     if len(capture.response_urls) < 30 and response.url not in capture.response_urls:
                         capture.response_urls.append(response.url)
-                    # Remove any rendered-link fallback rows captured before the
-                    # XHR arrived. Once the official list response is available,
-                    # it is the authoritative transport for this Feishu source.
+                    # Once the official list response exists, remove any page/DOM
+                    # fallback rows that may have been captured before its XHR.
                     capture.jobs = {
                         key: value for key, value in capture.jobs.items()
-                        if value.get("observed_via") != "browser-rendered-dom"
+                        if value.get("observed_via") not in {"browser-rendered-dom", "browser-current-job-page"}
                     }
                     for row in rows:
                         capture.json_candidates += 1
@@ -349,12 +359,11 @@ def install() -> None:
 
     def collect_dom(entry, page, capture):
         before = len(capture.jobs)
+        # Generic same-host JSON responses must not disable the fallback. Only a
+        # successfully parsed Feishu `job/posts` response is authoritative.
+        if is_feishu_entry(entry) and has_feishu_job_posts(capture):
+            return 0
         capture.add(current_page_job(entry, page))
-        # For Feishu, once a concrete public job_post_list response is parsed,
-        # DOM cards are only a second rendering of the same rows and would double
-        # count them. Keep DOM as a fallback only when no list response arrived.
-        if is_feishu_entry(entry) and capture.json_responses > 0:
-            return len(capture.jobs) - before
         base_collect_dom(entry, page, capture)
         return len(capture.jobs) - before
 
