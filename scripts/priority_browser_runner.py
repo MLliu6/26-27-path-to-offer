@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Install public-ATS schema adapters, then run the generic browser harvester.
+"""Install reviewed public-ATS/page adapters, then run the browser harvester.
 
 The generic collector intentionally keeps a conservative field vocabulary so
-filter metadata cannot be mistaken for jobs.  This runner adds reviewed schema
-aliases for ATS families that we have actually observed in employer public UI
-traffic.  It does not add another transport or bypass any access control.
+filter metadata cannot be mistaken for jobs. This runner adds reviewed schema
+aliases for ATS families observed in employer public UI traffic and a browser
+fallback for employer pages whose *current document* is itself a job detail.
+It does not add another transport or bypass any access control.
 """
 from __future__ import annotations
 
+import re
 from urllib.parse import quote
 
 from scripts import priority_browser_harvester as h
@@ -34,9 +36,88 @@ EXTRA_UPDATED_KEYS = (
     "postdate", "post_date", "modifiedtime", "modified_time", "createdtime", "created_time",
 )
 
+DUTY_RE = re.compile(r"岗位职责|工作职责|职位职责|职位描述|工作内容|responsibilit|job\s*description", re.I)
+QUAL_RE = re.compile(r"任职要求|任职资格|职位要求|岗位要求|基本要求|qualifications?|requirements?", re.I)
+NOISE_HEADING_RE = re.compile(r"^(?:recruitment|招聘|招聘信息|人才招聘|加入我们|校园招聘|社会招聘)$", re.I)
+
 
 def extend(existing, extra):
     return tuple(dict.fromkeys([*existing, *extra]))
+
+
+def page_job_from_text(entry, page_url: str, headings, body: str):
+    """Normalize one public employer page only when it is clearly a job detail."""
+    company = h.clean(entry.get("company"))
+    body = h.clean(body)
+    if not company or not page_url.startswith(("http://", "https://")):
+        return None
+    if len(body) < 180 or not DUTY_RE.search(body) or not QUAL_RE.search(body):
+        return None
+
+    role = ""
+    for raw in headings or []:
+        candidate = h.clean(raw).strip(" -—–|｜:：[]【】")
+        candidate = re.sub(r"^(?:全职|实习)[-—–\s]*", "", candidate, flags=re.I)
+        if NOISE_HEADING_RE.fullmatch(candidate):
+            continue
+        if h.looks_like_role(candidate, strict=True):
+            role = candidate[:140]
+            break
+    if not role:
+        # A number of older corporate CMS pages render the role immediately
+        # after a generic "Recruitment" heading. Recover only a short line that
+        # still contains an explicit role signal; never invent a title.
+        for candidate in re.split(r"[\n|｜•·]+", body[:1800]):
+            candidate = h.clean(candidate).strip(" -—–|｜:：[]【】")
+            if h.looks_like_role(candidate, strict=True):
+                role = candidate[:140]
+                break
+    if not role:
+        return None
+
+    location = h.location_from_text(" ".join([role, body[:2500]]))
+    batch = "2027校园招聘" if ("2027" in body or "27届" in body) else h.clean(entry.get("batch")) or "公开招聘"
+    source = f"direct-official:browser:{h.clean(entry.get('id'))}"
+    job = {
+        "source": source,
+        "source_label": f"{company}招聘官网 · 浏览器岗位详情",
+        "source_url": h.clean(entry.get("official_url") or entry.get("start_url")),
+        "updated_at": "",
+        "company": company,
+        "department": "",
+        "role": role,
+        "location": location,
+        "salary": "",
+        "batch": batch,
+        "company_type": h.clean(entry.get("company_type")),
+        "industry": h.clean(entry.get("category")),
+        "graduation": "2027届" if "2027" in batch else "",
+        "education": "",
+        "notice_url": page_url,
+        "apply_url": page_url,
+        "jd": body[: h.MAX_JD],
+        "tags": ["企业官网", "浏览器岗位详情", batch],
+        "observed_via": "browser-current-job-page",
+        "position_id": "",
+    }
+    job["id"] = h.stable_id(company, role, location, page_url)
+    return job
+
+
+def current_page_job(entry, page):
+    try:
+        snapshot = page.evaluate(
+            """() => ({
+              url: location.href,
+              headings: Array.from(document.querySelectorAll('h1,h2,h3')).slice(0,16).map(x => (x.innerText||x.textContent||'').trim()),
+              body: (document.body && (document.body.innerText||document.body.textContent) || '').trim()
+            })"""
+        )
+    except Exception:
+        return None
+    if not isinstance(snapshot, dict):
+        return None
+    return page_job_from_text(entry, h.clean(snapshot.get("url")), snapshot.get("headings") or [], snapshot.get("body") or "")
 
 
 def install() -> None:
@@ -67,6 +148,16 @@ def install() -> None:
         return job
 
     h.normalize_json_job = normalize_json_job
+
+    base_collect_dom = h.collect_dom
+
+    def collect_dom(entry, page, capture):
+        before = len(capture.jobs)
+        capture.add(current_page_job(entry, page))
+        base_collect_dom(entry, page, capture)
+        return len(capture.jobs) - before
+
+    h.collect_dom = collect_dom
 
 
 def main() -> int:
