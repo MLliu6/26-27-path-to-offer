@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 
 from scripts import priority_browser_harvester as h
-from scripts.priority_browser_runner import install, page_job_from_text
+from scripts.priority_browser_runner import install, normalize_heading, page_job_from_text
 
 
 class PriorityBrowserRunnerTests(unittest.TestCase):
@@ -66,6 +66,10 @@ class PriorityBrowserRunnerTests(unittest.TestCase):
         self.assertEqual(job["role"], "资深SoC设计工程师")
         self.assertEqual(job["apply_url"], "https://www.rhino.auto/SoCdesign")
         self.assertEqual(job["observed_via"], "browser-current-job-page")
+
+    def test_bracketed_location_metadata_is_removed_from_role(self):
+        self.assertEqual(normalize_heading("【全职-上海】芯片功能安全工程师"), "芯片功能安全工程师")
+        self.assertEqual(normalize_heading("〖实习-北京〗CUDA算子工程师"), "CUDA算子工程师")
 
     def test_generic_company_page_is_not_invented_as_job(self):
         entry = {"id": "x", "company": "测试公司", "official_url": "https://example.com"}
