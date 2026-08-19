@@ -224,6 +224,20 @@ class OfficialSourceGraphTests(unittest.TestCase):
             "https://jobs.ashbyhq.com/applied/11111111-1111-1111-1111-111111111111/application",
         )
 
+    def test_semantic_ats_query_keys_survive_tracking_cleanup(self):
+        self.assertEqual(
+            graph_canonical_url("https://vrfi1sk8a0.jobs.feishu.cn/379481/?project=7495675705720965415&utm_source=x"),
+            "https://vrfi1sk8a0.jobs.feishu.cn/379481?project=7495675705720965415",
+        )
+        self.assertEqual(
+            graph_canonical_url("https://kunlunxin.zhiye.com/xiangqing?jobId=151190919&from=homepage"),
+            "https://kunlunxin.zhiye.com/xiangqing?jobId=151190919",
+        )
+        self.assertEqual(
+            graph_canonical_url("https://wecruit.hotjob.cn/SU123/pb/school.html?projectCode=102101&utm_source=x"),
+            "https://wecruit.hotjob.cn/SU123/pb/school.html?projectCode=102101",
+        )
+
     def test_shared_ats_position_urls_collapse_to_company_boards(self):
         cases = [
             ("https://jobs.ashbyhq.com/applied/11111111-1111-1111-1111-111111111111/application", "https://jobs.ashbyhq.com/applied"),
