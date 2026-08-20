@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '1.3.0',
-  buildVersion: '1.3.0-universal-resume-official-sources',
+  version: '1.4.0',
+  buildVersion: '1.4.0-product-hardening-fit-search-sources',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -215,6 +215,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('ranking-v07.js');
     await loadPtoScript('ranking-v09.js');
     await loadPtoScript('ranking-v13.js');
+    await loadPtoScript('ranking-v14.js');
     await loadPtoScript('market-v06.js');
     await loadPtoScript('enhancements-v05.js');
     await loadPtoScript('enhancements-v06.js');
@@ -228,6 +229,8 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v12-renderfix.js');
     await loadPtoScript('enhancements-v12-adminfix.js');
     await loadPtoScript('enhancements-v13.js');
+    await loadPtoScript('enhancements-v14.js');
+    await loadPtoScript('score-explain-v14.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {

@@ -1,4 +1,4 @@
-# v1.3 production priority-feed trigger
+# v1.4 production priority-feed trigger
 name: refresh-priority-official-jobs
 
 on:
@@ -18,6 +18,10 @@ on:
       - 'sources/moka_priority_sources.json'
       - 'sources/official_position_seeds.json'
       - 'sources/domestic_direct_sources.json'
+      - 'config.js'
+      - 'ranking-v14.js'
+      - 'enhancements-v14.js'
+      - 'score-explain-v14.js'
       - '.github/workflows/refresh-priority-official.yml'
   pull_request:
     paths:
@@ -36,6 +40,11 @@ on:
       - 'tests/test_didi_official_harvester.py'
       - 'tests/test_didi_ui_priority_seed.py'
       - 'tests/priority_feed_browser_smoke.py'
+      - 'config.js'
+      - 'ranking-v14.js'
+      - 'enhancements-v14.js'
+      - 'score-explain-v14.js'
+      - 'tests/v14_source_resilience_smoke.py'
       - '.github/workflows/refresh-priority-official.yml'
 
 permissions:

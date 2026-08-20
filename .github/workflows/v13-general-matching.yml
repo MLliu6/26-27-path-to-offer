@@ -72,7 +72,7 @@ jobs:
       - name: Product invariants
         run: |
           python - <<'PY'
-          import json
+          import json,re
           from pathlib import Path
           taxonomy=Path('career-taxonomy-v13.js').read_text(encoding='utf-8')
           ranking=Path('ranking-v13.js').read_text(encoding='utf-8')
@@ -88,8 +88,8 @@ jobs:
               assert token in ranking, token
           assert "state.preferences.targetDirections=[]" in enhancement
           assert "state.preferences.targetLocations=[]" in enhancement
-          assert "version: '1.3.0'" in config
-          assert "buildVersion: '1.3.0-universal-resume-official-sources'" in config
+          version=re.search(r"version:\s*'(\d+)\.(\d+)\.(\d+)'",config)
+          assert version and tuple(map(int,version.groups())) >= (1,3,0), version.groups() if version else None
           assert config.index("career-taxonomy-v13.js") < config.index("profile-core-v05.js")
           assert config.index("ranking-v13.js") < config.index("market-v06.js")
           assert 'enhancements-v13.js' in config
@@ -107,7 +107,7 @@ jobs:
           required={'spacechina-iguopin','cssc-iguopin','cetc-iguopin','chng-iguopin','cnooc-iguopin','cnbm-iguopin'}
           assert required.issubset({x.get('id') for x in iguopin})
           assert all('gp-api.iguopin.com' in (x.get('api_hosts') or []) for x in iguopin)
-          print('Path to Offer v1.3 universal matching / Moka / SOE-bank invariants: PASS')
+          print('Path to Offer v1.3+ universal matching / Moka / SOE-bank invariants: PASS')
           PY
       - name: Live IGuopin employer request probe
         run: PYTHONPATH=. python tests/iguopin_browser_probe.py
