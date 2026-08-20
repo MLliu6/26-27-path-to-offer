@@ -6,10 +6,12 @@ on:
       - 'ranking-v14.js'
       - 'enhancements-v14.js'
       - 'score-explain-v14.js'
+      - 'pipeline-timeline-v14.js'
       - 'config.js'
       - 'docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md'
       - 'tests/v14_score_calibration.mjs'
       - 'tests/v14_source_resilience_smoke.py'
+      - 'tests/v14_pipeline_timeline_smoke.py'
       - '.github/workflows/v14-product-hardening.yml'
   push:
     branches: [main]
@@ -17,10 +19,12 @@ on:
       - 'ranking-v14.js'
       - 'enhancements-v14.js'
       - 'score-explain-v14.js'
+      - 'pipeline-timeline-v14.js'
       - 'config.js'
       - 'docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md'
       - 'tests/v14_score_calibration.mjs'
       - 'tests/v14_source_resilience_smoke.py'
+      - 'tests/v14_pipeline_timeline_smoke.py'
       - '.github/workflows/v14-product-hardening.yml'
 
 permissions:
@@ -33,7 +37,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 18
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -49,9 +53,10 @@ jobs:
           node --check ranking-v14.js
           node --check enhancements-v14.js
           node --check score-explain-v14.js
+          node --check pipeline-timeline-v14.js
           node --check config.js
           node tests/v14_score_calibration.mjs
-          python -m py_compile tests/v14_source_resilience_smoke.py
+          python -m py_compile tests/v14_source_resilience_smoke.py tests/v14_pipeline_timeline_smoke.py
       - name: Product invariants
         run: |
           python - <<'PY'
@@ -61,6 +66,7 @@ jobs:
           ranking=Path('ranking-v14.js').read_text(encoding='utf-8')
           enhancement=Path('enhancements-v14.js').read_text(encoding='utf-8')
           explainer=Path('score-explain-v14.js').read_text(encoding='utf-8')
+          timeline=Path('pipeline-timeline-v14.js').read_text(encoding='utf-8')
           report=Path('docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md').read_text(encoding='utf-8')
           assert re.search(r"version:\s*'1\.4\.0'",config)
           assert "buildVersion: '1.4.0-product-hardening-fit-search-sources'" in config
@@ -70,16 +76,19 @@ jobs:
               assert token in ranking, token
           for token in ['Promise.all','PTO_FEED_RUNTIME','usedPrevious','部分信源降级','pto-market-summary','恢复全部','打开招聘源']:
               assert token in enhancement, token
-          for token in ['匹配评分明细','来源可信度 / 7','pto-score-audit']:
+          for token in ['匹配评分明细','来源可信度 / 7','pto-score-audit','pipeline-timeline-v14.js']:
               assert token in explainer, token
+          for token in ['pipeline-mini-timeline','状态轨迹','MAX_VISIBLE=4','renderPipeline']:
+              assert token in timeline, token
           for token in ['Match Score','Evidence Confidence','60,000','P0-3']:
               assert token in report, token
           print('Path to Offer v1.4 product invariants: PASS')
           PY
-      - name: Browser source resilience
+      - name: Browser source resilience and kanban timeline
         run: |
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/pto-v14-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           sleep 1
           python tests/v14_source_resilience_smoke.py
+          python tests/v14_pipeline_timeline_smoke.py
