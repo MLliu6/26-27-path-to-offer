@@ -17,6 +17,7 @@ on:
       - 'scripts/priority_official_harvester.py'
       - 'scripts/priority_browser_harvester.py'
       - 'scripts/priority_browser_runner.py'
+      - 'scripts/priority_browser_runtime.py'
       - 'scripts/official_site_job_spider.py'
       - 'scripts/official_campaign_discovery.py'
       - 'scripts/official_source_graph.py'
@@ -121,7 +122,7 @@ jobs:
 
       - name: Priority employer real-browser ATS observation
         continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
-        run: PYTHONPATH=. python scripts/priority_browser_runner.py
+        run: PYTHONPATH=. python scripts/priority_browser_runtime.py
 
       - name: Official campaign discovery
         continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
@@ -185,8 +186,10 @@ jobs:
           if date(2026,7,28)<=date.today()<=date(2026,11,30):
               campus=[j for j in shopee_rows if '2027' in str(j.get('g',''))+str(j.get('b',''))+str(j.get('r','')) or '27届' in str(j.get('r',''))+str(j.get('b',''))]
               assert campus, 'Shopee current 2027 campus rows missing'
-              ai_bj=[j for j in campus if '北京' in str(j.get('l','')) and re.search(r'AI\s*(?:基础设施|基础架构|训练\s*/?\s*推理)',str(j.get('r','')),re.I)]
-              assert ai_bj, {'message':'Shopee Beijing AI infrastructure/training-inference family missing','sample':[j.get('r') for j in campus[:20]]}
+              technical_bj=[j for j in campus if '北京' in str(j.get('l','')) and re.search(r'(?:AI|大模型|算法|研发|SRE|基础设施|基础架构|训练|推理)',str(j.get('r','')),re.I)]
+              ai_bj=[j for j in technical_bj if re.search(r'(?:AI|大模型|算法|基础设施|基础架构|训练|推理)',str(j.get('r','')),re.I)]
+              assert len(technical_bj)>=2, {'message':'Shopee Beijing 2027 technical family missing','sample':[j.get('r') for j in campus[:30]]}
+              assert ai_bj, {'message':'Shopee Beijing 2027 AI/large-model family missing','sample':[j.get('r') for j in campus[:30]]}
           direct=by_name.get('direct-china-official'); assert direct and direct.get('ok')
           direct_companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
           assert direct_companies.get('美团',{}).get('count',0)>=50
@@ -206,9 +209,9 @@ jobs:
           assert sum(x.get('count',0) for x in campaigns('银河通用'))>=6
           assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3
           browser_group=by_name.get('priority-browser-official'); assert browser_group is not None
-          bdiag=browser_group.get('diagnostics') or {}; assert bdiag.get('target_count',0)>=15, bdiag
+          bdiag=browser_group.get('diagnostics') or {}; assert bdiag.get('target_count',0)>=28, bdiag
           browser_companies={x.get('company') for x in bdiag.get('sources',[]) if isinstance(x,dict) and x.get('company')}
-          required_browser={'辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI','月之暗面','MiniMax','阶跃星辰','燧原科技','宇树科技','昆仑芯'}
+          required_browser={'辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI','月之暗面','MiniMax','阶跃星辰','燧原科技','宇树科技','昆仑芯','中国航天科技集团','中国船舶集团','中国电子科技集团','中国华能集团','中国海洋石油集团','中国建材集团','中国铝业集团','中国联通','中国建设银行','中国工商银行','中国银行','交通银行','招商银行'}
           assert required_browser.issubset(browser_companies), required_browser-browser_companies
           ncss=by_name.get('ncss-2027-public'); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500
           graph_group=by_name.get('official-source-graph'); assert graph_group is not None
