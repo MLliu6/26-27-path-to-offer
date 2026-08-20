@@ -1,11 +1,58 @@
 {
-  "generated_at": "2026-08-20T03:54:37Z",
-  "catalog_count": 2610,
+  "generated_at": "2026-08-20T04:12:00Z",
+  "catalog_count": 2594,
   "refresh_class": "priority-employer-direct",
   "nominal_interval_minutes": 10,
   "exact_pdd_position_id": "5e4eb6f3-294f-491b-9d39-42895eed98c3",
   "exact_pdd_position_ok": true,
   "sources": [
+    {
+      "name": "didi-direct-official",
+      "label": "滴滴招聘官网 · 浏览器自主直连",
+      "url": "https://talent.didiglobal.com",
+      "ok": true,
+      "count": 16,
+      "fresh_count": 16,
+      "preserved_previous": false,
+      "diagnostics": {
+        "transport": "browser-ui-navigation",
+        "official_url": "https://talent.didiglobal.com",
+        "list_endpoint_observed": "https://talent.didiglobal.com/recruit-portal-service/api/job/front/list",
+        "unique_jobs": 16,
+        "batches": [
+          [
+            "社会招聘",
+            16
+          ]
+        ],
+        "scopes": [
+          {
+            "scope": "社会招聘",
+            "code": "1",
+            "pages": 1,
+            "unique": 16,
+            "observed_page_sizes": [
+              16
+            ],
+            "resolved_routes": [
+              "https://talent.didiglobal.com/social/list/1"
+            ],
+            "errors": [
+              "timeout page=2"
+            ]
+          }
+        ],
+        "priority_mode": "social-first",
+        "priority_page_budget": 6,
+        "deep_scan_scopes": [
+          "social",
+          "campus",
+          "intern",
+          "overseas"
+        ]
+      },
+      "error": ""
+    },
     {
       "name": "pdd-direct-official",
       "label": "拼多多校园招聘官网 · 全量自主直连",
@@ -112,8 +159,8 @@
             "rows_seen": 181
           },
           "2": {
-            "total_reported": 373,
-            "rows_seen": 373
+            "total_reported": 374,
+            "rows_seen": 374
           }
         },
         "page_size": 100,
