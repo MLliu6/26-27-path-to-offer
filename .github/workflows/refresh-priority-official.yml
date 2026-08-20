@@ -29,6 +29,7 @@ on:
       - 'sources/domestic_direct_sources.json'
       - 'tests/test_pdd_official_harvester.py'
       - 'tests/test_didi_official_harvester.py'
+      - 'tests/test_didi_ui_priority_seed.py'
       - 'tests/priority_feed_browser_smoke.py'
       - '.github/workflows/refresh-priority-official.yml'
 
@@ -61,7 +62,7 @@ jobs:
       - name: Unit-test employer adapters
         id: unit
         continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
-        run: PYTHONPATH=. python -m unittest -v tests.test_pdd_official_harvester tests.test_didi_official_harvester
+        run: PYTHONPATH=. python -m unittest -v tests.test_pdd_official_harvester tests.test_didi_official_harvester tests.test_didi_ui_priority_seed
 
       - name: Collect fast direct sources
         id: fast
@@ -97,11 +98,15 @@ jobs:
           assert (didi.get('diagnostics') or {}).get('transport') == 'browser-ui-navigation', didi
           didi_rows=[j for j in jobs if j.get('s')=='direct-official:didi']
           assert len(didi_rows)>=16 and all(j.get('u','').startswith('https://talent.didiglobal.com/') for j in didi_rows)
+          didi_social=[j for j in didi_rows if ('社会' in str(j.get('b','')) or '社招' in str(j.get('b','')) or '/social/' in str(j.get('u','') or j.get('n','')).lower())]
+          fresh_count=int(didi.get('fresh_count') or 0)
+          assert fresh_count>=16, didi
+          assert len(didi_social)==fresh_count, {'social_rows':len(didi_social),'fresh_count':fresh_count,'didi':didi}
           categories=dict((pdd.get('diagnostics') or {}).get('categories') or [])
           for category in ['技术','产品','职能']:
               assert category in categories, categories
           print('PDD:',pdd.get('count'),categories)
-          print('DiDi UI:',didi.get('count'),(didi.get('diagnostics') or {}).get('batches'))
+          print('DiDi UI:',didi.get('count'),(didi.get('diagnostics') or {}).get('batches'),'social=',len(didi_social),'fresh=',fresh_count)
           PY
 
       - name: Browser-test priority feed merge and official apply link
