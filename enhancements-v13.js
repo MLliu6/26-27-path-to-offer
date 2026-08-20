@@ -29,8 +29,6 @@
     return profile;
   }
 
-  // Future file uploads and pasted resumes both call buildResumeProfile. Force a
-  // v13 career-domain stamp after all previous section-aware wrappers run.
   if(typeof buildResumeProfile==='function'){
     const previousBuild=buildResumeProfile;
     buildResumeProfile=function(rawText,fileName){
@@ -42,11 +40,7 @@
   }
 
   function resetResumeDerivedPrefs(beforeLocations=[]){
-    // Target directions must never leak from a previously uploaded candidate.
-    // Users can still set a manual direction afterwards in the profile inspector.
     state.preferences.targetDirections=[];
-    // v0.7 silently injected Beijing after any resume. Undo that only when the
-    // user had no explicit location preference before this upload.
     if(!beforeLocations.length)state.preferences.targetLocations=[];
     const threshold=$('#scoreThreshold');if(threshold)threshold.value='25';
     const label=$('#scoreThresholdLabel');if(label)label.textContent=threshold?.value||'25';
@@ -70,8 +64,6 @@
     };
   }
 
-  // Pasted-resume path does not go through handleResumeFile. Observe the actual
-  // active-resume change and apply exactly the same preference reset.
   document.addEventListener('click',event=>{
     const button=event.target.closest?.('#parsePastedResume');if(!button)return;
     const beforeId=typeof currentProfile==='function'?currentProfile()?.id||'':'';
@@ -83,9 +75,6 @@
     },220);
   },true);
 
-  // Existing local profiles are upgraded from the old tech-only ontology when
-  // plaintext is still available. Profiles whose raw text was deliberately
-  // deleted are left untouched rather than guessed from old derived signals.
   function migrateProfiles(){
     let changed=false;
     for(const profile of state.resumes||[]){
@@ -116,6 +105,46 @@
     const first=$('#ptoFlow .pto-flow-step:nth-child(2) small');
     const profile=typeof currentProfile==='function'?currentProfile():null;
     if(first&&profile)first.textContent=profile.signals?.primaryCareerDomain||`${profile.signals?.skills?.length||0} 个简历信号`;
+  }
+
+  function canonicalText(value){return String(value||'').trim().replace(/\s+/g,' ').toLowerCase();}
+  function canonicalUrl(value){
+    const raw=String(value||'').trim();if(!raw)return '';
+    try{
+      const url=new URL(raw,window.location.href);url.hash='';
+      for(const key of ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','spm','from'])url.searchParams.delete(key);
+      return `${url.origin}${url.pathname.replace(/\/+$/,'')||'/'}${url.search}`.toLowerCase();
+    }catch(_){return raw.replace(/#.*$/,'').replace(/\/+$/,'').toLowerCase();}
+  }
+  function normalizedJobKeys(job){
+    const company=canonicalText(job?.company),role=canonicalText(job?.role),location=canonicalText(job?.location);
+    const keys=[];
+    for(const value of [job?.applyUrl,job?.noticeUrl]){
+      const url=canonicalUrl(value);if(url&&company&&role)keys.push(`url:${url}|${company}|${role}`);
+    }
+    if(company&&role&&location)keys.push(`fallback:${company}|${role}|${location}`);
+    if(!keys.length&&company&&role)keys.push(`role:${company}|${role}`);
+    return [...new Set(keys)];
+  }
+  function dedupeNormalizedMarketJobs(rows){
+    const ranked=[...(Array.isArray(rows)?rows:[])].sort((a,b)=>Number(b?.sourceTier||0)-Number(a?.sourceTier||0));
+    const kept=[];const seen=new Set();
+    for(const job of ranked){
+      const keys=normalizedJobKeys(job);
+      if(keys.length&&keys.some(key=>seen.has(key)))continue;
+      keys.forEach(key=>seen.add(key));kept.push(job);
+    }
+    return kept;
+  }
+
+  if(typeof loadFeeds==='function'){
+    const previousLoadFeeds=loadFeeds;
+    loadFeeds=async function(){
+      await previousLoadFeeds.apply(this,arguments);
+      marketJobs=dedupeNormalizedMarketJobs(marketJobs);
+      if(typeof renderDiscovery==='function')renderDiscovery();
+      return marketJobs;
+    };
   }
 
   const oldRenderAll=typeof renderAll==='function'?renderAll:null;
