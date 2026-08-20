@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '0.9.0',
-  buildVersion: '1.3.0-general-resume-moka',
+  version: '1.3.0',
+  buildVersion: '1.3.0-universal-resume-official-sources',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
