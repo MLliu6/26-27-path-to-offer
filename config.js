@@ -1,12 +1,13 @@
 window.PTO_CONFIG = Object.freeze({
   version: '0.9.0',
-  buildVersion: '1.2.7-priority-safe-url-dedupe',
+  buildVersion: '1.3.0-general-resume-moka',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
   priorityJobsFeed: './data/jobs_priority.json',
   sourceStatusFeed: './data/source_status.json',
   prioritySourceStatusFeed: './data/priority_source_status.json',
+  fullScoreLimit: 5600,
   interviewAssetsRepo: 'https://github.com/MLliu6/26-27-interview',
   githubOAuthProxy: '',
   githubClientId: '',
@@ -29,9 +30,6 @@ function ptoCanonicalUrl(value) {
   try {
     const url = new URL(raw, window.location.href);
     url.hash = '';
-    // Remove only standard UTM tracking parameters. Generic query keys such as
-    // `source` or `from` may be part of an ATS's business routing semantics and
-    // must not be dropped during cross-feed identity construction.
     const removable = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'];
     removable.forEach(key => url.searchParams.delete(key));
     return `${url.origin}${url.pathname.replace(/\/+$/, '') || '/'}${url.search}`.toLowerCase();
@@ -48,9 +46,6 @@ function ptoJobKey(job) {
   const positionId = ptoCanonicalText(job.z || job.position_id);
   const applyUrl = ptoCanonicalUrl(job.u || job.apply_url || job.url);
   const noticeUrl = ptoCanonicalUrl(job.n || job.notice_url);
-  // Cross-feed IDs and position-id availability differ by collector. Concrete
-  // employer detail URLs are the strongest shared identity; priority rows are
-  // iterated first and therefore win when a domestic duplicate has another ID.
   if (applyUrl && company && role) return `apply:${applyUrl}|${company}|${role}`;
   if (noticeUrl && company && role) return `notice:${noticeUrl}|${company}|${role}`;
   if (positionId && company) return `position:${company}|${positionId}`;
@@ -201,11 +196,13 @@ function loadPtoScript(src) {
 window.addEventListener('load', async () => {
   try {
     await loadPtoScript('matching-core.js');
+    await loadPtoScript('career-taxonomy-v13.js');
     await loadPtoScript('profile-core-v05.js');
     await loadPtoScript('enhancements-v04.js');
     await loadPtoScript('ranking-v06.js');
     await loadPtoScript('ranking-v07.js');
     await loadPtoScript('ranking-v09.js');
+    await loadPtoScript('ranking-v13.js');
     await loadPtoScript('market-v06.js');
     await loadPtoScript('enhancements-v05.js');
     await loadPtoScript('enhancements-v06.js');
@@ -218,6 +215,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v12-security.js');
     await loadPtoScript('enhancements-v12-renderfix.js');
     await loadPtoScript('enhancements-v12-adminfix.js');
+    await loadPtoScript('enhancements-v13.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
