@@ -9,10 +9,14 @@ on:
       - 'config.js'
       - 'scripts/moka_public_harvester.py'
       - 'scripts/priority_direct_feed.py'
+      - 'scripts/priority_browser_harvester.py'
+      - 'scripts/priority_browser_runner.py'
       - 'sources/moka_priority_sources.json'
+      - 'sources/priority_browser_sources.json'
       - 'tests/general_matching_v13.mjs'
       - 'tests/test_moka_public_harvester.py'
       - 'tests/priority_feed_browser_smoke.py'
+      - 'tests/iguopin_browser_probe.py'
       - '.github/workflows/v13-general-matching.yml'
   push:
     branches: [main]
@@ -23,10 +27,14 @@ on:
       - 'config.js'
       - 'scripts/moka_public_harvester.py'
       - 'scripts/priority_direct_feed.py'
+      - 'scripts/priority_browser_harvester.py'
+      - 'scripts/priority_browser_runner.py'
       - 'sources/moka_priority_sources.json'
+      - 'sources/priority_browser_sources.json'
       - 'tests/general_matching_v13.mjs'
       - 'tests/test_moka_public_harvester.py'
       - 'tests/priority_feed_browser_smoke.py'
+      - 'tests/iguopin_browser_probe.py'
       - '.github/workflows/v13-general-matching.yml'
 
 permissions:
@@ -39,7 +47,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 18
+    timeout-minutes: 24
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -57,7 +65,7 @@ jobs:
           node --check enhancements-v13.js
           node --check config.js
           node tests/general_matching_v13.mjs
-          python -m py_compile scripts/moka_public_harvester.py scripts/priority_direct_feed.py tests/test_moka_public_harvester.py tests/priority_feed_browser_smoke.py
+          python -m py_compile scripts/moka_public_harvester.py scripts/priority_direct_feed.py scripts/priority_browser_harvester.py scripts/priority_browser_runner.py tests/test_moka_public_harvester.py tests/priority_feed_browser_smoke.py tests/iguopin_browser_probe.py
           PYTHONPATH=. python -m unittest -v tests.test_moka_public_harvester
       - name: Product invariants
         run: |
@@ -70,6 +78,7 @@ jobs:
           config=Path('config.js').read_text(encoding='utf-8')
           moka=Path('scripts/moka_public_harvester.py').read_text(encoding='utf-8')
           sources=json.loads(Path('sources/moka_priority_sources.json').read_text(encoding='utf-8'))
+          browser_sources=json.loads(Path('sources/priority_browser_sources.json').read_text(encoding='utf-8'))
           for token in ['材料 / 新能源材料 / 工艺研发','法务 / 合规 / 知识产权','产品 / 项目 / 用户研究','生物 / 生物医药 / 制药','公共管理 / 社会科学 / 政策研究']:
               assert token in taxonomy, token
           for token in ['v13-resume-domain-general','domainMismatch','未设置目标城市','FULL_LIMIT','query']:
@@ -85,8 +94,17 @@ jobs:
           shopee=next((x for x in sources.get('sources',[]) if x.get('key')=='shopee'),None)
           assert shopee and shopee.get('org')=='shopee' and int(shopee.get('site'))==2962
           assert 'campus-recruitment/shopee/2962' in shopee.get('official_url','')
-          print('Path to Offer v1.3 universal matching / Moka invariants: PASS')
+          iguopin=[x for x in browser_sources.get('sources',[]) if x.get('family')=='iguopin']
+          banks=[x for x in browser_sources.get('sources',[]) if x.get('family')=='bank']
+          assert len(iguopin)>=8, len(iguopin)
+          assert len(banks)>=5, len(banks)
+          required={'spacechina-iguopin','cssc-iguopin','cetc-iguopin','chng-iguopin','cnooc-iguopin','cnbm-iguopin'}
+          assert required.issubset({x.get('id') for x in iguopin})
+          assert all('gp-api.iguopin.com' in (x.get('api_hosts') or []) for x in iguopin)
+          print('Path to Offer v1.3 universal matching / Moka / SOE-bank invariants: PASS')
           PY
+      - name: Live IGuopin employer request probe
+        run: PYTHONPATH=. python tests/iguopin_browser_probe.py
       - name: Browser priority-feed regression
         run: |
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/pto-v13-http.log 2>&1 &
