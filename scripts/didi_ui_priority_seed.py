@@ -23,9 +23,11 @@ from scripts.aggregate_jobs import clean
 import scripts.didi_browser_ui_harvester as didi_ui
 from scripts.priority_direct_feed import OUT, STATUS, canonical_compact, encode, now
 
-# The broad collector still owns all four scopes. Only this fast lane narrows the
-# active traversal to the route proven to return a real public job list quickly.
-didi_ui.SCOPES[:] = [scope for scope in didi_ui.SCOPES if scope.get("slug") == "social"]
+# The browser module imports SCOPES from didi_official_harvester. Never mutate
+# that shared list in place: doing so silently narrows the deep first-party
+# collector to social-only for every later caller in the same Python process.
+# Rebind only this module's view for the fast lane instead.
+didi_ui.SCOPES = [scope for scope in didi_ui.SCOPES if scope.get("slug") == "social"]
 
 
 def is_didi_social_row(row: dict) -> bool:
