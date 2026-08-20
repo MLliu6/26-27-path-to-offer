@@ -61,4 +61,5 @@
 
   ensureStyles();
   window.PTO_PIPELINE_TIMELINE_V14={timelineEvents,miniTimeline,maxVisible:MAX_VISIBLE};
+  if(typeof renderPipeline==='function')renderPipeline();
 })();
