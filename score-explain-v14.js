@@ -20,4 +20,15 @@
   }
 
   openMarketJob=function(id){const out=baseOpen(id);enhanceAudit(id);return out;};
+
+  // Load the kanban timeline only after the older account/pipeline enhancers have
+  // finished defining pipelineCard. Keeping it last prevents an older override
+  // from silently removing the visible status history.
+  if(!window.PTO_PIPELINE_TIMELINE_V14&&!document.querySelector('script[data-pto-timeline-v14]')){
+    const script=document.createElement('script');
+    script.dataset.ptoTimelineV14='1';
+    script.src=`pipeline-timeline-v14.js?v=${encodeURIComponent(window.PTO_CONFIG?.buildVersion||window.PTO_CONFIG?.version||'1.4.0')}`;
+    script.onerror=()=>console.warn('Path to Offer kanban timeline enhancement failed to load');
+    document.head.appendChild(script);
+  }
 })();
