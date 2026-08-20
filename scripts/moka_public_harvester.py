@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 """Read-only public Moka employer-career harvester.
 
-Moka career sites load their current public job catalogue from the anonymous
-website endpoint below. The response envelope contains both an encrypted payload
-and the ephemeral decryption key needed by the public website. This collector
-implements that public browser contract only: it never calls applicant, login,
-resume-upload or authenticated APIs and never reuses user cookies.
-
-The deep federation can discover Moka tenants from the pinned Hiring-Radar seed
-file, while the ten-minute priority feed uses a small local registry for sources
-we want to regress explicitly (currently Shopee).
+Moka employer career portals expose their current job catalogue to the public
+website through an anonymous endpoint. This collector implements only that
+public browser contract. It never calls applicant/login/resume APIs, reuses user
+cookies, or bypasses access controls.
 """
 from __future__ import annotations
 
@@ -42,9 +37,7 @@ PAGE_SIZE = max(20, min(100, int(os.getenv("PTO_MOKA_PAGE_SIZE", "50"))))
 WORKERS = max(2, min(20, int(os.getenv("PTO_MOKA_WORKERS", "10"))))
 MAX_JD = max(400, min(10000, int(os.getenv("PTO_MOKA_JD_CHARS", "5000"))))
 
-COMPANY_OVERRIDES = {
-    "shopee": "Shopee（深圳虾皮信息科技有限公司）",
-}
+COMPANY_OVERRIDES = {"shopee": "Shopee（深圳虾皮信息科技有限公司）"}
 
 
 def strip_html(value: Any) -> str:
@@ -69,9 +62,9 @@ def parse_date(value: Any) -> str:
         return datetime.fromtimestamp(n, tz=timezone.utc).date().isoformat()
     except Exception:
         pass
-    m = re.search(r"(20\d{2})[-年/.](\d{1,2})[-月/.](\d{1,2})", raw)
-    if m:
-        return f"{int(m.group(1)):04d}-{int(m.group(2)):02d}-{int(m.group(3)):02d}"
+    match = re.search(r"(20\d{2})[-年/.](\d{1,2})[-月/.](\d{1,2})", raw)
+    if match:
+        return f"{int(match.group(1)):04d}-{int(match.group(2)):02d}-{int(match.group(3)):02d}"
     try:
         return datetime.fromisoformat(raw.replace("Z", "+00:00")).date().isoformat()
     except Exception:
@@ -79,12 +72,17 @@ def parse_date(value: Any) -> str:
 
 
 def infer_graduation(text: str) -> str:
-    m = re.search(r"(20(?:2[4-9]|3\d))\s*届", text)
-    if m:
-        return f"{m.group(1)}届"
-    m = re.search(r"\b(20(?:2[4-9]|3\d))\b", text)
-    if m and re.search(r"校招|校园|应届|毕业|秋招|春招|campus|graduate", text, re.I):
-        return f"{m.group(1)}届"
+    """Normalize both `2027届` and common campus shorthand such as `27届`."""
+    text = str(text or "")
+    match = re.search(r"(?<!\d)(20(?:2[4-9]|3\d))\s*届", text)
+    if match:
+        return f"{match.group(1)}届"
+    short = re.search(r"(?<!\d)(2[4-9]|3\d)\s*届", text)
+    if short:
+        return f"20{short.group(1)}届"
+    match = re.search(r"\b(20(?:2[4-9]|3\d))\b", text)
+    if match and re.search(r"校招|校园|应届|毕业|秋招|春招|campus|graduate", text, re.I):
+        return f"{match.group(1)}届"
     return ""
 
 
@@ -102,7 +100,6 @@ def infer_education(text: str) -> str:
 
 
 def parse_moka_seed_file(path: Path = SEED_PATH) -> list[dict[str, Any]]:
-    """Parse only Moka tenant declarations from a public discovery seed file."""
     text = path.read_text(encoding="utf-8")
     out: list[dict[str, Any]] = []
     for raw in text.splitlines():
@@ -187,208 +184,205 @@ def response_jobs(payload: Any) -> list[dict[str, Any]]:
 
 
 def call_page(session: requests.Session, spec: dict[str, Any], offset: int) -> list[dict[str, Any]]:
-    body = {
-        "orgId": spec["org"],
-        "siteId": int(spec["site"]),
-        "locale": "zh-CN",
-        "limit": PAGE_SIZE,
-        "offset": offset,
-    }
+    body = {"orgId": spec["org"], "siteId": int(spec["site"]), "locale": "zh-CN", "limit": PAGE_SIZE, "offset": offset}
     response = session.post(API, json=body, timeout=TIMEOUT)
     response.raise_for_status()
     return response_jobs(decrypt_public_envelope(response.json()))
 
 
 def location_text(row: dict[str, Any]) -> str:
-    values=[]
+    values = []
     for item in row.get("locations") or []:
         if not isinstance(item, dict):
             continue
         for key in ("cityName", "name", "locationName"):
-            value=clean(item.get(key))
+            value = clean(item.get(key))
             if value:
-                values.append(value);break
-    fallback=clean(row.get("location") or row.get("workLocation") or row.get("city"))
+                values.append(value)
+                break
+    fallback = clean(row.get("location") or row.get("workLocation") or row.get("city"))
     if fallback:
         values.append(fallback)
     return "、".join(dict.fromkeys(values))
 
 
 def department_text(row: dict[str, Any]) -> str:
-    dep=row.get("department")
+    dep = row.get("department")
     if isinstance(dep, dict):
         return clean(dep.get("name") or dep.get("title"))
     return clean(dep or row.get("dept") or row.get("team"))
 
 
 def portal_url(spec: dict[str, Any]) -> str:
-    explicit=clean(spec.get("official_url"))
+    explicit = clean(spec.get("official_url"))
     if explicit:
         return explicit
-    kind=clean(spec.get("portal_kind")) or "social-recruitment"
+    kind = clean(spec.get("portal_kind")) or "social-recruitment"
     return f"https://app.mokahr.com/{kind}/{spec['org']}/{spec['site']}#/jobs"
 
 
 def job_url(spec: dict[str, Any], job_id: str) -> str:
-    kind=clean(spec.get("portal_kind")) or "social-recruitment"
+    kind = clean(spec.get("portal_kind")) or "social-recruitment"
     return f"https://app.mokahr.com/{kind}/{spec['org']}/{spec['site']}#/job/{job_id}"
 
 
 def normalize_job(spec: dict[str, Any], row: dict[str, Any]) -> dict[str, Any] | None:
-    title=clean(row.get("title") or row.get("jobName") or row.get("name"))
-    job_id=clean(row.get("id") or row.get("jobId") or row.get("positionId"))
+    title = clean(row.get("title") or row.get("jobName") or row.get("name"))
+    job_id = clean(row.get("id") or row.get("jobId") or row.get("positionId"))
     if not title or not job_id:
         return None
-    company=clean(spec.get("company")) or clean(row.get("company")) or clean(spec.get("key"))
-    location=location_text(row)
-    department=department_text(row)
-    description=strip_html(row.get("jobDescription") or row.get("description") or row.get("jd"))
-    requirement=strip_html(row.get("jobRequirement") or row.get("requirements") or row.get("qualification"))
-    commitment=clean(row.get("commitment") or row.get("jobType") or row.get("type"))
-    category=clean(spec.get("category"))
-    blob=" ".join([title,description,requirement,commitment,department,category])
-    graduation=infer_graduation(blob)
-    campus=bool(re.search(r"2027|27届|2028|28届|校招|校园招聘|应届|秋招|春招|campus|graduate", blob, re.I)) or clean(spec.get("portal_kind"))=="campus-recruitment"
-    batch="校园招聘" if campus else commitment
+    company = clean(spec.get("company")) or clean(row.get("company")) or clean(spec.get("key"))
+    location = location_text(row)
+    department = department_text(row)
+    description = strip_html(row.get("jobDescription") or row.get("description") or row.get("jd"))
+    requirement = strip_html(row.get("jobRequirement") or row.get("requirements") or row.get("qualification"))
+    commitment = clean(row.get("commitment") or row.get("jobType") or row.get("type"))
+    category = clean(spec.get("category"))
+    blob = " ".join([title, description, requirement, commitment, department, category])
+    graduation = infer_graduation(blob)
+    campus = bool(re.search(r"2027|27届|2028|28届|校招|校园招聘|应届|秋招|春招|campus|graduate", blob, re.I)) or clean(spec.get("portal_kind")) == "campus-recruitment"
+    batch = "校园招聘" if campus else commitment
     if graduation:
-        batch=f"{graduation}校园招聘" + (f" · {commitment}" if commitment else "")
-    jd="；".join(part for part in [department and f"部门：{department}", commitment and f"性质：{commitment}", description and f"岗位描述：{description}", requirement and f"任职要求：{requirement}"] if part) or title
-    url=job_url(spec,job_id)
-    salary=""
-    min_salary=clean(row.get("minSalary"));max_salary=clean(row.get("maxSalary"))
-    if min_salary or max_salary:
-        salary=f"{min_salary}-{max_salary}".strip("-")
-    source_id=f"direct-official:moka:{clean(spec.get('key')) or spec['org']}"
-    if clean(spec.get("key"))=="shopee":
-        source_id="direct-official:shopee"
-    job={
-        "source":source_id,
-        "source_label":f"{company}招聘官网 · Moka公开直连",
-        "source_url":portal_url(spec),
-        "updated_at":parse_date(row.get("publishedAt") or row.get("createdAt") or row.get("openedAt") or row.get("updatedAt")),
-        "company":company,
-        "department":department,
-        "role":title,
-        "location":location,
-        "salary":salary,
-        "batch":batch,
-        "company_type":"外企/互联网" if clean(spec.get("key"))=="shopee" else "",
-        "industry":category,
-        "graduation":graduation,
-        "education":infer_education(blob),
-        "notice_url":url,
-        "apply_url":url,
-        "jd":jd[:MAX_JD],
-        "tags":[x for x in ["企业官网","Moka",commitment,category,graduation] if x],
-        "observed_via":"moka-public-website-api",
-        "position_id":job_id,
-        "portal_kind":clean(spec.get("portal_kind")),
+        batch = f"{graduation}校园招聘" + (f" · {commitment}" if commitment else "")
+    jd = "；".join(part for part in [
+        department and f"部门：{department}",
+        commitment and f"性质：{commitment}",
+        description and f"岗位描述：{description}",
+        requirement and f"任职要求：{requirement}",
+    ] if part) or title
+    url = job_url(spec, job_id)
+    min_salary, max_salary = clean(row.get("minSalary")), clean(row.get("maxSalary"))
+    salary = f"{min_salary}-{max_salary}".strip("-") if min_salary or max_salary else ""
+    key = clean(spec.get("key"))
+    source_id = "direct-official:shopee" if key == "shopee" else f"direct-official:moka:{key or spec['org']}"
+    job = {
+        "source": source_id,
+        "source_label": f"{company}招聘官网 · Moka公开直连",
+        "source_url": portal_url(spec),
+        "updated_at": parse_date(row.get("publishedAt") or row.get("createdAt") or row.get("openedAt") or row.get("updatedAt")),
+        "company": company,
+        "department": department,
+        "role": title,
+        "location": location,
+        "salary": salary,
+        "batch": batch,
+        "company_type": "外企/互联网" if key == "shopee" else "",
+        "industry": category,
+        "graduation": graduation,
+        "education": infer_education(blob),
+        "notice_url": url,
+        "apply_url": url,
+        "jd": jd[:MAX_JD],
+        "tags": [x for x in ["企业官网", "Moka", commitment, category, graduation] if x],
+        "observed_via": "moka-public-website-api",
+        "position_id": job_id,
+        "portal_kind": clean(spec.get("portal_kind")),
     }
-    job["id"]=stable_id(company,title,location,job_id)
+    job["id"] = stable_id(company, title, location, job_id)
     return job
 
 
 def fetch_company(spec: dict[str, Any], session: requests.Session | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    active=session or public_session()
-    jobs: dict[str, dict[str, Any]]={}
-    raw_count=0
-    page_sizes=[]
+    active = session or public_session()
+    jobs: dict[str, dict[str, Any]] = {}
+    raw_count = 0
+    page_sizes = []
     for page in range(MAX_PAGES):
-        rows=call_page(active,spec,page*PAGE_SIZE)
-        page_sizes.append(len(rows));raw_count+=len(rows)
+        rows = call_page(active, spec, page * PAGE_SIZE)
+        page_sizes.append(len(rows))
+        raw_count += len(rows)
         if not rows:
             break
         for row in rows:
-            job=normalize_job(spec,row)
+            job = normalize_job(spec, row)
             if job:
-                jobs[clean(job.get("position_id"))]=job
-        if len(rows)<PAGE_SIZE:
+                jobs[clean(job.get("position_id"))] = job
+        if len(rows) < PAGE_SIZE:
             break
-    values=list(jobs.values())
-    return values,{
-        "key":clean(spec.get("key")),"company":clean(spec.get("company")),"org":spec.get("org"),"site":spec.get("site"),
-        "official_url":portal_url(spec),"pages":len(page_sizes),"page_sizes":page_sizes,"raw_rows":raw_count,"unique_jobs":len(values),
-        "campus_rows":sum(1 for job in values if re.search(r"校招|校园|应届|秋招|春招|2027|27届", " ".join([job.get("role", ""),job.get("batch", ""),job.get("graduation", "")]), re.I)),
-        "year_2027_rows":sum(1 for job in values if "2027" in " ".join([job.get("role", ""),job.get("batch", ""),job.get("graduation", ""),job.get("jd", "")])),
-        "beijing_rows":sum(1 for job in values if "北京" in clean(job.get("location"))),
+    values = list(jobs.values())
+    return values, {
+        "key": clean(spec.get("key")), "company": clean(spec.get("company")), "org": spec.get("org"), "site": spec.get("site"),
+        "official_url": portal_url(spec), "pages": len(page_sizes), "page_sizes": page_sizes, "raw_rows": raw_count, "unique_jobs": len(values),
+        "campus_rows": sum(1 for job in values if re.search(r"校招|校园|应届|秋招|春招|2027|27届", " ".join([job.get("role", ""), job.get("batch", ""), job.get("graduation", "")]), re.I)),
+        "year_2027_rows": sum(1 for job in values if "2027" in " ".join([job.get("role", ""), job.get("batch", ""), job.get("graduation", ""), job.get("jd", "")])),
+        "beijing_rows": sum(1 for job in values if "北京" in clean(job.get("location"))),
     }
 
 
 def collect_specs(specs: Iterable[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    spec_list=list(specs);jobs=[];statuses=[]
-    with ThreadPoolExecutor(max_workers=min(WORKERS,max(1,len(spec_list)))) as pool:
-        futures={pool.submit(fetch_company,spec):spec for spec in spec_list}
+    spec_list = list(specs)
+    jobs, statuses = [], []
+    with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(spec_list)))) as pool:
+        futures = {pool.submit(fetch_company, spec): spec for spec in spec_list}
         for future in as_completed(futures):
-            spec=futures[future]
+            spec = futures[future]
             try:
-                rows,diag=future.result();jobs.extend(rows)
-                statuses.append({"key":clean(spec.get("key")),"company":clean(spec.get("company")),"source":f"direct-official:moka:{clean(spec.get('key'))}","ok":True,"count":len(rows),"error":"","diagnostics":diag})
+                rows, diag = future.result()
+                jobs.extend(rows)
+                statuses.append({"key": clean(spec.get("key")), "company": clean(spec.get("company")), "source": f"direct-official:moka:{clean(spec.get('key'))}", "ok": True, "count": len(rows), "error": "", "diagnostics": diag})
             except Exception as exc:
-                statuses.append({"key":clean(spec.get("key")),"company":clean(spec.get("company")),"source":f"direct-official:moka:{clean(spec.get('key'))}","ok":False,"count":0,"error":f"{type(exc).__name__}: {clean(exc)[:260]}","diagnostics":{}})
-    statuses.sort(key=lambda x:x.get("company") or x.get("key"))
-    return jobs,statuses
+                statuses.append({"key": clean(spec.get("key")), "company": clean(spec.get("company")), "source": f"direct-official:moka:{clean(spec.get('key'))}", "ok": False, "count": 0, "error": f"{type(exc).__name__}: {clean(exc)[:260]}", "diagnostics": {}})
+    statuses.sort(key=lambda row: row.get("company") or row.get("key"))
+    return jobs, statuses
 
 
 def collect_priority_moka() -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    specs=load_priority_specs();jobs,statuses=collect_specs(specs)
-    return jobs,{"sources":statuses,"companies":len(specs),"jobs":len(jobs)}
+    specs = load_priority_specs()
+    jobs, statuses = collect_specs(specs)
+    return jobs, {"sources": statuses, "companies": len(specs), "jobs": len(jobs)}
 
 
 def collect_all_moka() -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    specs=parse_moka_seed_file();jobs,statuses=collect_specs(specs)
-    ok=sum(1 for row in statuses if row.get("ok"));
-    return jobs,{"sources":statuses,"companies":len(specs),"companies_ok":ok,"jobs":len(jobs),"seed_path":str(SEED_PATH)}
+    specs = parse_moka_seed_file()
+    jobs, statuses = collect_specs(specs)
+    ok = sum(1 for row in statuses if row.get("ok"))
+    return jobs, {"sources": statuses, "companies": len(specs), "companies_ok": ok, "jobs": len(jobs), "seed_path": str(SEED_PATH)}
 
 
 def source_key(job: dict[str, Any]) -> str:
-    source=clean(job.get("source"))
-    return source if source.startswith("direct-official:moka:") or source=="direct-official:shopee" else ""
+    source = clean(job.get("source"))
+    return source if source.startswith("direct-official:moka:") or source == "direct-official:shopee" else ""
 
 
 def merge_with_previous(existing: list[dict[str, Any]], fresh: list[dict[str, Any]], diagnostics: dict[str, Any]) -> list[dict[str, Any]]:
-    successful=set()
-    for row in diagnostics.get("sources",[]):
-        if not row.get("ok"):
-            continue
-        key=clean(row.get("key"));successful.add("direct-official:shopee" if key=="shopee" else f"direct-official:moka:{key}")
-    out=[]
-    for job in existing:
-        if not isinstance(job,dict):
-            continue
-        key=source_key(job)
-        if key and key in successful:
-            continue
-        out.append(job)
-    seen={(clean(j.get("company")).lower(),clean(j.get("role")).lower(),clean(j.get("location")).lower(),clean(j.get("position_id") or j.get("apply_url")).lower()) for j in out}
+    successful = set()
+    for row in diagnostics.get("sources", []):
+        if row.get("ok"):
+            key = clean(row.get("key"))
+            successful.add("direct-official:shopee" if key == "shopee" else f"direct-official:moka:{key}")
+    out = [job for job in existing if isinstance(job, dict) and not (source_key(job) and source_key(job) in successful)]
+    seen = {(clean(j.get("company")).lower(), clean(j.get("role")).lower(), clean(j.get("location")).lower(), clean(j.get("position_id") or j.get("apply_url")).lower()) for j in out}
     for job in fresh:
-        ident=(clean(job.get("company")).lower(),clean(job.get("role")).lower(),clean(job.get("location")).lower(),clean(job.get("position_id") or job.get("apply_url")).lower())
+        ident = (clean(job.get("company")).lower(), clean(job.get("role")).lower(), clean(job.get("location")).lower(), clean(job.get("position_id") or job.get("apply_url")).lower())
         if ident not in seen:
-            seen.add(ident);out.append(job)
+            seen.add(ident)
+            out.append(job)
     return out
 
 
 def main() -> int:
-    jobs,diag=collect_all_moka()
+    jobs, diag = collect_all_moka()
     if not diag.get("companies_ok"):
         raise RuntimeError("all public Moka sources failed; previous catalogue preserved")
-    payload=json.loads(JOBS_PATH.read_text(encoding="utf-8")) if JOBS_PATH.exists() else {"schema_version":3,"jobs":[]}
-    existing=payload.get("jobs",[]) if isinstance(payload,dict) else []
-    if existing and isinstance(existing[0],dict) and "c" in existing[0]:
+    payload = json.loads(JOBS_PATH.read_text(encoding="utf-8")) if JOBS_PATH.exists() else {"schema_version": 3, "jobs": []}
+    existing = payload.get("jobs", []) if isinstance(payload, dict) else []
+    if existing and isinstance(existing[0], dict) and "c" in existing[0]:
         raise RuntimeError("moka_public_harvester.py must run before compact_feed.py")
-    merged=merge_with_previous(existing if isinstance(existing,list) else [],jobs,diag)
-    payload=dict(payload) if isinstance(payload,dict) else {}
-    payload.update({"schema_version":3,"generated_at":utc_now(),"jobs":merged})
-    JOBS_PATH.write_text(json.dumps(payload,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf-8")
+    merged = merge_with_previous(existing if isinstance(existing, list) else [], jobs, diag)
+    payload = dict(payload) if isinstance(payload, dict) else {}
+    payload.update({"schema_version": 3, "generated_at": utc_now(), "jobs": merged})
+    JOBS_PATH.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
 
-    status=json.loads(STATUS_PATH.read_text(encoding="utf-8")) if STATUS_PATH.exists() else {}
-    group={"name":"moka-public-federation","label":"企业招聘官网 · Moka公开职位联邦","url":"https://app.mokahr.com/","ok":True,"count":len(jobs),"error":"","diagnostics":diag}
-    sources=[row for row in status.get("sources",[]) if not isinstance(row,dict) or row.get("name")!=group["name"]]
-    sources.insert(0,group);status.update({"sources":sources,"catalog_count":len(merged),"generated_at":utc_now()})
-    STATUS_PATH.write_text(json.dumps(status,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    shopee=[job for job in jobs if "Shopee" in clean(job.get("company"))]
-    print(json.dumps({"moka_jobs":len(jobs),"companies":diag.get("companies"),"companies_ok":diag.get("companies_ok"),"shopee":len(shopee)},ensure_ascii=False))
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8")) if STATUS_PATH.exists() else {}
+    group = {"name": "moka-public-federation", "label": "企业招聘官网 · Moka公开职位联邦", "url": "https://app.mokahr.com/", "ok": True, "count": len(jobs), "error": "", "diagnostics": diag}
+    sources = [row for row in status.get("sources", []) if not isinstance(row, dict) or row.get("name") != group["name"]]
+    sources.insert(0, group)
+    status.update({"sources": sources, "catalog_count": len(merged), "generated_at": utc_now()})
+    STATUS_PATH.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    shopee = [job for job in jobs if "Shopee" in clean(job.get("company"))]
+    print(json.dumps({"moka_jobs": len(jobs), "companies": diag.get("companies"), "companies_ok": diag.get("companies_ok"), "shopee": len(shopee)}, ensure_ascii=False))
     return 0
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     raise SystemExit(main())
