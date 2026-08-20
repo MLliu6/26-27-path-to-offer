@@ -82,7 +82,14 @@
     const skillHits=Number(c.skillHits||0);
     if(skillHits===0)cap=Math.min(cap,84);
     else if(skillHits===1)cap=Math.min(cap,89);
-    if(!c.domainExact&&Number(c.direction||0)<12)cap=Math.min(cap,76);
+
+    // The nonlinear calibration intentionally lifts solid same-domain jobs into
+    // the intuitive 80–95+ range.  It must not do the same to weak cross-domain
+    // rows that only share generic words such as “数据 / AI / 研发”.  Require
+    // either an exact career-domain match or substantive direction/skill proof.
+    const directionPoints=Number(c.direction||0);
+    if(!c.domainExact&&directionPoints<18&&skillHits<=1)cap=Math.min(cap,50);
+    else if(!c.domainExact&&directionPoints<12)cap=Math.min(cap,62);
     score=round(Math.max(0,Math.min(cap,score)));
 
     const source=clamp(Number(c.source||0)/7);
