@@ -5,12 +5,14 @@ The generic collector intentionally keeps a conservative field vocabulary so
 filter metadata cannot be mistaken for jobs. This runner adds reviewed schema
 aliases for ATS families observed in employer public UI traffic, rejects known
 metadata-only JSON objects/endpoints, isolates JSON parsing to the registered
-ATS host, gives Feishu Hire's public `job_post_list` a direct-row adapter, and
-keeps a browser fallback for employer pages whose *current document* is itself
-a job detail. It does not add another transport or bypass any access control.
+ATS host, gives Feishu Hire and IGuopin employer tenants direct public-row
+adapters, and keeps a browser fallback for employer pages whose current document
+is itself a job detail. It does not add another transport or bypass access
+controls.
 """
 from __future__ import annotations
 
+import json
 import re
 from urllib.parse import quote, urlparse
 
@@ -50,6 +52,7 @@ FEISHU_METADATA_PATH_RE = re.compile(
     re.I,
 )
 FEISHU_JOB_POSTS_PATH_RE = re.compile(r"^/api/v1/search/job/posts(?:/|$)", re.I)
+IGUOPIN_JOB_LIST_PATH_RE = re.compile(r"^/api/jobs/v1/list/?$", re.I)
 
 
 def extend(existing, extra):
@@ -88,18 +91,29 @@ def is_feishu_entry(entry) -> bool:
         return False
 
 
+def is_iguopin_entry(entry) -> bool:
+    return h.clean(entry.get("family")).lower() == "iguopin"
+
+
 def mark_feishu_job_posts(capture) -> None:
-    """Record that a concrete Feishu public job-list response was parsed."""
     setattr(capture, "_feishu_job_post_responses", int(getattr(capture, "_feishu_job_post_responses", 0)) + 1)
 
 
 def has_feishu_job_posts(capture) -> bool:
-    """Return whether the authoritative Feishu job-list endpoint has responded."""
     return int(getattr(capture, "_feishu_job_post_responses", 0)) > 0
 
 
+def mark_iguopin_job_posts(capture, tenant_id: str) -> None:
+    setattr(capture, "_iguopin_job_post_responses", int(getattr(capture, "_iguopin_job_post_responses", 0)) + 1)
+    if tenant_id:
+        setattr(capture, "_iguopin_company_id_with_sub", tenant_id)
+
+
+def has_iguopin_job_posts(capture) -> bool:
+    return int(getattr(capture, "_iguopin_job_post_responses", 0)) > 0
+
+
 def feishu_job_rows(payload) -> list[dict]:
-    """Return only direct Feishu Hire position rows, never their nested metadata."""
     if not isinstance(payload, dict):
         return []
     if payload.get("code") not in (None, 0, "0"):
@@ -118,8 +132,6 @@ def feishu_portal_path(entry) -> str:
         return ""
     if not parts:
         return ""
-    # Public Feishu portals use the first path component as `website-path`, e.g.
-    # /huixi, /zhipucampus, /campusrecruitment, /379481.
     return parts[0]
 
 
@@ -186,13 +198,152 @@ def normalize_feishu_job(entry, row: dict, response_url: str, page_url: str):
     return job
 
 
+def iguopin_job_rows(payload) -> list[dict]:
+    if not isinstance(payload, dict) or payload.get("code") not in (None, 0, "0", 200, "200"):
+        return []
+    data = payload.get("data") or {}
+    if not isinstance(data, dict):
+        return []
+    for key in ("list", "rows", "items", "jobs", "results"):
+        rows = data.get(key)
+        if isinstance(rows, list):
+            return [row for row in rows if isinstance(row, dict)]
+    return []
+
+
+def _request_headers(request) -> dict[str, str]:
+    try:
+        headers = request.all_headers()
+    except Exception:
+        headers = getattr(request, "headers", {}) or {}
+    return {str(k).lower(): str(v) for k, v in headers.items()}
+
+
+def iguopin_request_tenant(entry, response) -> str:
+    """Return the tenant id only for a list request emitted by this employer page.
+
+    IGuopin uses the same public API host and `Subsite: iguopin` across employers.
+    The live browser contract scopes an employer portal with
+    `company_id_with_sub` in the POST body. Requiring both the employer-page
+    Origin/Referer and that tenant field prevents a national IGuopin feed from
+    ever being attributed to one SOE.
+    """
+    if not is_iguopin_entry(entry):
+        return ""
+    try:
+        parsed = urlparse(response.url)
+        if (parsed.hostname or "").lower() != "gp-api.iguopin.com" or not IGUOPIN_JOB_LIST_PATH_RE.fullmatch(parsed.path or ""):
+            return ""
+        start_host = (urlparse(h.clean(entry.get("start_url"))).hostname or "").lower()
+        headers = _request_headers(response.request)
+        origin_host = (urlparse(headers.get("origin", "")).hostname or "").lower()
+        referer_host = (urlparse(headers.get("referer", "")).hostname or "").lower()
+        if not start_host or start_host not in {origin_host, referer_host}:
+            return ""
+        body = json.loads(response.request.post_data or "{}")
+        tenant = h.clean(body.get("company_id_with_sub")) if isinstance(body, dict) else ""
+        return tenant if tenant and tenant.isdigit() else ""
+    except Exception:
+        return ""
+
+
+def _iguopin_location(row: dict) -> str:
+    values = []
+    districts = row.get("district_list") or row.get("districtList") or []
+    if isinstance(districts, list):
+        for item in districts:
+            if isinstance(item, dict):
+                value = h.clean(item.get("area_cn") or item.get("name") or item.get("address"))
+            else:
+                value = h.clean(item)
+            if value and value not in values:
+                values.append(value)
+    return "/".join(values[:8]) or h.location_from_text(h.flat_text(row, 1800))
+
+
+def _graduation(text: str) -> str:
+    text = h.clean(text)
+    full = re.search(r"(?<!\d)(20(?:2[4-9]|3\d))\s*届", text)
+    if full:
+        return f"{full.group(1)}届"
+    short = re.search(r"(?<!\d)(2[4-9]|3\d)\s*届", text)
+    if short:
+        return f"20{short.group(1)}届"
+    return ""
+
+
+def normalize_iguopin_job(entry, row: dict, tenant_id: str):
+    parent = h.clean(entry.get("company"))
+    role = h.clean(row.get("job_name") or row.get("jobName") or row.get("title") or row.get("name"))
+    position_id = h.clean(row.get("job_id") or row.get("jobId") or row.get("id"))
+    if not parent or not position_id or not h.looks_like_role(role):
+        return None
+    company = h.clean(row.get("company_name") or row.get("companyName")) or parent
+    location = _iguopin_location(row)
+    department = h.clean(
+        row.get("department_name") or row.get("departmentName") or row.get("department_cn") or
+        row.get("category_cn") or row.get("job_category_cn") or row.get("org_name")
+    )
+    contents = row.get("contents") or row.get("content") or row.get("description") or row.get("job_description") or ""
+    jd = h.flat_text(contents, h.MAX_JD)
+    jd = h.clean(re.sub(r"<[^>]+>", " ", jd))[: h.MAX_JD] or role
+    nature = h.clean(row.get("nature_cn") or row.get("nature") or row.get("job_nature_cn"))
+    signal = " ".join([role, nature, jd, h.clean(entry.get("batch"))])
+    graduation = _graduation(signal)
+    entry_batch = h.clean(entry.get("batch"))
+    if graduation:
+        batch = f"{graduation}校园招聘"
+    elif nature:
+        batch = nature
+    else:
+        batch = entry_batch or "公开招聘"
+    channel = "campus" if ("校园" in batch or "campus" in h.clean(entry.get("start_url")).lower()) else "social"
+    detail = f"https://job.iguopin.com/job/detail?id={quote(position_id, safe='')}&source={channel}"
+    min_salary = h.clean(row.get("min_wage") or row.get("salary_min") or row.get("min_salary"))
+    max_salary = h.clean(row.get("max_wage") or row.get("salary_max") or row.get("max_salary"))
+    salary = h.clean(row.get("salary_cn") or row.get("salary"))
+    if not salary and (min_salary or max_salary):
+        salary = f"{min_salary}-{max_salary}".strip("-")
+    updated = h.clean(row.get("update_time") or row.get("updated_at") or row.get("start_time"))[:20]
+    education = h.clean(row.get("education_cn") or row.get("education"))
+    tags = ["企业官网/官方ATS", "国聘公开职位", parent, batch]
+    if tenant_id:
+        tags.append(f"tenant:{tenant_id}")
+    job = {
+        "source": f"direct-official:browser:{h.clean(entry.get('id'))}",
+        "source_label": f"{parent}招聘官网 · 国聘公开职位",
+        "source_url": h.clean(entry.get("official_url") or entry.get("start_url")),
+        "updated_at": updated,
+        "company": company,
+        "department": department,
+        "role": role[:140],
+        "location": location,
+        "salary": salary,
+        "batch": batch,
+        "company_type": h.clean(entry.get("company_type")),
+        "industry": h.clean(entry.get("category")),
+        "graduation": graduation,
+        "education": education,
+        "notice_url": detail,
+        "apply_url": detail,
+        "jd": jd,
+        "tags": tags,
+        "observed_via": "browser-public-iguopin-tenant-list",
+        "position_id": position_id,
+        "tenant_id": tenant_id,
+        "parent_company": parent,
+    }
+    job["id"] = h.stable_id(company, role, location, position_id)
+    return job
+
+
 def page_job_from_text(entry, page_url: str, headings, body: str):
     """Normalize one public employer page only when it is clearly a job detail."""
     company = h.clean(entry.get("company"))
     body = h.clean(body)
     if not company or not page_url.startswith(("http://", "https://")):
         return None
-    if len(body) < 180 or not DUTY_RE.search(body) or not QUAL_RE.search(body):
+    if len(body) < 90 or not DUTY_RE.search(body) or not QUAL_RE.search(body):
         return None
 
     role = ""
@@ -306,6 +457,20 @@ def install() -> None:
             parsed = urlparse(response.url)
             host = (parsed.hostname or "").lower()
             path = parsed.path or ""
+            if is_iguopin_entry(entry) and host == "gp-api.iguopin.com" and IGUOPIN_JOB_LIST_PATH_RE.fullmatch(path):
+                tenant_id = iguopin_request_tenant(entry, response)
+                if not tenant_id:
+                    return
+                payload = response.json()
+                rows = iguopin_job_rows(payload)
+                capture.json_responses += 1
+                mark_iguopin_job_posts(capture, tenant_id)
+                if len(capture.response_urls) < 30 and response.url not in capture.response_urls:
+                    capture.response_urls.append(response.url)
+                for row in rows:
+                    capture.json_candidates += 1
+                    capture.add(normalize_iguopin_job(entry, row, tenant_id))
+                return
             if host.endswith("jobs.feishu.cn"):
                 if FEISHU_METADATA_PATH_RE.search(path):
                     return
@@ -316,8 +481,6 @@ def install() -> None:
                     mark_feishu_job_posts(capture)
                     if len(capture.response_urls) < 30 and response.url not in capture.response_urls:
                         capture.response_urls.append(response.url)
-                    # Once the official list response exists, remove any page/DOM
-                    # fallback rows that may have been captured before its XHR.
                     capture.jobs = {
                         key: value for key, value in capture.jobs.items()
                         if value.get("observed_via") not in {"browser-rendered-dom", "browser-current-job-page"}
@@ -328,7 +491,8 @@ def install() -> None:
                     return
         except Exception as exc:
             if len(capture.errors) < 20:
-                capture.errors.append(f"feishu response {type(exc).__name__}: {h.clean(exc)[:160]}")
+                family = "iguopin" if is_iguopin_entry(entry) else "feishu"
+                capture.errors.append(f"{family} response {type(exc).__name__}: {h.clean(exc)[:160]}")
             return
         return base_response_handler(entry, page, capture, response)
 
@@ -348,7 +512,7 @@ def install() -> None:
                 job["apply_url"] = detail
                 job["notice_url"] = detail
                 job["id"] = h.stable_id(job.get("company"), job.get("role"), job.get("location"), position_id)
-        salary = h.flat_text(h.first_value(row, ("salary", "salaryrange", "salary_range")), 160)
+        salary = h.flat_text(h.first_value(row, ("salary", "salaryrange", "salary_range", "min_wage", "max_wage")), 160)
         if salary:
             job["salary"] = salary
         return job
@@ -359,9 +523,7 @@ def install() -> None:
 
     def collect_dom(entry, page, capture):
         before = len(capture.jobs)
-        # Generic same-host JSON responses must not disable the fallback. Only a
-        # successfully parsed Feishu `job/posts` response is authoritative.
-        if is_feishu_entry(entry) and has_feishu_job_posts(capture):
+        if (is_feishu_entry(entry) and has_feishu_job_posts(capture)) or (is_iguopin_entry(entry) and has_iguopin_job_posts(capture)):
             return 0
         capture.add(current_page_job(entry, page))
         base_collect_dom(entry, page, capture)

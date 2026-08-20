@@ -35,9 +35,17 @@ MAX_JSON_BYTES = max(200_000, min(8_000_000, int(os.getenv("PTO_PRIORITY_BROWSER
 MAX_JD = max(800, min(8000, int(os.getenv("PTO_PRIORITY_BROWSER_JD_CHARS", "5000"))))
 
 API_HINT_RE = re.compile(r"(?:job|jobs|position|positions|post|posts|recruit|career|vacan|search|list|campus|apply)", re.I)
+# Role detection must be career-general. A browser source collector that only
+# recognizes AI/software titles will silently erase the value of a universal
+# resume matcher even when official employers publish materials, finance, law,
+# manufacturing, life-science or operations jobs on the same page.
 ROLE_RE = re.compile(
-    r"(?:工程师|算法|研发|开发|编译|编译器|软件|芯片|GPU|CUDA|推理|大模型|多模态|VLM|VLA|"
-    r"机器人|强化学习|运动控制|系统|架构|性能|测试|验证|安全|研究员|研究|实习|产品经理|运营|销售)",
+    r"(?:工程师|算法|研发|开发|编译|编译器|软件|芯片|GPU|CUDA|推理|大模型|多模态|VLM|VLA|机器人|强化学习|"
+    r"运动控制|系统|架构|性能|测试|验证|安全|研究员|研究|实习|产品经理|运营|销售|材料|化学|化工|工艺|"
+    r"质量|可靠性|失效|机械|结构|电气|电力|能源|制造|生产|土木|建筑|施工|造价|环境|环保|生物|医药|"
+    r"制药|临床|医学|数据|统计|财务|会计|审计|税务|金融|投资|证券|风控|法务|合规|知识产权|人力|招聘|"
+    r"行政|市场|品牌|商务|供应链|采购|物流|计划|咨询|战略|管培|设计师|交互|视觉|编辑|记者|教师|教研|"
+    r"地质|油气|采矿|测绘|食品|农业|翻译|国际业务|公共事务|政策|客户经理|分析师|专员|经理|顾问)",
     re.I,
 )
 JOB_FIELD_RE = re.compile(r"(?:job|position|post|recruit|career|vacan|duty|require|qualif|responsib|description)", re.I)
@@ -66,7 +74,7 @@ URL_KEYS = (
 )
 LOCATION_KEYS = (
     "location", "locations", "locationname", "location_name", "city", "cities", "cityname", "city_name",
-    "workcity", "work_city", "workplace", "work_place", "worklocation", "work_location",
+    "workcity", "work_city", "workplace", "work_place", "worklocation", "work_location", "districtlist", "district_list",
 )
 DEPARTMENT_KEYS = (
     "department", "departmentname", "department_name", "dept", "team", "jobcategory", "job_category",
@@ -74,7 +82,7 @@ DEPARTMENT_KEYS = (
 )
 JD_KEYS = (
     "description", "jobdescription", "job_description", "responsibility", "responsibilities", "requirement",
-    "requirements", "qualification", "qualifications", "duty", "duties", "content", "jobduty", "jobrequirement",
+    "requirements", "qualification", "qualifications", "duty", "duties", "content", "contents", "jobduty", "jobrequirement",
 )
 UPDATED_KEYS = ("updatedat", "updated_at", "updatetime", "update_time", "publishtime", "publish_time", "refreshtime", "refresh_time")
 
@@ -135,8 +143,6 @@ def json_candidate(row: dict[str, Any], path: str = "") -> bool:
     mapping = lower_map(row)
     title = flat_text(first_value(row, TITLE_KEYS), 180)
     if not looks_like_role(title):
-        # `name` is too generic to be a global title key; only use it when the
-        # structural object path (not the request URL) is clearly job-shaped.
         name = flat_text(row.get("name"), 180)
         if not looks_like_role(name):
             return False
@@ -148,7 +154,6 @@ def json_candidate(row: dict[str, Any], path: str = "") -> bool:
     has_id = first_value(row, ID_KEYS) not in (None, "")
     has_url = first_value(row, URL_KEYS) not in (None, "")
     location = first_value(row, LOCATION_KEYS) not in (None, "")
-    # Avoid mistaking tiny metadata/name objects for jobs.
     return bool(has_id or has_url or location or jobish_keys >= 2 or JOB_FIELD_RE.search(path))
 
 
@@ -235,18 +240,21 @@ def dom_role(text: str, block: str) -> str:
     text = clean(text)
     if looks_like_role(text, strict=True):
         return text[:140]
-    # Detail buttons often have generic text; recover a nearby job title from
-    # the rendered card without inventing one.
-    candidates = re.split(r"[\n|｜•·]+|(?<=\S)\s{2,}", clean(block))
+    # Preserve line boundaries before `clean()` collapses whitespace. Job cards
+    # commonly expose a generic “查看详情” anchor followed by title/location/JD;
+    # splitting the already-cleaned string made the whole card the role title.
+    raw_block = str(block or "")
+    candidates = re.split(r"[\r\n|｜•·]+|(?<=\S)[ \t]{2,}", raw_block)
     for candidate in candidates[:20]:
         candidate = clean(candidate).strip(" -—–|｜:：")
         if looks_like_role(candidate, strict=True):
             return candidate[:140]
-    match = ROLE_RE.search(clean(block))
+    cleaned = clean(block)
+    match = ROLE_RE.search(cleaned)
     if match:
         start = max(0, match.start() - 28)
-        end = min(len(clean(block)), match.end() + 45)
-        fragment = clean(block)[start:end].strip(" -—–|｜:：")
+        end = min(len(cleaned), match.end() + 45)
+        fragment = cleaned[start:end].strip(" -—–|｜:：")
         if looks_like_role(fragment):
             return fragment[:140]
     return ""
@@ -332,9 +340,6 @@ def response_handler(entry: dict[str, Any], page: Page, capture: Capture, respon
         if len(capture.response_urls) < 30 and url not in capture.response_urls:
             capture.response_urls.append(url)
         seen = 0
-        # Keep structural JSON paths independent of the endpoint URL.  An API
-        # URL such as `/job/list` must not make every nested `{id,name}` filter
-        # option look job-shaped merely because the request path contains job.
         for row, path in walk_json(payload, path="root"):
             seen += 1
             capture.add(normalize_json_job(entry, row, path, url, page.url))
@@ -369,7 +374,9 @@ def collect_dom(entry: dict[str, Any], page: Page, capture: Capture) -> int:
     for item in rendered_links(page):
         href = clean(item.get("href"))
         text = clean(item.get("text"))
-        block = clean(item.get("block"))
+        # Preserve rendered line breaks for dom_role(); normalize_dom_job will
+        # still clean the final JD text before writing it to the catalogue.
+        block = str(item.get("block") or "").strip()
         if not href.startswith(("http://", "https://")):
             continue
         if GENERIC_ROLE_RE.fullmatch(text) and not ROLE_RE.search(block):
@@ -433,7 +440,6 @@ def collect_one(context: BrowserContext, entry: dict[str, Any]) -> tuple[list[di
         stable_rounds = 0
         for _ in range(max_pages):
             before = len(capture.jobs)
-            # Exercise lazy/infinite lists without simulating hidden behavior.
             for fraction in (0.45, 0.8, 1.0):
                 try:
                     page.evaluate(f"window.scrollTo(0, document.body.scrollHeight * {fraction})")
@@ -449,7 +455,6 @@ def collect_one(context: BrowserContext, entry: dict[str, Any]) -> tuple[list[di
                 continue
             if stable_rounds >= 2:
                 break
-            # One extra lazy-load cycle is useful even without a paginator.
             page.wait_for_timeout(650)
         collect_dom(entry, page, capture)
     except PlaywrightTimeoutError as exc:

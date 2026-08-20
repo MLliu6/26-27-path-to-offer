@@ -8,6 +8,7 @@ on:
       - 'scripts/expand_feed.py'
       - 'scripts/merge_public_tables.py'
       - 'scripts/federated_harvester.py'
+      - 'scripts/moka_public_harvester.py'
       - 'scripts/direct_china_official.py'
       - 'scripts/pdd_official_harvester.py'
       - 'scripts/didi_official_harvester.py'
@@ -16,6 +17,7 @@ on:
       - 'scripts/priority_official_harvester.py'
       - 'scripts/priority_browser_harvester.py'
       - 'scripts/priority_browser_runner.py'
+      - 'scripts/priority_browser_runtime.py'
       - 'scripts/official_site_job_spider.py'
       - 'scripts/official_campaign_discovery.py'
       - 'scripts/official_source_graph.py'
@@ -41,13 +43,13 @@ jobs:
   aggregate:
     runs-on: ubuntu-24.04
     timeout-minutes: 88
-    # Automatic refreshes are best-effort because employer sites are external,
-    # non-deterministic dependencies. Manual dispatch stays strict for debugging.
     continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
     env:
       PTO_HIRING_RADAR_DIR: /tmp/hiring-radar
       PTO_HIRING_RADAR_COMMIT: f49ec607e4cb89091a9447c9f527e43d0afdc6a4
       PTO_FEDERATED_WORKERS: '12'
+      PTO_MOKA_WORKERS: '10'
+      PTO_MOKA_MAX_PAGES: '20'
       PTO_CATALOG_JD_CHARS: '600'
       PTO_BROWSER_JD_CHARS: '220'
       PTO_MAX_CATALOG: '60000'
@@ -70,7 +72,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install crawler dependencies
-        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright pycryptodome==3.23.0
 
       - name: Expand previous compact feed
         id: expand
@@ -84,11 +86,13 @@ jobs:
           git -C "$PTO_HIRING_RADAR_DIR" checkout --quiet "$PTO_HIRING_RADAR_COMMIT"
           test "$(git -C "$PTO_HIRING_RADAR_DIR" rev-parse HEAD)" = "$PTO_HIRING_RADAR_COMMIT"
 
-      # Every external family is isolated. On schedule/push an outage records a
-      # warning and the remaining sources continue; manual dispatch is strict.
       - name: Federated public ATS sources
         continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
         run: PYTHONPATH=. python scripts/federated_harvester.py
+
+      - name: Public Moka employer federation
+        continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
+        run: PYTHONPATH=. python scripts/moka_public_harvester.py
 
       - name: Direct China employer APIs
         continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
@@ -118,7 +122,7 @@ jobs:
 
       - name: Priority employer real-browser ATS observation
         continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
-        run: PYTHONPATH=. python scripts/priority_browser_runner.py
+        run: PYTHONPATH=. python scripts/priority_browser_runtime.py
 
       - name: Official campaign discovery
         continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
@@ -156,7 +160,8 @@ jobs:
         continue-on-error: ${{ github.event_name != 'workflow_dispatch' }}
         run: |
           python - <<'PY'
-          import json
+          import json,re
+          from datetime import date
           from pathlib import Path
           global_path=Path('data/jobs.json'); cn_path=Path('data/jobs_cn.json')
           graph_path=Path('data/official_source_catalog.json')
@@ -171,9 +176,20 @@ jobs:
           assert status.get('cn_catalog_count') == len(cn_jobs)
           assert global_path.stat().st_size < 45_000_000 and cn_path.stat().st_size < global_path.stat().st_size
           names='\n'.join((j.get('c','')+' '+j.get('r','')+' '+j.get('l','')+' '+j.get('x','')) for j in cn_jobs).lower()
-          for query in ['京东','腾讯','字节','北京','美团','拼多多','滴滴','航天科工','银河通用','中国银行']:
-              assert query.lower() in names, f'{query} missing from China-first feed'
+          for query in ['京东','腾讯','字节','北京','美团','拼多多','滴滴','Shopee','航天科工','银河通用','中国银行']:
+              assert query.lower() in names.lower(), f'{query} missing from China-first feed'
           by_name={s.get('name'):s for s in status.get('sources',[]) if isinstance(s,dict)}
+          moka=by_name.get('moka-public-federation'); assert moka and moka.get('ok') and moka.get('count',0)>=1, moka
+          mdiag=moka.get('diagnostics') or {}; assert mdiag.get('companies_ok',0)>=1, mdiag
+          shopee_rows=[j for j in cn_jobs if ('shopee' in str(j.get('c','')).lower() or '虾皮' in str(j.get('c','')))]
+          assert shopee_rows, 'Shopee missing from public Moka federation'
+          if date(2026,7,28)<=date.today()<=date(2026,11,30):
+              campus=[j for j in shopee_rows if '2027' in str(j.get('g',''))+str(j.get('b',''))+str(j.get('r','')) or '27届' in str(j.get('r',''))+str(j.get('b',''))]
+              assert campus, 'Shopee current 2027 campus rows missing'
+              technical_bj=[j for j in campus if '北京' in str(j.get('l','')) and re.search(r'(?:AI|大模型|算法|研发|SRE|基础设施|基础架构|训练|推理)',str(j.get('r','')),re.I)]
+              ai_bj=[j for j in technical_bj if re.search(r'(?:AI|大模型|算法|基础设施|基础架构|训练|推理)',str(j.get('r','')),re.I)]
+              assert len(technical_bj)>=2, {'message':'Shopee Beijing 2027 technical family missing','sample':[j.get('r') for j in campus[:30]]}
+              assert ai_bj, {'message':'Shopee Beijing 2027 AI/large-model family missing','sample':[j.get('r') for j in campus[:30]]}
           direct=by_name.get('direct-china-official'); assert direct and direct.get('ok')
           direct_companies={x.get('company'):x for x in (direct.get('diagnostics') or {}).get('sources',[])}
           assert direct_companies.get('美团',{}).get('count',0)>=50
@@ -193,9 +209,9 @@ jobs:
           assert sum(x.get('count',0) for x in campaigns('银河通用'))>=6
           assert sum(x.get('count',0) for x in campaigns('中国银行'))>=3
           browser_group=by_name.get('priority-browser-official'); assert browser_group is not None
-          bdiag=browser_group.get('diagnostics') or {}; assert bdiag.get('target_count',0)>=15, bdiag
+          bdiag=browser_group.get('diagnostics') or {}; assert bdiag.get('target_count',0)>=28, bdiag
           browser_companies={x.get('company') for x in bdiag.get('sources',[]) if isinstance(x,dict) and x.get('company')}
-          required_browser={'辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI','月之暗面','MiniMax','阶跃星辰','燧原科技','宇树科技','昆仑芯'}
+          required_browser={'辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI','月之暗面','MiniMax','阶跃星辰','燧原科技','宇树科技','昆仑芯','中国航天科技集团','中国船舶集团','中国电子科技集团','中国华能集团','中国海洋石油集团','中国建材集团','中国铝业集团','中国联通','中国建设银行','中国工商银行','中国银行','交通银行','招商银行'}
           assert required_browser.issubset(browser_companies), required_browser-browser_companies
           ncss=by_name.get('ncss-2027-public'); assert ncss and ncss.get('ok') and ncss.get('count',0)>=500
           graph_group=by_name.get('official-source-graph'); assert graph_group is not None
@@ -209,15 +225,13 @@ jobs:
           assert overseas <= max(10, len(cn_jobs)//200)
           print('global:',len(jobs),global_path.stat().st_size)
           print('china:',len(cn_jobs),cn_path.stat().st_size,'overseas=',overseas)
+          print('Moka:',moka.get('count'),'companies_ok=',mdiag.get('companies_ok'),'Shopee=',len(shopee_rows))
           print('PDD exact:',exact[0].get('u'))
           print('DiDi:',didi.get('count'),(didi.get('diagnostics') or {}).get('batches'))
           print('priority browser:',browser_group.get('count'),bdiag.get('fresh_companies'),[(x.get('company'),x.get('count'),x.get('preserved_previous')) for x in bdiag.get('sources',[])])
           print('official graph:',graph.get('source_count'),graph_group.get('diagnostics'))
           PY
 
-      # On automatic runs, commit any successfully compacted best-effort result
-      # even if one upstream source or a soft acceptance gate failed. Manual
-      # dispatch commits only after strict validation passes.
       - name: Commit refreshed feed when changed
         if: ${{ always() && steps.compact.outcome == 'success' && (github.event_name != 'workflow_dispatch' || steps.validation.outcome == 'success') }}
         run: |

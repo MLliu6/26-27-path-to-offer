@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "policy": "Open only anonymous employer-owned recruiting pages or the public ATS destinations linked by the employer. Observe normal browser XHR/fetch responses and rendered/current job pages; never log in, solve CAPTCHA, replay private cookies, or bypass access controls. A zero/blocked refresh preserves previously validated rows for that source. Prefer one authoritative live recruiting entry per company; use a concrete employer job page only when no current list endpoint is available.",
+  "version": 4,
+  "policy": "Open only anonymous employer-owned recruiting pages or the public ATS destinations linked by the employer. Observe normal browser XHR/fetch responses and rendered/current job pages; never log in, solve CAPTCHA, replay private cookies, or bypass access controls. A zero/blocked refresh preserves previously validated rows for that source. Prefer one authoritative live recruiting entry per company; use a concrete employer job page only when no current list endpoint is available. Source coverage is career-general: engineering, materials, finance, operations, legal, life science and other non-AI roles are first-class catalogue content.",
   "sources": [
     {
       "id": "rhino", "company": "辉羲智能", "category": "AI芯片/具身智能", "company_type": "民营/AI芯片初创",
@@ -77,6 +77,73 @@
       "id": "kunlunxin", "company": "昆仑芯", "category": "AI芯片/大模型基础设施", "company_type": "民营/AI芯片",
       "start_url": "https://kunlunxin.zhiye.com/xiangqing?jobId=151190919", "url": "https://kunlunxin.zhiye.com/xiangqing?jobId=151190919", "official_url": "https://kunlunxin.zhiye.com/",
       "priority": 97, "modes": ["browser-current-job-page"], "batch": "2027校园招聘", "max_pages": 1
+    },
+
+    {
+      "id": "spacechina-iguopin", "family": "iguopin", "company": "中国航天科技集团", "category": "航天/军工/科研制造", "company_type": "中央企业",
+      "start_url": "https://spacechina.iguopin.com/job-campus", "url": "https://spacechina.iguopin.com/job-campus", "official_url": "https://spacechina.iguopin.com/job-campus",
+      "api_hosts": ["gp-api.iguopin.com"], "priority": 98, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 8
+    },
+    {
+      "id": "cssc-iguopin", "family": "iguopin", "company": "中国船舶集团", "category": "船舶/海工/材料/制造", "company_type": "中央企业",
+      "start_url": "https://cssc.iguopin.com/job-campus", "url": "https://cssc.iguopin.com/job-campus", "official_url": "https://cssc.iguopin.com/job-campus",
+      "api_hosts": ["gp-api.iguopin.com"], "priority": 97, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 8
+    },
+    {
+      "id": "cetc-iguopin", "family": "iguopin", "company": "中国电子科技集团", "category": "电子信息/芯片/通信/科研", "company_type": "中央企业",
+      "start_url": "https://cetcjob.iguopin.com/jobCampus", "url": "https://cetcjob.iguopin.com/jobCampus", "official_url": "https://cetcjob.iguopin.com/jobCampus",
+      "api_hosts": ["gp-api.iguopin.com"], "priority": 98, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 8
+    },
+    {
+      "id": "chng-iguopin", "family": "iguopin", "company": "中国华能集团", "category": "能源/电力/新能源", "company_type": "中央企业",
+      "start_url": "https://chng.iguopin.com/job-campus", "url": "https://chng.iguopin.com/job-campus", "official_url": "https://chng.iguopin.com/job-campus",
+      "api_hosts": ["gp-api.iguopin.com"], "priority": 97, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 8
+    },
+    {
+      "id": "cnooc-iguopin", "family": "iguopin", "company": "中国海洋石油集团", "category": "石油/能源/地质/化工", "company_type": "中央企业",
+      "start_url": "https://cnooc.iguopin.com/job-campus", "url": "https://cnooc.iguopin.com/job-campus", "official_url": "https://cnooc.iguopin.com/job-campus",
+      "api_hosts": ["gp-api.iguopin.com"], "priority": 97, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 8
+    },
+    {
+      "id": "cnbm-iguopin", "family": "iguopin", "company": "中国建材集团", "category": "材料/建材/制造/研发", "company_type": "中央企业",
+      "start_url": "https://cnbmjob.iguopin.com/job-campus", "url": "https://cnbmjob.iguopin.com/job-campus", "official_url": "https://cnbmjob.iguopin.com/job-campus",
+      "api_hosts": ["gp-api.iguopin.com"], "priority": 97, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 8
+    },
+    {
+      "id": "chinalco-iguopin", "family": "iguopin", "company": "中国铝业集团", "category": "有色金属/材料/冶金/制造", "company_type": "中央企业",
+      "start_url": "https://www.chinalco.iguopin.com/", "url": "https://www.chinalco.iguopin.com/", "official_url": "https://www.chinalco.iguopin.com/",
+      "api_hosts": ["gp-api.iguopin.com"], "priority": 96, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 8
+    },
+    {
+      "id": "chinaunicom-iguopin", "family": "iguopin", "company": "中国联通", "category": "通信/互联网/云计算/运营", "company_type": "中央企业",
+      "start_url": "https://zglt.iguopin.com/job", "url": "https://zglt.iguopin.com/job", "official_url": "https://zglt.iguopin.com/job",
+      "api_hosts": ["gp-api.iguopin.com"], "priority": 97, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 8
+    },
+
+    {
+      "id": "ccb", "family": "bank", "company": "中国建设银行", "category": "银行/金融/科技/职能", "company_type": "国有大型商业银行",
+      "start_url": "https://ccb.com/chn/job/plan_index.html?planType=XY", "url": "https://ccb.com/chn/job/plan_index.html?planType=XY", "official_url": "https://ccb.com/cn/job/index.html",
+      "priority": 97, "modes": ["browser-public-ui", "browser-rendered-dom"], "batch": "校园招聘", "max_pages": 10
+    },
+    {
+      "id": "icbc", "family": "bank", "company": "中国工商银行", "category": "银行/金融/科技/职能", "company_type": "国有大型商业银行",
+      "start_url": "https://job.icbc.com.cn/pc/index.html?type=login", "url": "https://job.icbc.com.cn/pc/index.html?type=login", "official_url": "https://job.icbc.com.cn/pc/index.html?type=login",
+      "priority": 97, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 10
+    },
+    {
+      "id": "boc", "family": "bank", "company": "中国银行", "category": "银行/金融/科技/职能", "company_type": "国有大型商业银行",
+      "start_url": "https://www.boc.cn/aboutboc/bi4/index.html", "url": "https://www.boc.cn/aboutboc/bi4/index.html", "official_url": "https://www.boc.cn/aboutboc/bi4/index.html",
+      "priority": 96, "modes": ["browser-rendered-dom"], "batch": "校园招聘", "max_pages": 6
+    },
+    {
+      "id": "bankcomm", "family": "bank", "company": "交通银行", "category": "银行/金融/科技/职能", "company_type": "国有大型商业银行",
+      "start_url": "https://job.bankcomm.com/queryPosition.do", "url": "https://job.bankcomm.com/queryPosition.do", "official_url": "https://www.bankcomm.com/BankCommSite/shtml/jyjr/cn/7158/list.shtml",
+      "priority": 96, "modes": ["browser-public-ui", "browser-rendered-dom"], "batch": "校园招聘", "max_pages": 10
+    },
+    {
+      "id": "cmb", "family": "bank", "company": "招商银行", "category": "银行/金融/科技/职能", "company_type": "股份制商业银行",
+      "start_url": "https://career.cmbchina.com/", "url": "https://career.cmbchina.com/", "official_url": "https://www.cmbchina.com/",
+      "priority": 96, "modes": ["browser-public-ui"], "batch": "校园招聘", "max_pages": 10
     }
   ]
 }

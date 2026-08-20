@@ -1,4 +1,4 @@
-# v1.2.4 production priority-feed trigger
+# v1.3 production priority-feed trigger
 name: refresh-priority-official-jobs
 
 on:
@@ -9,25 +9,30 @@ on:
     branches: [main]
     paths:
       - 'scripts/pdd_official_harvester.py'
+      - 'scripts/moka_public_harvester.py'
       - 'scripts/didi_official_harvester.py'
       - 'scripts/didi_browser_ui_harvester.py'
       - 'scripts/didi_ui_priority_seed.py'
       - 'scripts/priority_direct_feed.py'
       - 'scripts/direct_china_official.py'
+      - 'sources/moka_priority_sources.json'
       - 'sources/official_position_seeds.json'
       - 'sources/domestic_direct_sources.json'
       - '.github/workflows/refresh-priority-official.yml'
   pull_request:
     paths:
       - 'scripts/pdd_official_harvester.py'
+      - 'scripts/moka_public_harvester.py'
       - 'scripts/didi_official_harvester.py'
       - 'scripts/didi_browser_ui_harvester.py'
       - 'scripts/didi_ui_priority_seed.py'
       - 'scripts/priority_direct_feed.py'
       - 'scripts/direct_china_official.py'
+      - 'sources/moka_priority_sources.json'
       - 'sources/official_position_seeds.json'
       - 'sources/domestic_direct_sources.json'
       - 'tests/test_pdd_official_harvester.py'
+      - 'tests/test_moka_public_harvester.py'
       - 'tests/test_didi_official_harvester.py'
       - 'tests/test_didi_ui_priority_seed.py'
       - 'tests/priority_feed_browser_smoke.py'
@@ -43,46 +48,43 @@ concurrency:
 jobs:
   refresh-and-verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 28
-    # Scheduled refreshes and main-branch source updates can encounter upstream
-    # rate limits or transient employer outages. PR/manual validation remains strict.
+    timeout-minutes: 30
     continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
     env:
       PTO_DIDI_MAX_PAGES: '80'
       PTO_DIDI_DETAIL_WORKERS: '16'
       PTO_DIDI_BROWSER_MAX_PAGES: '80'
+      PTO_MOKA_MAX_PAGES: '20'
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright pycryptodome==3.23.0
 
       - name: Unit-test employer adapters
         id: unit
         continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
-        run: PYTHONPATH=. python -m unittest -v tests.test_pdd_official_harvester tests.test_didi_official_harvester tests.test_didi_ui_priority_seed
+        run: PYTHONPATH=. python -m unittest -v tests.test_pdd_official_harvester tests.test_moka_public_harvester tests.test_didi_official_harvester tests.test_didi_ui_priority_seed
 
       - name: Collect fast direct sources
         id: fast
         continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: PYTHONPATH=. python scripts/priority_direct_feed.py
 
-      # If DiDi is transiently unavailable, priority_direct_feed.py has already
-      # carried forward the previous validated DiDi rows. Do not discard fresh
-      # PDD/Meituan/Tencent data merely because this browser pass timed out.
       - name: Repair DiDi through employer public UI navigation
         id: didi
         continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: PYTHONPATH=. python scripts/didi_ui_priority_seed.py
 
-      - name: Enforce PDD and DiDi first-party gates
+      - name: Enforce PDD, Shopee and DiDi first-party gates
         id: gates
         continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: |
           python - <<'PY'
-          import json
+          import json,re
+          from datetime import date
           from pathlib import Path
           pid='5e4eb6f3-294f-491b-9d39-42895eed98c3'
           feed=json.loads(Path('data/jobs_priority.json').read_text(encoding='utf-8'))
@@ -94,6 +96,25 @@ jobs:
           assert exact[0].get('q') == 7 and exact[0].get('s') == 'direct-official:pdd'
           sources={s.get('name'):s for s in status.get('sources',[]) if isinstance(s,dict)}
           pdd=sources.get('pdd-direct-official'); assert pdd and pdd.get('count',0)>=20, pdd
+          categories=dict((pdd.get('diagnostics') or {}).get('categories') or [])
+          for category in ['技术','产品','职能']:
+              assert category in categories, categories
+
+          shopee=sources.get('shopee-direct-official'); assert shopee and shopee.get('ok') and shopee.get('count',0)>=1, shopee
+          shopee_rows=[j for j in jobs if j.get('s')=='direct-official:shopee']
+          assert shopee_rows and all(str(j.get('u','')).startswith('https://app.mokahr.com/') for j in shopee_rows)
+          current_campaign=date(2026,7,28)<=date.today()<=date(2026,11,30)
+          if current_campaign:
+              campus=[j for j in shopee_rows if ('2027' in str(j.get('g',''))+str(j.get('b',''))+str(j.get('r','')) or '27届' in str(j.get('r',''))+str(j.get('b','')))]
+              assert campus, 'Shopee 2027 campus rows missing from official Moka source'
+              beijing=lambda j:'北京' in (str(j.get('l',''))+' '+str(j.get('r','')))
+              exact_ai_infra=[j for j in campus if beijing(j) and re.search(r'AI\s*基础设施研发工程师',str(j.get('r','')),re.I)]
+              technical_bj=[j for j in campus if beijing(j) and re.search(r'(?:AI|大模型|算法|研发|SRE|基础设施|基础架构|训练|推理)',str(j.get('r','')),re.I)]
+              assert exact_ai_infra, {'message':'Shopee live Beijing AI infrastructure role missing','sample':[j.get('r') for j in campus[:40]]}
+              assert len(technical_bj)>=3, {'message':'Shopee Beijing 2027 technical family missing','sample':[j.get('r') for j in campus[:40]]}
+              print('Shopee exact AI Infra:',[(j.get('r'),j.get('l'),j.get('t'),j.get('u')) for j in exact_ai_infra])
+              print('Shopee 2027 Beijing technical family:',[(j.get('r'),j.get('l'),j.get('t'),j.get('u')) for j in technical_bj[:12]])
+
           didi=sources.get('didi-direct-official'); assert didi and didi.get('ok') and didi.get('count',0)>=16, didi
           assert (didi.get('diagnostics') or {}).get('transport') == 'browser-ui-navigation', didi
           didi_rows=[j for j in jobs if j.get('s')=='direct-official:didi']
@@ -102,11 +123,9 @@ jobs:
           fresh_count=int(didi.get('fresh_count') or 0)
           assert fresh_count>=16, didi
           assert len(didi_social)==fresh_count, {'social_rows':len(didi_social),'fresh_count':fresh_count,'didi':didi}
-          categories=dict((pdd.get('diagnostics') or {}).get('categories') or [])
-          for category in ['技术','产品','职能']:
-              assert category in categories, categories
           print('PDD:',pdd.get('count'),categories)
-          print('DiDi UI:',didi.get('count'),(didi.get('diagnostics') or {}).get('batches'),'social=',len(didi_social),'fresh=',fresh_count)
+          print('Shopee:',shopee.get('count'))
+          print('DiDi UI:',didi.get('count'),'social=',len(didi_social),'fresh=',fresh_count)
           PY
 
       - name: Browser-test priority feed merge and official apply link
@@ -119,9 +138,6 @@ jobs:
           sleep 1
           python tests/priority_feed_browser_smoke.py
 
-      # Automatic runs commit whichever validated/carry-forward catalogue was
-      # successfully produced. Manual dispatch commits only when strict gates and
-      # the browser regression both pass. Pull requests never write data.
       - name: Commit refreshed priority feed
         if: ${{ always() && github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || (steps.fast.outcome == 'success' && steps.gates.outcome == 'success' && steps.browser.outcome == 'success')) }}
         run: |

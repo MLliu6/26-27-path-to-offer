@@ -11,10 +11,11 @@ BASE = "http://127.0.0.1:8000"
 EXACT_ID = "5e4eb6f3-294f-491b-9d39-42895eed98c3"
 EXACT_URL = f"https://careers.pddglobalhr.com/campus/grad/detail?positionId={EXACT_ID}"
 DIDI_URL = "https://talent.didiglobal.com/social/p/58333"
+SHOPEE_URL = "https://app.mokahr.com/campus-recruitment/shopee/2962#/job/shopee-ai-infra-2027-bj"
 
 PRIORITY = {
     "schema_version": 4,
-    "generated_at": "2026-08-19T05:40:00Z",
+    "generated_at": "2026-08-20T09:40:00Z",
     "jobs": [
         {
             "i": "pdd-exact-ai-infra",
@@ -35,6 +36,26 @@ PRIORITY = {
             "q": 7,
             "s": "direct-official:pdd",
             "z": EXACT_ID,
+        },
+        {
+            "i": "shopee-ai-infra-2027-bj",
+            "c": "Shopee（深圳虾皮信息科技有限公司）",
+            "r": "（27届秋招）AI 基础设施研发工程师-北京",
+            "l": "北京市",
+            "u": SHOPEE_URL,
+            "n": SHOPEE_URL,
+            "d": "Shopee CNDC AI平台，负责分布式训练与推理基础设施、GPU集群、算力调度和模型服务。",
+            "t": "2026-07-28",
+            "b": "2027届校园招聘 · 全职",
+            "g": "2027届",
+            "e": "本科及以上",
+            "y": "外企/互联网",
+            "h": "外企/互联网/跨境电商",
+            "m": "Shopee CNDC",
+            "x": "Shopee（深圳虾皮信息科技有限公司）招聘官网 · Moka公开直连",
+            "q": 7,
+            "s": "direct-official:shopee",
+            "z": "shopee-ai-infra-2027-bj",
         },
         {
             "i": "didi-public-58333",
@@ -73,12 +94,13 @@ DOMESTIC = {
     }],
 }
 PRIORITY_STATUS = {
-    "generated_at": "2026-08-19T05:40:00Z",
-    "catalog_count": 2,
+    "generated_at": "2026-08-20T09:40:00Z",
+    "catalog_count": 3,
     "nominal_interval_minutes": 10,
     "exact_pdd_position_ok": True,
     "sources": [
         {"name": "pdd-direct-official", "label": "拼多多校园招聘官网 · 全量自主直连", "url": "https://careers.pddglobalhr.com/campus/grad", "ok": True, "count": 24, "preserved_previous": False, "error": ""},
+        {"name": "shopee-direct-official", "label": "Shopee（深圳虾皮信息科技有限公司）招聘官网 · Moka公开直连", "url": "https://app.mokahr.com/campus-recruitment/shopee/2962#/jobs", "ok": True, "count": 21, "preserved_previous": False, "error": ""},
         {"name": "didi-direct-official", "label": "滴滴招聘官网 · 浏览器自主直连", "url": "https://talent.didiglobal.com/", "ok": True, "count": 16, "preserved_previous": False, "error": ""},
     ],
 }
@@ -124,8 +146,6 @@ def main() -> int:
         page.wait_for_selector("#priorityFeedChip")
         assert "10 min" in page.locator("#priorityFeedChip").inner_text()
 
-        # Exact PDD first-party position remains searchable and reaches the
-        # employer-owned detail URL.
         page.locator("#jobSearch").fill("AI Infra研发工程师")
         exact = page.locator('.market-card[data-market-id="pdd-exact-ai-infra"]')
         exact.wait_for(timeout=8_000)
@@ -138,8 +158,19 @@ def main() -> int:
         assert page.locator(f'#marketJobDetail a[href="{EXACT_URL}"]').count() >= 1
         page.locator("#closeDrawer").click()
 
-        # Regression for the user's production report: a concrete DiDi row from
-        # the ten-minute first-party feed must be discoverable by company search.
+        # Shopee must be a concrete current row from the employer's public Moka
+        # tenant, not merely an announcement or company-level fallback card.
+        page.locator("#jobSearch").fill("Shopee")
+        shopee = page.locator('.market-card[data-market-id="shopee-ai-infra-2027-bj"]')
+        shopee.wait_for(timeout=8_000)
+        assert "AI 基础设施研发工程师" in shopee.inner_text()
+        assert "北京" in shopee.inner_text()
+        page.locator('.market-card[data-market-id="shopee-ai-infra-2027-bj"] [data-open-detail="shopee-ai-infra-2027-bj"]').click()
+        page.wait_for_selector("#marketJobDetail:not(.hidden)")
+        assert "Shopee CNDC" in page.locator("#marketJobDetail").inner_text()
+        assert page.locator(f'#marketJobDetail a[href="{SHOPEE_URL}"]').count() >= 1
+        page.locator("#closeDrawer").click()
+
         page.locator("#jobSearch").fill("滴滴")
         didi = page.locator('.market-card[data-market-id="didi-public-58333"]')
         didi.wait_for(timeout=8_000)
@@ -149,16 +180,13 @@ def main() -> int:
         assert page.locator(f'#marketJobDetail a[href="{DIDI_URL}"]').count() >= 1
         page.locator("#closeDrawer").click()
 
-        # v1.2 intentionally hides detailed source diagnostics behind the admin
-        # gate. The old test expected the raw source list and therefore failed
-        # after the privacy UX was correctly implemented.
         page.locator("#openSourcePanel").click()
         page.wait_for_selector(".admin-source-gate")
         gate = page.locator(".admin-source-gate").inner_text()
         assert "管理员信息已雾化" in gate
         assert page.locator(".admin-source-blur").count() == 1
         blurred = page.locator(".admin-source-blur").inner_text()
-        assert "拼多多校园招聘官网" in blurred and "滴滴招聘官网" in blurred
+        assert "拼多多校园招聘官网" in blurred and "滴滴招聘官网" in blurred and "Shopee" in blurred
 
         context.close()
         browser.close()

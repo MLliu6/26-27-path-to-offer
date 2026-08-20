@@ -1,0 +1,120 @@
+name: v13-general-resume-matching
+
+on:
+  pull_request:
+    paths:
+      - 'career-taxonomy-v13.js'
+      - 'ranking-v13.js'
+      - 'enhancements-v13.js'
+      - 'config.js'
+      - 'scripts/moka_public_harvester.py'
+      - 'scripts/priority_direct_feed.py'
+      - 'scripts/priority_browser_harvester.py'
+      - 'scripts/priority_browser_runner.py'
+      - 'scripts/priority_browser_runtime.py'
+      - 'sources/moka_priority_sources.json'
+      - 'sources/priority_browser_sources.json'
+      - 'tests/general_matching_v13.mjs'
+      - 'tests/test_moka_public_harvester.py'
+      - 'tests/priority_feed_browser_smoke.py'
+      - 'tests/iguopin_browser_probe.py'
+      - '.github/workflows/v13-general-matching.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'career-taxonomy-v13.js'
+      - 'ranking-v13.js'
+      - 'enhancements-v13.js'
+      - 'config.js'
+      - 'scripts/moka_public_harvester.py'
+      - 'scripts/priority_direct_feed.py'
+      - 'scripts/priority_browser_harvester.py'
+      - 'scripts/priority_browser_runner.py'
+      - 'scripts/priority_browser_runtime.py'
+      - 'sources/moka_priority_sources.json'
+      - 'sources/priority_browser_sources.json'
+      - 'tests/general_matching_v13.mjs'
+      - 'tests/test_moka_public_harvester.py'
+      - 'tests/priority_feed_browser_smoke.py'
+      - 'tests/iguopin_browser_probe.py'
+      - '.github/workflows/v13-general-matching.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v13-general-matching-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 pycryptodome==3.23.0 playwright
+      - name: Syntax and unit regressions
+        run: |
+          node --check career-taxonomy-v13.js
+          node --check ranking-v13.js
+          node --check enhancements-v13.js
+          node --check config.js
+          node tests/general_matching_v13.mjs
+          python -m py_compile scripts/moka_public_harvester.py scripts/priority_direct_feed.py scripts/priority_browser_harvester.py scripts/priority_browser_runner.py scripts/priority_browser_runtime.py tests/test_moka_public_harvester.py tests/priority_feed_browser_smoke.py tests/iguopin_browser_probe.py
+          PYTHONPATH=. python -m unittest -v tests.test_moka_public_harvester
+      - name: Product invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          taxonomy=Path('career-taxonomy-v13.js').read_text(encoding='utf-8')
+          ranking=Path('ranking-v13.js').read_text(encoding='utf-8')
+          enhancement=Path('enhancements-v13.js').read_text(encoding='utf-8')
+          config=Path('config.js').read_text(encoding='utf-8')
+          moka=Path('scripts/moka_public_harvester.py').read_text(encoding='utf-8')
+          runtime=Path('scripts/priority_browser_runtime.py').read_text(encoding='utf-8')
+          sources=json.loads(Path('sources/moka_priority_sources.json').read_text(encoding='utf-8'))
+          browser_sources=json.loads(Path('sources/priority_browser_sources.json').read_text(encoding='utf-8'))
+          for token in ['材料 / 新能源材料 / 工艺研发','法务 / 合规 / 知识产权','产品 / 项目 / 用户研究','生物 / 生物医药 / 制药','公共管理 / 社会科学 / 政策研究']:
+              assert token in taxonomy, token
+          for token in ['v13-resume-domain-general','domainMismatch','未设置目标城市','FULL_LIMIT','query']:
+              assert token in ranking, token
+          assert "state.preferences.targetDirections=[]" in enhancement
+          assert "state.preferences.targetLocations=[]" in enhancement
+          assert "version: '1.3.0'" in config
+          assert "buildVersion: '1.3.0-universal-resume-official-sources'" in config
+          assert config.index("career-taxonomy-v13.js") < config.index("profile-core-v05.js")
+          assert config.index("ranking-v13.js") < config.index("market-v06.js")
+          assert 'enhancements-v13.js' in config
+          for token in ['api/outer/ats-apply/website/jobs/v2','necromancer','moka-public-website-api','direct-official:shopee']:
+              assert token in moka, token
+          for token in ['browser-public-iguopin-tenant-list','iguopin_tenant_only','rejected_non_tenant_rows']:
+              assert token in runtime, token
+          shopee=next((x for x in sources.get('sources',[]) if x.get('key')=='shopee'),None)
+          assert shopee and shopee.get('org')=='shopee' and int(shopee.get('site'))==2962
+          assert 'campus-recruitment/shopee/2962' in shopee.get('official_url','')
+          iguopin=[x for x in browser_sources.get('sources',[]) if x.get('family')=='iguopin']
+          banks=[x for x in browser_sources.get('sources',[]) if x.get('family')=='bank']
+          assert len(iguopin)>=8, len(iguopin)
+          assert len(banks)>=5, len(banks)
+          required={'spacechina-iguopin','cssc-iguopin','cetc-iguopin','chng-iguopin','cnooc-iguopin','cnbm-iguopin'}
+          assert required.issubset({x.get('id') for x in iguopin})
+          assert all('gp-api.iguopin.com' in (x.get('api_hosts') or []) for x in iguopin)
+          print('Path to Offer v1.3 universal matching / Moka / SOE-bank invariants: PASS')
+          PY
+      - name: Live IGuopin employer request probe
+        run: PYTHONPATH=. python tests/iguopin_browser_probe.py
+      - name: Browser priority-feed regression
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/pto-v13-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 1
+          python tests/priority_feed_browser_smoke.py
