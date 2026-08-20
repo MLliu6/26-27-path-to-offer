@@ -51,9 +51,13 @@ function ptoJobKeys(job) {
   if (applyUrl && company && role) keys.push(`url:${applyUrl}|${company}|${role}`);
   if (noticeUrl && company && role) keys.push(`url:${noticeUrl}|${company}|${role}`);
   if (positionId && company) keys.push(`position:${company}|${positionId}`);
-  if (!keys.length && rawId) keys.push(`id:${rawId}`);
-  if (!keys.length && company && role && location) keys.push(`fallback:${company}|${role}|${location}`);
+  // Product identity is intentionally simple: one company + one role + one city
+  // is one visible opportunity. The priority feed is merged first, so when
+  // several public sources describe that opportunity we keep one directly
+  // clickable source instead of showing duplicate cards.
+  if (company && role && location) keys.push(`fallback:${company}|${role}|${location}`);
   if (!keys.length && company && role) keys.push(`role:${company}|${role}`);
+  if (!keys.length && rawId) keys.push(`id:${rawId}`);
   return [...new Set(keys)];
 }
 
