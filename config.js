@@ -46,14 +46,14 @@ function ptoJobKeys(job) {
   const positionId = ptoCanonicalText(job.z || job.position_id);
   const applyUrl = ptoCanonicalUrl(job.u || job.apply_url || job.url);
   const noticeUrl = ptoCanonicalUrl(job.n || job.notice_url);
+  const rawId = ptoCanonicalText(job.i || job.id);
   const keys = [];
   if (applyUrl && company && role) keys.push(`url:${applyUrl}|${company}|${role}`);
   if (noticeUrl && company && role) keys.push(`url:${noticeUrl}|${company}|${role}`);
   if (positionId && company) keys.push(`position:${company}|${positionId}`);
-  if (company && role && location) keys.push(`fallback:${company}|${role}|${location}`);
-  if (!keys.length && company && role) keys.push(`role:${company}|${role}`);
-  const rawId = ptoCanonicalText(job.i || job.id);
   if (!keys.length && rawId) keys.push(`id:${rawId}`);
+  if (!keys.length && company && role && location) keys.push(`fallback:${company}|${role}|${location}`);
+  if (!keys.length && company && role) keys.push(`role:${company}|${role}`);
   return [...new Set(keys)];
 }
 
