@@ -5,6 +5,7 @@ on:
     paths:
       - 'ranking-v14.js'
       - 'enhancements-v14.js'
+      - 'score-explain-v14.js'
       - 'config.js'
       - 'docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md'
       - 'tests/v14_score_calibration.mjs'
@@ -15,6 +16,7 @@ on:
     paths:
       - 'ranking-v14.js'
       - 'enhancements-v14.js'
+      - 'score-explain-v14.js'
       - 'config.js'
       - 'docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md'
       - 'tests/v14_score_calibration.mjs'
@@ -46,6 +48,7 @@ jobs:
         run: |
           node --check ranking-v14.js
           node --check enhancements-v14.js
+          node --check score-explain-v14.js
           node --check config.js
           node tests/v14_score_calibration.mjs
           python -m py_compile tests/v14_source_resilience_smoke.py
@@ -57,15 +60,18 @@ jobs:
           config=Path('config.js').read_text(encoding='utf-8')
           ranking=Path('ranking-v14.js').read_text(encoding='utf-8')
           enhancement=Path('enhancements-v14.js').read_text(encoding='utf-8')
+          explainer=Path('score-explain-v14.js').read_text(encoding='utf-8')
           report=Path('docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md').read_text(encoding='utf-8')
           assert re.search(r"version:\s*'1\.4\.0'",config)
           assert "buildVersion: '1.4.0-product-hardening-fit-search-sources'" in config
           assert config.index("ranking-v13.js") < config.index("ranking-v14.js") < config.index("market-v06.js")
-          assert config.index("enhancements-v13.js") < config.index("enhancements-v14.js")
+          assert config.index("enhancements-v13.js") < config.index("enhancements-v14.js") < config.index("score-explain-v14.js")
           for token in ['v14-fit-confidence-separated','evidenceConfidence','SEARCH_SCORE_LIMIT','rankCache','searchRankFast','fitCore']:
               assert token in ranking, token
           for token in ['Promise.all','PTO_FEED_RUNTIME','usedPrevious','部分信源降级','pto-market-summary','恢复全部','打开招聘源']:
               assert token in enhancement, token
+          for token in ['匹配评分明细','来源可信度 / 7','pto-score-audit']:
+              assert token in explainer, token
           for token in ['Match Score','Evidence Confidence','60,000','P0-3']:
               assert token in report, token
           print('Path to Offer v1.4 product invariants: PASS')
