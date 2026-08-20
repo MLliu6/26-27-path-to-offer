@@ -130,9 +130,9 @@
     return [...new Set(keys)];
   }
   function dedupeNormalizedMarketJobs(rows){
-    const ranked=[...(Array.isArray(rows)?rows:[])].sort((a,b)=>Number(b?.sourceTier||0)-Number(a?.sourceTier||0));
+    const input=Array.isArray(rows)?rows:[];
     const kept=[];const seen=new Set();
-    for(const job of ranked){
+    for(const job of input){
       const keys=normalizedJobKeys(job);
       if(keys.length&&keys.some(key=>seen.has(key)))continue;
       keys.forEach(key=>seen.add(key));kept.push(job);
@@ -144,8 +144,13 @@
     const previousLoadFeeds=loadFeeds;
     loadFeeds=async function(){
       await previousLoadFeeds.apply(this,arguments);
-      marketJobs=dedupeNormalizedMarketJobs(marketJobs);
-      if(typeof renderDiscovery==='function')renderDiscovery();
+      const before=Array.isArray(marketJobs)?marketJobs.length:0;
+      const deduped=dedupeNormalizedMarketJobs(marketJobs);
+      marketJobs=deduped;
+      // The base loader already rendered the current catalogue. Re-render only
+      // when cross-feed dedupe actually removed rows; otherwise a 60k catalogue
+      // would be fully ranked/rendered twice for no product benefit.
+      if(deduped.length!==before&&typeof renderDiscovery==='function')renderDiscovery();
       return marketJobs;
     };
   }
