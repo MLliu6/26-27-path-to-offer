@@ -38,28 +38,36 @@ function ptoCanonicalUrl(value) {
   }
 }
 
-function ptoJobKey(job) {
-  if (!job || typeof job !== 'object') return '';
+function ptoJobKeys(job) {
+  if (!job || typeof job !== 'object') return [];
   const company = ptoCanonicalText(job.c || job.company);
   const role = ptoCanonicalText(job.r || job.role || job.position);
   const location = ptoCanonicalText(job.l || job.location);
   const positionId = ptoCanonicalText(job.z || job.position_id);
   const applyUrl = ptoCanonicalUrl(job.u || job.apply_url || job.url);
   const noticeUrl = ptoCanonicalUrl(job.n || job.notice_url);
-  if (applyUrl && company && role) return `apply:${applyUrl}|${company}|${role}`;
-  if (noticeUrl && company && role) return `notice:${noticeUrl}|${company}|${role}`;
-  if (positionId && company) return `position:${company}|${positionId}`;
-  if (company && role) return `fallback:${company}|${role}|${location}`;
-  return ptoCanonicalText(job.i || job.id || applyUrl || noticeUrl);
+  const keys = [];
+  if (applyUrl && company && role) keys.push(`url:${applyUrl}|${company}|${role}`);
+  if (noticeUrl && company && role) keys.push(`url:${noticeUrl}|${company}|${role}`);
+  if (positionId && company) keys.push(`position:${company}|${positionId}`);
+  if (company && role && location) keys.push(`fallback:${company}|${role}|${location}`);
+  if (!keys.length && company && role) keys.push(`role:${company}|${role}`);
+  const rawId = ptoCanonicalText(job.i || job.id);
+  if (!keys.length && rawId) keys.push(`id:${rawId}`);
+  return [...new Set(keys)];
+}
+
+function ptoJobKey(job) {
+  return ptoJobKeys(job)[0] || '';
 }
 
 function ptoMergeJobs(priorityJobs, domesticJobs) {
   const merged = [];
   const seen = new Set();
   for (const job of [...(Array.isArray(priorityJobs) ? priorityJobs : []), ...(Array.isArray(domesticJobs) ? domesticJobs : [])]) {
-    const key = ptoJobKey(job);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
+    const keys = ptoJobKeys(job);
+    if (!keys.length || keys.some(key => seen.has(key))) continue;
+    keys.forEach(key => seen.add(key));
     merged.push(job);
   }
   return merged;
