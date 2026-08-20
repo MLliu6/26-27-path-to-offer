@@ -5,6 +5,12 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(BASE){
   'use strict';
 
+  // Capture the pre-v1.3 implementation before installing our wrapper. Calling
+  // BASE.buildProfile dynamically after the assignment below would recurse
+  // forever and prevented every downstream resume regression from running.
+  const BASE_BUILD_PROFILE=typeof BASE?.buildProfile==='function'?BASE.buildProfile.bind(BASE):null;
+  const BASE_EXTRACT_SIGNALS=typeof BASE?.extractSignals==='function'?BASE.extractSignals.bind(BASE):null;
+
   const DOMAINS=[
     {id:'ai-infra',name:'AI Infra / 训练推理系统',roles:['AI基础设施研发工程师','AI基础架构工程师','训练/推理框架工程师','机器学习平台研发工程师','大模型系统研发工程师'],major:['计算机科学','软件工程','电子信息','人工智能'],terms:{'ai infra':9,'ai基础设施':10,'ai基础架构':10,'大模型推理':9,'训练框架':8,'推理框架':9,'vllm':9,'sglang':9,'megatron':7,'deepspeed':7,'cuda':5,'gpu集群':8,'gpu调度':8,'kubernetes':6,'kubeflow':7,'volcano':7,'ray':6,'rdma':7,'nccl':7,'分布式训练':8,'分布式推理':9,'高性能计算':6,'算力调度':8,'模型服务':7,'serving':7}},
     {id:'ai-algorithm',name:'AI / 机器学习 / 算法',roles:['算法工程师','机器学习工程师','大模型算法工程师','推荐算法工程师','计算机视觉算法工程师'],major:['人工智能','机器学习','计算机视觉','模式识别','数据科学','计算机科学'],terms:{'机器学习':8,'深度学习':8,'算法工程师':8,'大模型算法':9,'transformer':6,'pytorch':5,'tensorflow':4,'多模态':7,'计算机视觉':7,'自然语言处理':7,'推荐算法':7,'搜索算法':7,'aigc':6,'强化学习':7,'目标检测':6,'yolo':5,'llm':5,'nlp':5}},
@@ -96,7 +102,7 @@
   function buildSignals(rawText){
     const text=String(rawText||'');
     const result=classifyText(text,{resume:true});
-    const old=BASE?.extractSignals?BASE.extractSignals(text):{};
+    const old=BASE_EXTRACT_SIGNALS?BASE_EXTRACT_SIGNALS(text):{};
     const directions=result.scores.slice(0,5).map(x=>x.name);
     const roles=uniq(result.scores.slice(0,4).flatMap(x=>x.roles||[])).slice(0,18);
     const skills=uniq([...extractDomainSkills(text,result),...(old.skills||[])]).slice(0,72);
@@ -117,7 +123,7 @@
     return signals;
   }
   function buildProfile(rawText,fileName='resume'){
-    const base=BASE?.buildProfile?BASE.buildProfile(rawText,fileName):{name:String(fileName).replace(/\.[^.]+$/,''),fileName,rawText:String(rawText||''),signals:{}};
+    const base=BASE_BUILD_PROFILE?BASE_BUILD_PROFILE(rawText,fileName):{name:String(fileName).replace(/\.[^.]+$/,''),fileName,rawText:String(rawText||''),signals:{}};
     return {...base,profileVersion:13,signals:buildSignals(rawText)};
   }
   function jobDomains(job){
@@ -150,5 +156,5 @@
     BASE.buildProfile=buildProfile;
     BASE.CAREER_DOMAINS=DOMAINS;
   }
-  return {version:'13.0.0',DOMAINS,DOMAIN_MAP,TECH_IDS,classifyText,buildSignals,buildProfile,jobDomains,profileDomains,termsFor,cheapAffinity,norm,uniq};
+  return {version:'13.0.1',DOMAINS,DOMAIN_MAP,TECH_IDS,classifyText,buildSignals,buildProfile,jobDomains,profileDomains,termsFor,cheapAffinity,norm,uniq};
 });
