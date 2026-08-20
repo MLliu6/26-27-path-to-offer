@@ -20,6 +20,7 @@ function job(company,role,jd,{id,location='北京',batch='2027届校园招聘',g
   return {id:id||`${company}-${role}-${sourceTier}`,company,role,jd,location,batch,graduation,education,industry:'',sourceTier,sourceLabel:sourceTier>=6?'企业招聘官网 · 自主直连':'公开聚合来源',applyUrl:'https://example.com/job',updatedAt};
 }
 function score(j,p,locations=[]){return CORE.scoreJob(j,p,{ageDays:6,targetLocations:locations,targetDirections:[]});}
+function expectStrong(label,j,p,min=86){const out=score(j,p);assert.ok(out.score>=min,{label,out});return out;}
 
 const materials=makeProfile(`材料科学与工程 硕士 2027届\n金属材料 材料表征 XRD SEM EBSD 热处理 相变 高熵合金 电化学 失效分析\n研究镍基合金微观组织与力学性能，完成热处理、XRD物相分析和SEM断口分析。\n材料研发实习，参与新能源材料配方、烧结工艺和可靠性验证。`,'materials.txt');
 const materialsJob=job('宁德时代','材料研发工程师','负责新能源材料研发、材料表征、XRD SEM分析、烧结工艺优化、热处理与失效分析。');
@@ -40,8 +41,25 @@ assert.ok(shopeeFit.evidenceConfidence>=70,shopeeFit);
 
 const accounting=makeProfile(`会计学 硕士 2027届\n财务会计 成本核算 财务报表分析 审计 税务 预算管理 CPA\n银行财务部实习，参与月度结账、预算执行分析、会计凭证复核和财务报表编制。`,'accounting.txt');
 const accountingJob=job('中国建设银行','财务会计岗','负责财务核算、预算管理、财务报表分析、会计准则执行及税务管理。');
-const accountingFit=score(accountingJob,accounting);
-assert.ok(accountingFit.score>=88,accountingFit);
+const accountingFit=expectStrong('accounting',accountingJob,accounting,88);
+
+const civil=makeProfile(`土木工程 硕士 2027届\n结构设计 岩土工程 BIM Revit 施工组织 工程管理 工程造价 CAD\n参与大型公共建筑结构计算、施工组织设计、BIM协同和工程进度质量管理。`,'civil.txt');
+const civilJob=job('中国建筑','土建工程管理岗','负责土木建筑工程施工组织、BIM协同、进度质量管理、结构及现场工程技术。');
+const civilFit=expectStrong('civil',civilJob,civil);
+
+const biotech=makeProfile(`生物工程 硕士 2027届\n生物医药 制药 细胞培养 PCR 蛋白纯化 药物研发 生物实验 GMP\n参与重组蛋白表达纯化、细胞实验、药物筛选与生物制药工艺研究。`,'biotech.txt');
+const biotechJob=job('某生物医药集团','生物医药研发工程师','负责生物制药研发、细胞培养、蛋白表达纯化、药物筛选及实验数据分析。');
+const biotechFit=expectStrong('biotech',biotechJob,biotech);
+
+const legal=makeProfile(`法学 硕士 2027届\n法务 合规 合同审查 知识产权 公司法 劳动法 法律检索 法律风险\n企业法务实习，参与合同审核、合规审查、知识产权管理与法律意见整理。`,'legal.txt');
+const legalJob=job('某央企集团','法务合规岗','负责合同审查、公司合规、知识产权、法律风险识别及法律事务支持。');
+const legalFit=expectStrong('legal',legalJob,legal);
+
+const product=makeProfile(`信息管理 本科 2027届\n产品经理 用户研究 需求分析 PRD Axure 原型设计 数据分析 A/B测试 用户增长\n互联网产品实习，完成用户访谈、需求拆解、产品原型、指标分析和版本迭代。`,'product.txt');
+const productJob=job('某互联网公司','产品经理','负责用户研究、需求分析、PRD、产品原型、数据分析和产品迭代。');
+const productFit=expectStrong('product',productJob,product);
+const productWrong=score(wrongVlm,product);
+assert.ok(productWrong.score<=50,{productFit,productWrong});
 
 // Source quality changes Evidence Confidence, not candidate-job fit.
 const official={...shopee,id:'same-role-official',sourceTier:7,sourceLabel:'企业招聘官网 · 自主直连'};
@@ -49,6 +67,13 @@ const aggregate={...shopee,id:'same-role-aggregate',sourceTier:1,sourceLabel:'�
 const officialScore=score(official,infra),aggregateScore=score(aggregate,infra);
 assert.ok(Math.abs(officialScore.score-aggregateScore.score)<=2,{officialScore,aggregateScore});
 assert.ok(officialScore.evidenceConfidence-aggregateScore.evidenceConfidence>=20,{officialScore,aggregateScore});
+
+// Cache invalidation: same id but refreshed source/JD evidence must update the
+// Evidence Confidence instead of leaking the old cached explanation.
+const reusedIdOfficial={...shopee,id:'reused-id',sourceTier:7,sourceLabel:'企业招聘官网 · 自主直连',jd:shopee.jd+' 详细岗位职责与资格要求。'};
+const reusedIdWeak={...shopee,id:'reused-id',sourceTier:1,sourceLabel:'公开聚合来源',updatedAt:'2026-06-01',jd:'AI 基础设施'};
+const reusedA=score(reusedIdOfficial,infra),reusedB=CORE.scoreJob(reusedIdWeak,infra,{ageDays:80,targetLocations:[],targetDirections:[]});
+assert.notEqual(reusedA.evidenceConfidence,reusedB.evidenceConfidence,{reusedA,reusedB});
 
 // An explicit city preference is meaningful but cannot turn a wrong-city role
 // into an apparently perfect recommendation.
@@ -71,7 +96,12 @@ console.log(JSON.stringify({
   materials:[materialFit.score,materialWrong.score],
   shopee:[shopeeFit.score,shopeeFit.evidenceConfidence],
   accounting:accountingFit.score,
+  civil:civilFit.score,
+  biotech:biotechFit.score,
+  legal:legalFit.score,
+  product:[productFit.score,productWrong.score],
   sourceConfidence:[officialScore.evidenceConfidence,aggregateScore.evidenceConfidence],
+  reusedEvidence:[reusedA.evidenceConfidence,reusedB.evidenceConfidence],
   cities:[rightCity.score,wrongCity.score],
   searchCount:searched.length,
   searchMs:globalThis.PTO_RANKING_V14.lastMs
