@@ -21,7 +21,12 @@ def feed():
     jobs=[]
     for i in range(COUNT):
         company='京东' if i in (777,17777,37777) else f'企业{i%1200:04d}'
-        role='大模型推理系统工程师' if i%19==0 else ('CUDA算子工程师' if i%23==0 else f'软件研发工程师 {i%70}')
+        base_role='大模型推理系统工程师' if i%19==0 else ('CUDA算子工程师' if i%23==0 else '软件研发工程师')
+        # The product intentionally collapses multiple sources for the same
+        # company + role + city into one clickable opportunity. A catalogue
+        # stress test therefore needs 60k genuinely distinct opportunities,
+        # not 60k source rows that repeat the same product identity.
+        role=f'{base_role} #{i}'
         jobs.append({'id':f'job-{i}','company':company,'role':role,'location':'北京' if i%2==0 else '上海','updated_at':'2026-08-15','apply_url':f'https://example.invalid/{i}','jd':'vLLM CUDA KV Cache PagedAttention' if i%19==0 else '软件研发 Python C++'})
     return {'schema_version':3,'generated_at':'2026-08-16T10:00:00Z','jobs':jobs}
 
