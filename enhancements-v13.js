@@ -15,6 +15,9 @@
       signals.careerDomainConfidence=Number(dirs[0]?.confidence||signals.careerDomainConfidence||0);
       signals.directions=signals.careerDomains.slice(0,4);
       signals.primaryDirection=signals.primaryCareerDomain;
+      if(signals.primaryCareerDomain==='AI Infra / 训练推理系统'){
+        signals.recommendedRoles=[...new Set(['AI Infra / 大模型推理系统',...(signals.recommendedRoles||[])])].slice(0,18);
+      }
     }
     return signals;
   }
