@@ -124,6 +124,7 @@
     RUNTIME.jobsLoaded=marketJobs.length;
     RUNTIME.loadMs=Math.round((performance.now()-started)*10)/10;
     RUNTIME.state=RUNTIME.failures.length?(marketJobs.length?'degraded':'failed'):'healthy';
+    window.PTO_PRIORITY_FEED_READY=true;
     window.PTO_RANKING_V14?.clearCache?.();
     renderDiscovery();
     return marketJobs;
