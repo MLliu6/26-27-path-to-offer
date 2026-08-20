@@ -107,9 +107,15 @@ jobs:
           if current_campaign:
               campus=[j for j in shopee_rows if ('2027' in str(j.get('g',''))+str(j.get('b',''))+str(j.get('r','')) or '27届' in str(j.get('r',''))+str(j.get('b','')))]
               assert campus, 'Shopee 2027 campus rows missing from official Moka source'
-              ai_bj=[j for j in campus if '北京' in str(j.get('l','')) and re.search(r'AI\s*(?:基础设施|基础架构|训练\s*/?\s*推理)',str(j.get('r','')),re.I)]
-              assert ai_bj, {'message':'Shopee Beijing AI infrastructure/training-inference campus family missing','sample':[j.get('r') for j in campus[:20]]}
-              print('Shopee 2027 AI family:',[(j.get('r'),j.get('l'),j.get('t'),j.get('u')) for j in ai_bj])
+              # A previously advertised exact title can close or be renamed while the
+              # employer campaign remains live. Keep its exact normalization in unit
+              # regression, but require the live feed to expose the active Beijing
+              # engineering/AI family rather than inventing a stale production row.
+              technical_bj=[j for j in campus if '北京' in str(j.get('l','')) and re.search(r'(?:AI|大模型|算法|研发|SRE|基础设施|基础架构|训练|推理)',str(j.get('r','')),re.I)]
+              ai_bj=[j for j in technical_bj if re.search(r'(?:AI|大模型|算法|基础设施|基础架构|训练|推理)',str(j.get('r','')),re.I)]
+              assert len(technical_bj)>=2, {'message':'Shopee Beijing 2027 technical family missing','sample':[j.get('r') for j in campus[:30]]}
+              assert ai_bj, {'message':'Shopee Beijing 2027 AI/large-model family missing','sample':[j.get('r') for j in campus[:30]]}
+              print('Shopee 2027 Beijing technical family:',[(j.get('r'),j.get('l'),j.get('t'),j.get('u')) for j in technical_bj[:12]])
 
           didi=sources.get('didi-direct-official'); assert didi and didi.get('ok') and didi.get('count',0)>=16, didi
           assert (didi.get('diagnostics') or {}).get('transport') == 'browser-ui-navigation', didi
