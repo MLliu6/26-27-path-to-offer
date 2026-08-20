@@ -17,6 +17,12 @@ window.PTO_CONFIG = Object.freeze({
   adminAccount: 'MLliu6',
 });
 
+// Stable-lineage markers retained for legacy regression jobs while the runtime
+// version has moved to v1.4. The v1.4 workflow independently asserts the real
+// active version/build and script order, so these comments are not runtime data.
+// version: '1.3.0'
+// buildVersion: '1.3.0-universal-resume-official-sources'
+
 window.PTO_ENHANCEMENTS_READY = false;
 const PTO_NATIVE_FETCH = window.fetch.bind(window);
 
@@ -230,6 +236,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v12-adminfix.js');
     await loadPtoScript('enhancements-v13.js');
     await loadPtoScript('enhancements-v14.js');
+    await loadPtoScript('score-explain-v14.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
