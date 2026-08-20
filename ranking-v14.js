@@ -58,7 +58,7 @@
     const eligibility=clamp(Number(c.eligibility||0)/8);
     const location=clamp(Number(c.location||0)/10);
 
-    // Match means candidate-job fit, not source quality.  Source/freshness/JD
+    // Match means candidate-job fit, not source quality. Source/freshness/JD
     // completeness are reported separately as Evidence Confidence below.
     let fit;
     if(locationRequired){
@@ -112,10 +112,20 @@
     };
   }
 
+  function jobEvidenceKey(job){
+    // Employer APIs frequently reuse a position id while changing the JD,
+    // source tier or update time. Cache the expensive score, but never let a
+    // refresh keep stale explanation/confidence for the same id.
+    return [
+      job?.id||`${job?.company||''}|${job?.role||''}`,
+      job?.role||'',job?.location||'',job?.sourceTier||0,
+      job?.updatedAt||job?.updated_at||'',String(job?.jd||'').length
+    ].join('~');
+  }
   function scoreJobV14(job,profile,opts={}){
     if(!profile)return {score:null,reasons:[],hits:[],components:{},calibration:'no-profile'};
     const age=Number.isFinite(Number(opts.ageDays))?Math.floor(Number(opts.ageDays)):999;
-    const key=`${profileKey(profile)}|${job?.id||job?.company+'|'+job?.role}|${preferenceKey(opts)}|${age}`;
+    const key=`${profileKey(profile)}|${jobEvidenceKey(job)}|${preferenceKey(opts)}|${age}`;
     if(scoreCache.has(key))return scoreCache.get(key);
     const legacy=scoreV13(job,profile,opts);
     const result=calibrate(job,profile,legacy,opts);
