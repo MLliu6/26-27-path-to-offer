@@ -89,17 +89,14 @@ def is_feishu_entry(entry) -> bool:
 
 
 def mark_feishu_job_posts(capture) -> None:
-    """Record that a concrete Feishu public job-list response was parsed."""
     setattr(capture, "_feishu_job_post_responses", int(getattr(capture, "_feishu_job_post_responses", 0)) + 1)
 
 
 def has_feishu_job_posts(capture) -> bool:
-    """Return whether the authoritative Feishu job-list endpoint has responded."""
     return int(getattr(capture, "_feishu_job_post_responses", 0)) > 0
 
 
 def feishu_job_rows(payload) -> list[dict]:
-    """Return only direct Feishu Hire position rows, never their nested metadata."""
     if not isinstance(payload, dict):
         return []
     if payload.get("code") not in (None, 0, "0"):
@@ -118,8 +115,6 @@ def feishu_portal_path(entry) -> str:
         return ""
     if not parts:
         return ""
-    # Public Feishu portals use the first path component as `website-path`, e.g.
-    # /huixi, /zhipucampus, /campusrecruitment, /379481.
     return parts[0]
 
 
@@ -192,7 +187,10 @@ def page_job_from_text(entry, page_url: str, headings, body: str):
     body = h.clean(body)
     if not company or not page_url.startswith(("http://", "https://")):
         return None
-    if len(body) < 180 or not DUTY_RE.search(body) or not QUAL_RE.search(body):
+    # Some employer job pages are intentionally compact. Duty + qualification
+    # headings and a strict role heading provide stronger evidence than an
+    # arbitrary 180-character minimum; 90 chars still rejects navigation cards.
+    if len(body) < 90 or not DUTY_RE.search(body) or not QUAL_RE.search(body):
         return None
 
     role = ""
@@ -316,8 +314,6 @@ def install() -> None:
                     mark_feishu_job_posts(capture)
                     if len(capture.response_urls) < 30 and response.url not in capture.response_urls:
                         capture.response_urls.append(response.url)
-                    # Once the official list response exists, remove any page/DOM
-                    # fallback rows that may have been captured before its XHR.
                     capture.jobs = {
                         key: value for key, value in capture.jobs.items()
                         if value.get("observed_via") not in {"browser-rendered-dom", "browser-current-job-page"}
@@ -348,7 +344,7 @@ def install() -> None:
                 job["apply_url"] = detail
                 job["notice_url"] = detail
                 job["id"] = h.stable_id(job.get("company"), job.get("role"), job.get("location"), position_id)
-        salary = h.flat_text(h.first_value(row, ("salary", "salaryrange", "salary_range")), 160)
+        salary = h.flat_text(h.first_value(row, ("salary", "salaryrange", "salary_range", "min_wage", "max_wage")), 160)
         if salary:
             job["salary"] = salary
         return job
@@ -359,8 +355,6 @@ def install() -> None:
 
     def collect_dom(entry, page, capture):
         before = len(capture.jobs)
-        # Generic same-host JSON responses must not disable the fallback. Only a
-        # successfully parsed Feishu `job/posts` response is authoritative.
         if is_feishu_entry(entry) and has_feishu_job_posts(capture):
             return 0
         capture.add(current_page_job(entry, page))
