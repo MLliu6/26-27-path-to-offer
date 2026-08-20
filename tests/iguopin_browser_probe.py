@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Live browser probe for public IGuopin employer recruiting tenants.
+"""Live browser acceptance for public IGuopin employer recruiting tenants.
 
-The test deliberately observes only requests emitted by anonymous public career
-pages. It is a PR acceptance probe, not a scraper: the output records enough
-request/response shape to keep the production adapter tenant-scoped instead of
-mistakenly assigning a national IGuopin feed to one SOE.
+The test first records the anonymous browser contract emitted by several SOE
+career pages, then runs the production browser adapter against SpaceChina. This
+keeps the production parser tenant-scoped and proves that real rows—not merely a
+reachable portal—become concrete searchable jobs before PR merge.
 """
 from __future__ import annotations
 
@@ -15,6 +15,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright
+
+from scripts import priority_browser_harvester as production_harvester
+from scripts import priority_browser_runner as production_runner
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "sources" / "priority_browser_sources.json"
@@ -68,8 +71,11 @@ def main() -> int:
     assert selected, selected_ids
 
     summaries = []
+    production_jobs = []
+    production_diagnostics = {}
     with sync_playwright() as pw:
-        browser = pw.chromium.launch(headless=True, executable_path=browser_path(), args=["--no-sandbox", "--disable-dev-shm-usage"])
+        executable = browser_path()
+        browser = pw.chromium.launch(headless=True, executable_path=executable, args=["--no-sandbox", "--disable-dev-shm-usage"])
         context = browser.new_context(viewport={"width": 1365, "height": 900}, locale="zh-CN")
         try:
             for entry in selected:
@@ -134,6 +140,12 @@ def main() -> int:
                 summaries.append(summary)
                 print(json.dumps(summary, ensure_ascii=False))
                 page.close()
+
+            # The same real public page must now pass through the production
+            # normalizer. This is the merge gate that prevents "source exists"
+            # from being mistaken for "concrete jobs are actually in the feed".
+            production_runner.install()
+            production_jobs, production_diagnostics = production_harvester.collect_one(context, by_id["spacechina-iguopin"])
         finally:
             context.close()
             browser.close()
@@ -142,7 +154,22 @@ def main() -> int:
     assert spacechina["api_responses"], f"spacechina public page emitted no IGuopin jobs API response: {spacechina}"
     assert any((x.get("status") or 0) == 200 for x in spacechina["api_responses"]), spacechina
     assert sum(x["job_rows"] for x in summaries) > 0, {"message": "selected IGuopin employer pages exposed no concrete jobs", "summaries": summaries}
-    print("IGuopin employer public-request probe: PASS")
+
+    assert len(production_jobs) >= 5, {"jobs": production_jobs[:3], "diagnostics": production_diagnostics}
+    assert all(job.get("observed_via") == "browser-public-iguopin-tenant-list" for job in production_jobs), production_jobs[:3]
+    tenant_ids = {str(job.get("tenant_id") or "") for job in production_jobs}
+    assert len(tenant_ids) == 1 and next(iter(tenant_ids)).isdigit(), tenant_ids
+    assert all(job.get("parent_company") == "中国航天科技集团" for job in production_jobs)
+    assert any(job.get("company") and job.get("company") != "中国航天科技集团" for job in production_jobs), production_jobs[:5]
+    assert any(job.get("graduation") == "2027届" for job in production_jobs), production_jobs[:8]
+    assert all("https://job.iguopin.com/job/detail?id=" in str(job.get("apply_url")) for job in production_jobs)
+    print(json.dumps({
+        "production_spacechina_jobs": len(production_jobs),
+        "tenant_id": next(iter(tenant_ids)),
+        "sample": [{k: job.get(k) for k in ("company", "role", "location", "education", "graduation", "apply_url")} for job in production_jobs[:5]],
+        "diagnostics": production_diagnostics,
+    }, ensure_ascii=False))
+    print("IGuopin employer production adapter: PASS")
     return 0
 
 
