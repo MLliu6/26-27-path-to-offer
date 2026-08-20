@@ -7,8 +7,10 @@ DiDi searchable within a predictable budget. Campus/intern/overseas discovery
 remains enabled in the deeper employer crawl, where longer route probing cannot
 cause the next ten-minute refresh to cancel the current one.
 
-Previously verified DiDi rows are retained, so every fast run adds/replaces the
-current front window without deleting jobs discovered by the deep pass.
+Previously verified DiDi rows from non-social scopes are retained. The current
+social window is replaced atomically on every successful fast refresh so route
+or position-key changes cannot make the same live social jobs accumulate across
+runs.
 """
 from __future__ import annotations
 
@@ -26,6 +28,33 @@ from scripts.priority_direct_feed import OUT, STATUS, canonical_compact, encode,
 didi_ui.SCOPES[:] = [scope for scope in didi_ui.SCOPES if scope.get("slug") == "social"]
 
 
+def is_didi_social_row(row: dict) -> bool:
+    """Return True only for DiDi rows that belong to the fast social window."""
+    if clean(row.get("s")) != "direct-official:didi":
+        return False
+    batch = clean(row.get("b")).lower()
+    if batch and ("社会" in batch or "社招" in batch or "social" in batch):
+        return True
+    url = clean(row.get("u") or row.get("n")).lower()
+    return "/social/" in url
+
+
+def merge_priority_rows(previous: list[dict], encoded: list[dict]) -> dict[str, dict]:
+    """Replace the old DiDi social window while preserving every other scope."""
+    merged: dict[str, dict] = {}
+    for row in previous:
+        if is_didi_social_row(row):
+            continue
+        key = canonical_compact(row)
+        if key:
+            merged[key] = row
+    for row in encoded:
+        key = canonical_compact(row)
+        if key:
+            merged[key] = row
+    return merged
+
+
 def main() -> int:
     jobs, diagnostics = didi_ui.collect_didi_via_ui()
     encoded = [row for job in jobs for row in [encode(job)] if row]
@@ -36,15 +65,7 @@ def main() -> int:
     except Exception:
         pass
 
-    merged: dict[str, dict] = {}
-    for row in previous:
-        key = canonical_compact(row)
-        if key:
-            merged[key] = row
-    for row in encoded:
-        key = canonical_compact(row)
-        if key:
-            merged[key] = row
+    merged = merge_priority_rows(previous, encoded)
 
     generated = now()
     OUT.parent.mkdir(parents=True, exist_ok=True)
