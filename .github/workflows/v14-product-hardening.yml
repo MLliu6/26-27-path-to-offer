@@ -1,0 +1,79 @@
+name: v14-product-hardening
+
+on:
+  pull_request:
+    paths:
+      - 'ranking-v14.js'
+      - 'enhancements-v14.js'
+      - 'config.js'
+      - 'docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md'
+      - 'tests/v14_score_calibration.mjs'
+      - 'tests/v14_source_resilience_smoke.py'
+      - '.github/workflows/v14-product-hardening.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ranking-v14.js'
+      - 'enhancements-v14.js'
+      - 'config.js'
+      - 'docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md'
+      - 'tests/v14_score_calibration.mjs'
+      - 'tests/v14_source_resilience_smoke.py'
+      - '.github/workflows/v14-product-hardening.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v14-product-hardening-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install browser dependency
+        run: python -m pip install --disable-pip-version-check playwright
+      - name: Syntax and calibrated ranking regressions
+        run: |
+          node --check ranking-v14.js
+          node --check enhancements-v14.js
+          node --check config.js
+          node tests/v14_score_calibration.mjs
+          python -m py_compile tests/v14_source_resilience_smoke.py
+      - name: Product invariants
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          config=Path('config.js').read_text(encoding='utf-8')
+          ranking=Path('ranking-v14.js').read_text(encoding='utf-8')
+          enhancement=Path('enhancements-v14.js').read_text(encoding='utf-8')
+          report=Path('docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md').read_text(encoding='utf-8')
+          assert re.search(r"version:\s*'1\.4\.0'",config)
+          assert "buildVersion: '1.4.0-product-hardening-fit-search-sources'" in config
+          assert config.index("ranking-v13.js") < config.index("ranking-v14.js") < config.index("market-v06.js")
+          assert config.index("enhancements-v13.js") < config.index("enhancements-v14.js")
+          for token in ['v14-fit-confidence-separated','evidenceConfidence','SEARCH_SCORE_LIMIT','rankCache','searchRankFast','fitCore']:
+              assert token in ranking, token
+          for token in ['Promise.all','PTO_FEED_RUNTIME','usedPrevious','部分信源降级','pto-market-summary','恢复全部','打开招聘源']:
+              assert token in enhancement, token
+          for token in ['Match Score','Evidence Confidence','60,000','P0-3']:
+              assert token in report, token
+          print('Path to Offer v1.4 product invariants: PASS')
+          PY
+      - name: Browser source resilience
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/pto-v14-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 1
+          python tests/v14_source_resilience_smoke.py
