@@ -11,6 +11,7 @@ on:
       - 'scripts/priority_direct_feed.py'
       - 'scripts/priority_browser_harvester.py'
       - 'scripts/priority_browser_runner.py'
+      - 'scripts/priority_browser_runtime.py'
       - 'sources/moka_priority_sources.json'
       - 'sources/priority_browser_sources.json'
       - 'tests/general_matching_v13.mjs'
@@ -29,6 +30,7 @@ on:
       - 'scripts/priority_direct_feed.py'
       - 'scripts/priority_browser_harvester.py'
       - 'scripts/priority_browser_runner.py'
+      - 'scripts/priority_browser_runtime.py'
       - 'sources/moka_priority_sources.json'
       - 'sources/priority_browser_sources.json'
       - 'tests/general_matching_v13.mjs'
@@ -65,7 +67,7 @@ jobs:
           node --check enhancements-v13.js
           node --check config.js
           node tests/general_matching_v13.mjs
-          python -m py_compile scripts/moka_public_harvester.py scripts/priority_direct_feed.py scripts/priority_browser_harvester.py scripts/priority_browser_runner.py tests/test_moka_public_harvester.py tests/priority_feed_browser_smoke.py tests/iguopin_browser_probe.py
+          python -m py_compile scripts/moka_public_harvester.py scripts/priority_direct_feed.py scripts/priority_browser_harvester.py scripts/priority_browser_runner.py scripts/priority_browser_runtime.py tests/test_moka_public_harvester.py tests/priority_feed_browser_smoke.py tests/iguopin_browser_probe.py
           PYTHONPATH=. python -m unittest -v tests.test_moka_public_harvester
       - name: Product invariants
         run: |
@@ -77,6 +79,7 @@ jobs:
           enhancement=Path('enhancements-v13.js').read_text(encoding='utf-8')
           config=Path('config.js').read_text(encoding='utf-8')
           moka=Path('scripts/moka_public_harvester.py').read_text(encoding='utf-8')
+          runtime=Path('scripts/priority_browser_runtime.py').read_text(encoding='utf-8')
           sources=json.loads(Path('sources/moka_priority_sources.json').read_text(encoding='utf-8'))
           browser_sources=json.loads(Path('sources/priority_browser_sources.json').read_text(encoding='utf-8'))
           for token in ['材料 / 新能源材料 / 工艺研发','法务 / 合规 / 知识产权','产品 / 项目 / 用户研究','生物 / 生物医药 / 制药','公共管理 / 社会科学 / 政策研究']:
@@ -85,12 +88,15 @@ jobs:
               assert token in ranking, token
           assert "state.preferences.targetDirections=[]" in enhancement
           assert "state.preferences.targetLocations=[]" in enhancement
-          assert "buildVersion: '1.3.0-general-resume-moka'" in config
+          assert "version: '1.3.0'" in config
+          assert "buildVersion: '1.3.0-universal-resume-official-sources'" in config
           assert config.index("career-taxonomy-v13.js") < config.index("profile-core-v05.js")
           assert config.index("ranking-v13.js") < config.index("market-v06.js")
           assert 'enhancements-v13.js' in config
           for token in ['api/outer/ats-apply/website/jobs/v2','necromancer','moka-public-website-api','direct-official:shopee']:
               assert token in moka, token
+          for token in ['browser-public-iguopin-tenant-list','iguopin_tenant_only','rejected_non_tenant_rows']:
+              assert token in runtime, token
           shopee=next((x for x in sources.get('sources',[]) if x.get('key')=='shopee'),None)
           assert shopee and shopee.get('org')=='shopee' and int(shopee.get('site'))==2962
           assert 'campus-recruitment/shopee/2962' in shopee.get('official_url','')
