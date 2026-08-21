@@ -44,7 +44,7 @@ def main():
                 route.continue_()
         page.route('**/*',route_handler)
         page.goto(BASE,wait_until='domcontentloaded')
-        page.wait_for_function("() => window.PTO_SECURE_ACCOUNT_V2 && window.PTO_V12_RENDERFIX_READY && document.querySelector('#githubLoginBtn').textContent.includes('账户')",timeout=20000)
+        page.wait_for_function("() => window.PTO_SECURE_ACCOUNT_V2 && window.PTO_DEVICE_ACCOUNT_HINT && window.PTO_V12_RENDERFIX_READY && document.querySelector('#githubLoginBtn').textContent.includes('账户')",timeout=20000)
 
         # Priority B remains text; company avatar is the first company character.
         page.locator('button.nav-item[data-view="pipeline"]').click()
@@ -65,6 +65,7 @@ def main():
         page.locator('#secureLocalCreate').click()
         page.wait_for_function("() => window.PTO_ACCOUNT_SESSION && window.PTO_ACCOUNT_SESSION.username==='candidate-one'",timeout=10000)
         page.wait_for_function("() => Object.keys(localStorage).some(key => key.startsWith('pto.secure.local.v2.'))",timeout=10000)
+        page.wait_for_function("() => JSON.parse(localStorage.getItem('pto.secure.device-account.v1')||'{}').username==='candidate-one'",timeout=10000)
 
         # Plain app state is removed and account payload is opaque ciphertext.
         storage=page.evaluate("Object.fromEntries(Object.entries(localStorage))")
@@ -72,6 +73,10 @@ def main():
         secure=[v for k,v in storage.items() if k.startswith('pto.secure.local.v2.')]
         assert secure and all('PRIVATE RESUME TEXT' not in value and '拼多多' not in value for value in secure)
         assert all('ciphertext' in value and 'AES-GCM-256' in value for value in secure)
+        hint=json.loads(storage['pto.secure.device-account.v1'])
+        assert hint['username']=='candidate-one'
+        assert 'candidate-one-very-strong-password' not in storage['pto.secure.device-account.v1']
+        assert 'token' not in storage['pto.secure.device-account.v1'].lower()
 
         # Source details are visually gated and blurred before admin verification.
         page.locator('button.nav-item[data-view="discover"]').click()
@@ -81,11 +86,19 @@ def main():
         assert page.locator('.admin-source-blur').count()==1
         page.locator('#closeModal').click()
 
-        # Local account can be exited and unlocked again with the same credentials.
+        # Logout/reload must keep only the device-local account identity hint.
         page.locator('#githubLoginBtn').click()
         page.locator('#secureLogout').click()
+        page.wait_for_function("() => document.querySelector('#githubLoginBtn').textContent.includes('candidate-one') && document.querySelector('#githubLoginBtn').textContent.includes('已锁定')",timeout=10000)
+        page.reload(wait_until='domcontentloaded')
+        page.wait_for_function("() => window.PTO_SECURE_ACCOUNT_V2 && window.PTO_DEVICE_ACCOUNT_HINT && document.querySelector('#githubLoginBtn').textContent.includes('candidate-one') && document.querySelector('#githubLoginBtn').textContent.includes('已锁定')",timeout=20000)
         page.locator('#githubLoginBtn').click()
-        page.locator('#secureLocalUser').fill('candidate-one')
+        page.wait_for_selector('.account-modal')
+        assert page.locator('#secureLocalUser').input_value()=='candidate-one'
+        assert page.locator('#secureRemoteUser').input_value()=='candidate-one'
+        assert 'candidate-one · 已锁定' in page.locator('.account-status').inner_text()
+
+        # Password is still required; the remembered identity only helps locate the vault.
         page.locator('#secureLocalPass').fill('candidate-one-very-strong-password')
         page.locator('#secureLocalUnlock').click()
         page.wait_for_function("() => window.PTO_ACCOUNT_SESSION && window.PTO_ACCOUNT_SESSION.username==='candidate-one'",timeout=10000)
