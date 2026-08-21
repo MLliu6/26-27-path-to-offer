@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '1.4.0',
-  buildVersion: '1.4.0-product-hardening-fit-search-sources',
+  version: '1.4.1',
+  buildVersion: '1.4.1-feed-recovery-hotfix',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -230,6 +230,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v12-adminfix.js');
     await loadPtoScript('enhancements-v13.js');
     await loadPtoScript('enhancements-v14.js');
+    await loadPtoScript('enhancements-v141.js');
     await loadPtoScript('score-explain-v14.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
