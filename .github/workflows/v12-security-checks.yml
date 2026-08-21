@@ -6,6 +6,7 @@ on:
       - 'account-vault.js'
       - 'enhancements-v12-security.js'
       - 'enhancements-v12-renderfix.js'
+      - 'enhancements-v12-adminfix.js'
       - 'enhancements-v12.js'
       - 'enhancements-v12-hotfix.js'
       - 'config.js'
@@ -18,6 +19,7 @@ on:
       - 'account-vault.js'
       - 'enhancements-v12-security.js'
       - 'enhancements-v12-renderfix.js'
+      - 'enhancements-v12-adminfix.js'
       - 'config.js'
       - 'tests/account_vault_security.mjs'
       - 'tests/v12_security_browser_smoke.py'
@@ -52,6 +54,7 @@ jobs:
           node --check account-vault.js
           node --check enhancements-v12-security.js
           node --check enhancements-v12-renderfix.js
+          node --check enhancements-v12-adminfix.js
           node --check config.js
           node tests/account_vault.mjs
           node tests/account_vault_security.mjs
@@ -63,13 +66,17 @@ jobs:
           vault=Path('account-vault.js').read_text(encoding='utf-8')
           ui=Path('enhancements-v12-security.js').read_text(encoding='utf-8')
           renderfix=Path('enhancements-v12-renderfix.js').read_text(encoding='utf-8')
+          adminfix=Path('enhancements-v12-adminfix.js').read_text(encoding='utf-8')
           config=Path('config.js').read_text(encoding='utf-8')
           for token in ['verifyGithubToken','expectedLogin','PBKDF2-SHA256','AES-GCM-256','sanitizeState']:
               assert token in vault, token
           for token in ['用户自有 GitHub 加密仓库','零明文原则','管理员信息已雾化','companyInitial','优先 ${escaped(job.priority','portableWrite']:
               assert token in ui, token
+          for token in ['pto.secure.device-account.v1','已锁定（仅本机记住）','migrateKnownLocalVault','PTO_DEVICE_ACCOUNT_HINT']:
+              assert token in adminfix, token
+          assert 'password' not in "DEVICE_HINT_KEY='pto.secure.device-account.v1'"
           assert 'buildVersion:' in config and 'priorityJobsFeed' in config
-          assert 'enhancements-v12-security.js' in config and 'enhancements-v12-renderfix.js' in config
+          assert 'enhancements-v12-security.js' in config and 'enhancements-v12-renderfix.js' in config and 'enhancements-v12-adminfix.js' in config
           assert 'renderAll()' in renderfix
           assert '明文简历' not in ui.split('不会把明文简历')[0]
           print('v1.2 security invariants: PASS')
