@@ -5,6 +5,7 @@ on:
     paths:
       - 'ranking-v14.js'
       - 'enhancements-v14.js'
+      - 'enhancements-v141.js'
       - 'score-explain-v14.js'
       - 'pipeline-timeline-v14.js'
       - 'config.js'
@@ -12,12 +13,14 @@ on:
       - 'tests/v14_score_calibration.mjs'
       - 'tests/v14_source_resilience_smoke.py'
       - 'tests/v14_pipeline_timeline_smoke.py'
+      - 'tests/v141_feed_recovery_smoke.py'
       - '.github/workflows/v14-product-hardening.yml'
   push:
     branches: [main]
     paths:
       - 'ranking-v14.js'
       - 'enhancements-v14.js'
+      - 'enhancements-v141.js'
       - 'score-explain-v14.js'
       - 'pipeline-timeline-v14.js'
       - 'config.js'
@@ -25,6 +28,7 @@ on:
       - 'tests/v14_score_calibration.mjs'
       - 'tests/v14_source_resilience_smoke.py'
       - 'tests/v14_pipeline_timeline_smoke.py'
+      - 'tests/v141_feed_recovery_smoke.py'
       - '.github/workflows/v14-product-hardening.yml'
 
 permissions:
@@ -37,7 +41,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 24
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -52,11 +56,12 @@ jobs:
         run: |
           node --check ranking-v14.js
           node --check enhancements-v14.js
+          node --check enhancements-v141.js
           node --check score-explain-v14.js
           node --check pipeline-timeline-v14.js
           node --check config.js
           node tests/v14_score_calibration.mjs
-          python -m py_compile tests/v14_source_resilience_smoke.py tests/v14_pipeline_timeline_smoke.py
+          python -m py_compile tests/v14_source_resilience_smoke.py tests/v14_pipeline_timeline_smoke.py tests/v141_feed_recovery_smoke.py
       - name: Product invariants
         run: |
           python - <<'PY'
@@ -65,30 +70,34 @@ jobs:
           config=Path('config.js').read_text(encoding='utf-8')
           ranking=Path('ranking-v14.js').read_text(encoding='utf-8')
           enhancement=Path('enhancements-v14.js').read_text(encoding='utf-8')
+          hotfix=Path('enhancements-v141.js').read_text(encoding='utf-8')
           explainer=Path('score-explain-v14.js').read_text(encoding='utf-8')
           timeline=Path('pipeline-timeline-v14.js').read_text(encoding='utf-8')
           report=Path('docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md').read_text(encoding='utf-8')
-          assert re.search(r"version:\s*'1\.4\.0'",config)
-          assert "buildVersion: '1.4.0-product-hardening-fit-search-sources'" in config
+          assert re.search(r"version:\s*'1\.4\.1'",config)
+          assert "buildVersion: '1.4.1-feed-recovery-hotfix'" in config
           assert config.index("ranking-v13.js") < config.index("ranking-v14.js") < config.index("market-v06.js")
-          assert config.index("enhancements-v13.js") < config.index("enhancements-v14.js") < config.index("score-explain-v14.js")
+          assert config.index("enhancements-v13.js") < config.index("enhancements-v14.js") < config.index("enhancements-v141.js") < config.index("score-explain-v14.js")
           for token in ['v14-fit-confidence-separated','evidenceConfidence','SEARCH_SCORE_LIMIT','rankCache','searchRankFast','fitCore']:
               assert token in ranking, token
           for token in ['Promise.all','PTO_FEED_RUNTIME','usedPrevious','部分信源降级','pto-market-summary','恢复全部','打开招聘源']:
               assert token in enhancement, token
+          for token in ['45000','catalogInconsistent','expectedCatalogCount','catalogRecovered','PTO_V141_FEED_READY','global-fallback','岗位目录本轮加载失败']:
+              assert token in hotfix, token
           for token in ['匹配评分明细','来源可信度 / 7','pto-score-audit','pipeline-timeline-v14.js']:
               assert token in explainer, token
           for token in ['pipeline-mini-timeline','状态轨迹','MAX_VISIBLE=4','renderPipeline']:
               assert token in timeline, token
           for token in ['Match Score','Evidence Confidence','60,000','P0-3']:
               assert token in report, token
-          print('Path to Offer v1.4 product invariants: PASS')
+          print('Path to Offer v1.4.1 product invariants: PASS')
           PY
-      - name: Browser source resilience and kanban timeline
+      - name: Browser source resilience, v1.4.1 recovery and kanban timeline
         run: |
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/pto-v14-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           sleep 1
           python tests/v14_source_resilience_smoke.py
+          python tests/v141_feed_recovery_smoke.py
           python tests/v14_pipeline_timeline_smoke.py
