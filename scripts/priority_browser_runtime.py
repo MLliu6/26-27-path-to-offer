@@ -135,6 +135,12 @@ def _collect_rendered_role_blocks(entry: dict, page, capture) -> int:
     for item in _rendered_role_blocks(page):
         text = h.clean(item.get("text"))
         block = str(item.get("block") or "").strip()
+        # Static careers pages expose section headings such as “关于我们” next
+        # to actual job headings. In this opt-in mode the selected element must
+        # itself look like a role; parent-block inference is only used to enrich
+        # that role, never to turn a generic section title into a job.
+        if not h.looks_like_role(text, strict=True):
+            continue
         role = h.dom_role(text, block)
         if not role or not h.looks_like_role(role, strict=True):
             continue
