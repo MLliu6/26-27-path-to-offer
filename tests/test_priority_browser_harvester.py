@@ -134,13 +134,22 @@ class PriorityBrowserHarvesterTests(unittest.TestCase):
         path = Path(__file__).resolve().parents[1] / "sources" / "emerging_compute_browser_sources.json"
         payload = json.loads(path.read_text(encoding="utf-8"))
         sources = {row["id"]: row for row in payload.get("sources", [])}
-        for source_id in ["sunrise", "xingyun", "calculet", "tecorigin", "spacemit"]:
+        expected = [
+            "sunrise", "infinigence", "xingyun", "calculet", "tecorigin",
+            "ecosda", "sophgo", "axera", "spacemit",
+        ]
+        for source_id in expected:
             self.assertIn(source_id, sources)
             self.assertTrue(str(sources[source_id].get("start_url", "")).startswith("https://"))
             self.assertTrue(str(sources[source_id].get("official_url", "")).startswith("https://"))
+        self.assertGreaterEqual(len(sources), 9)
         self.assertEqual(sources["sunrise"].get("family"), "feishu")
+        self.assertEqual(sources["infinigence"].get("family"), "feishu")
         self.assertIn("browser-rendered-role-blocks", sources["xingyun"].get("modes", []))
         self.assertIn("browser-rendered-role-blocks", sources["calculet"].get("modes", []))
+        self.assertIn("2027", sources["ecosda"].get("batch", ""))
+        self.assertIn("jobs.sophgo.com", sources["sophgo"].get("start_url", ""))
+        self.assertIn("zhaopin.axera-tech.com", sources["axera"].get("start_url", ""))
 
     def test_merge_replaces_managed_source_but_keeps_other_sources(self):
         old_managed = normalize_dom_job(ENTRY, "https://jobs.example.com/job/old", "软件研发工程师", "软件研发工程师 北京")
