@@ -47,6 +47,7 @@ jobs:
           node --check enhancements-v13.js
           node --check ranking-v14.js
           node --check enhancements-v14.js
+          node --check enhancements-v141.js
           node --check score-explain-v14.js
           node --check pipeline-timeline-v14.js
           node tests/persona_trials.mjs
@@ -54,7 +55,7 @@ jobs:
           node tests/ranking_calibration.mjs
           node tests/general_matching_v13.mjs
           node tests/v14_score_calibration.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py scripts/priority_browser_harvester.py scripts/priority_browser_runner.py scripts/priority_browser_runtime.py scripts/official_site_job_spider.py scripts/official_campaign_discovery.py scripts/soe_directory_harvester.py scripts/university_2027_discovery.py scripts/ncss_public_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/v14_source_resilience_smoke.py tests/v14_pipeline_timeline_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py tests/test_direct_china_official.py tests/test_ncss_public_harvester.py tests/test_priority_browser_harvester.py tests/test_priority_browser_runner.py tests/iguopin_browser_probe.py
+          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py scripts/priority_browser_harvester.py scripts/priority_browser_runner.py scripts/priority_browser_runtime.py scripts/official_site_job_spider.py scripts/official_campaign_discovery.py scripts/soe_directory_harvester.py scripts/university_2027_discovery.py scripts/ncss_public_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/v14_source_resilience_smoke.py tests/v14_pipeline_timeline_smoke.py tests/v141_feed_recovery_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py tests/test_direct_china_official.py tests/test_ncss_public_harvester.py tests/test_priority_browser_harvester.py tests/test_priority_browser_runner.py tests/iguopin_browser_probe.py
           PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official tests.test_ncss_public_harvester tests.test_priority_browser_harvester tests.test_priority_browser_runner
       - name: Check product invariants
         run: |
@@ -78,6 +79,7 @@ jobs:
           enhancement13=Path('enhancements-v13.js').read_text(encoding='utf-8')
           ranking14=Path('ranking-v14.js').read_text(encoding='utf-8')
           enhancement14=Path('enhancements-v14.js').read_text(encoding='utf-8')
+          enhancement141=Path('enhancements-v141.js').read_text(encoding='utf-8')
           timeline14=Path('pipeline-timeline-v14.js').read_text(encoding='utf-8')
           direct=Path('scripts/direct_china_official.py').read_text(encoding='utf-8')
           priority=Path('scripts/priority_official_harvester.py').read_text(encoding='utf-8')
@@ -139,6 +141,8 @@ jobs:
               assert token in ranking14, token
           for token in ['PTO_FEED_RUNTIME','部分信源降级','恢复全部']:
               assert token in enhancement14, token
+          for token in ['45000','catalogInconsistent','expectedCatalogCount','PTO_V141_FEED_READY']:
+              assert token in enhancement141, token
           for token in ['pipeline-mini-timeline','状态轨迹','MAX_VISIBLE=4']:
               assert token in timeline14, token
           for token in ['direct-official:meituan','direct-official:tencent','zhaopin.meituan.com/api/official/job/getJobList','careers.tencent.com/tencentcareer/api/post/Query','国内企业招聘官网 · 自主直连']:
@@ -193,13 +197,13 @@ jobs:
           for token in ['95+ score inflation','near-perfect score inflation','score distribution collapsed']:
               assert token in calibration, token
           for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
-              assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6+enhancement7+enhancement9+enhancement13+enhancement14+timeline14, f'mock data leaked: {forbidden}'
-          assert "version: '1.4.0'" in config
-          assert "buildVersion: '1.4.0-product-hardening-fit-search-sources'" in config
-          assert 'ranking-v09.js' in config and 'enhancements-v09.js' in config and 'ranking-v13.js' in config and 'enhancements-v13.js' in config and 'ranking-v14.js' in config and 'enhancements-v14.js' in config and 'score-explain-v14.js' in config
+              assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6+enhancement7+enhancement9+enhancement13+enhancement14+enhancement141+timeline14, f'mock data leaked: {forbidden}'
+          assert "version: '1.4.1'" in config
+          assert "buildVersion: '1.4.1-feed-recovery-hotfix'" in config
+          assert 'ranking-v09.js' in config and 'enhancements-v09.js' in config and 'ranking-v13.js' in config and 'enhancements-v13.js' in config and 'ranking-v14.js' in config and 'enhancements-v14.js' in config and 'enhancements-v141.js' in config and 'score-explain-v14.js' in config
           assert 'domesticJobsFeed' in config and 'priorityJobsFeed' in config and 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
           assert 'no account credentials' in federation and 'moka' in federation
-          print('Path to Offer v1.4 universal matching and nationwide official-source checks passed.')
+          print('Path to Offer v1.4.1 universal matching and nationwide official-source checks passed.')
           PY
       - name: Browser smoke tests
         run: |
