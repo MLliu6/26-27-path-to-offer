@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "policy": "Reviewed expansion cluster for emerging China AI-infrastructure, GPU, accelerator and high-performance-computing employers. Each enabled entry must point to an employer-owned public recruiting surface or a public ATS used by that employer. Third-party job boards may be used only as discovery/evidence and are never crawled here when they require login, CAPTCHA or security verification.",
+  "sources": [
+    {
+      "id": "sunrise",
+      "family": "feishu",
+      "company": "曦望Sunrise",
+      "category": "GPU/AI芯片/推理基础设施",
+      "company_type": "民营/GPU/AI芯片",
+      "start_url": "https://bcn95a8dacj3.jobs.feishu.cn/271762/",
+      "url": "https://jobs.sunrise-ai.com/",
+      "official_url": "https://www.sunrise-ai.com/",
+      "api_hosts": ["jobs.sunrise-ai.com", "bcn95a8dacj3.jobs.feishu.cn"],
+      "priority": 99,
+      "modes": ["browser-public-ui"],
+      "batch": "公开招聘/校园招聘",
+      "max_pages": 14,
+      "evidence": "Employer recruiting portal currently resolves to jobs.sunrise-ai.com; public 2027 campaign evidence includes AI Infra, compiler and GPU system-software roles."
+    },
+    {
+      "id": "xingyun",
+      "company": "行云集成电路",
+      "category": "GPU/AI芯片/大模型推理",
+      "company_type": "民营/GPU/AI芯片初创",
+      "start_url": "https://xingyun.xin/rczp",
+      "url": "https://xingyun.xin/rczp",
+      "official_url": "https://xingyun.xin/rczp",
+      "priority": 98,
+      "modes": ["browser-rendered-role-blocks", "browser-rendered-dom"],
+      "batch": "公开招聘/校园招聘",
+      "max_pages": 6,
+      "evidence": "Employer careers page directly publishes inference-framework, CUDA, GPGPU architecture, compiler, GPU driver and firmware roles."
+    },
+    {
+      "id": "calculet",
+      "company": "原粒半导体",
+      "category": "AI芯片/Chiplet/高性能计算",
+      "company_type": "民营/AI芯片初创",
+      "start_url": "https://www.calculet.com.cn/jrwm",
+      "url": "https://www.calculet.com.cn/jrwm",
+      "official_url": "https://www.calculet.com.cn/jrwm",
+      "priority": 98,
+      "modes": ["browser-rendered-role-blocks", "browser-rendered-dom"],
+      "batch": "公开招聘",
+      "max_pages": 5,
+      "evidence": "Employer careers page directly publishes AI high-performance operator, AI compiler, IC design/verification and software roles."
+    },
+    {
+      "id": "tecorigin",
+      "company": "太初元碁",
+      "category": "AI芯片/高性能计算/智算",
+      "company_type": "民营/AI芯片",
+      "start_url": "https://app.mokahr.com/campus-recruitment/tecorigin/47402",
+      "url": "https://app.mokahr.com/campus-recruitment/tecorigin/47402",
+      "official_url": "https://www.tecorigin.com/cn/JoinUs.html",
+      "priority": 98,
+      "modes": ["browser-public-ui"],
+      "batch": "校园招聘",
+      "max_pages": 12,
+      "evidence": "The employer Join Us page explicitly links its social/campus recruiting channels; current employer news confirms 2027 campus recruitment and HPC/deep-learning-framework roles."
+    },
+    {
+      "id": "spacemit",
+      "company": "进迭时空",
+      "category": "RISC-V/AI CPU/高性能计算",
+      "company_type": "民营/计算芯片初创",
+      "start_url": "https://app.mokahr.com/campus-recruitment/space-t1/67916",
+      "url": "https://app.mokahr.com/campus-recruitment/space-t1/67916",
+      "official_url": "https://www.spacemit.com/",
+      "priority": 96,
+      "modes": ["browser-public-ui"],
+      "batch": "校园招聘",
+      "max_pages": 10,
+      "evidence": "Public campus materials identify the employer Moka tenant; recent recruiting covers CPU/IC design, high-performance computing, OS/driver, compiler and AI software tracks."
+    }
+  ]
+}
