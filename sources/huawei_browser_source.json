@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "policy": "Huawei jobs are collected only from the anonymous official Huawei Careers campus portal and the public XHR/fetch traffic emitted by that page. No login, resume upload, CAPTCHA handling, private cookies or access-control bypass is used.",
+  "sources": [
+    {
+      "id": "huawei-campus",
+      "family": "huawei",
+      "company": "华为",
+      "category": "ICT/AI/芯片/云计算",
+      "company_type": "民营/ICT/科技",
+      "start_url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html?jobTypes=2",
+      "url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html?jobTypes=2",
+      "official_url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html",
+      "priority": 100,
+      "modes": ["browser-public-ui"],
+      "batch": "2027校园招聘",
+      "max_pages": 20,
+      "evidence": "Huawei official campus page renders public jobData.result rows from HW.Portal.Reccamp.Job.findJobList; current default domestic graduate route uses jobTypes=2 and job detail links use jobId plus dataSource."
+    }
+  ]
+}
