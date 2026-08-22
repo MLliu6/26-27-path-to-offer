@@ -26,7 +26,7 @@ def walk(value, path="root", depth=0):
     if isinstance(value, dict):
         keys = {str(k).lower() for k in value}
         title = next((value.get(k) for k in value if str(k).lower() in {"title","jobname","job_name","jobtitle","job_title","positionname","position_name","name"}), None)
-        ident = next((value.get(k) for k in value if str(k).lower() in {"id","jobid","job_id","positionid","position_id","code"}), None)
+        ident = next((value.get(k) for k in value if str(k).lower() in {"id","jobid","job_id","positionid","position_id","advertisementsintegrationid","code"}), None)
         if title and (ident or any(HINT.search(k) for k in keys)):
             yield path, value
         for k, v in value.items():
@@ -49,11 +49,26 @@ def main() -> int:
             try:
                 parsed = urlparse(response.url)
                 ctype = (response.headers.get("content-type") or "").lower()
-                if "huawei.com" not in (parsed.hostname or ""):
+                host = (parsed.hostname or "").lower()
+                if "huawei.com" not in host:
                     return
                 if "json" not in ctype and not HINT.search(response.url):
                     return
-                record = {"url": response.url, "status": response.status, "ctype": ctype, "resource": response.request.resource_type}
+                req = response.request
+                record = {
+                    "url": response.url,
+                    "status": response.status,
+                    "ctype": ctype,
+                    "resource": req.resource_type,
+                    "method": req.method,
+                    "post_data": req.post_data,
+                }
+                try:
+                    headers = req.all_headers()
+                except Exception:
+                    headers = req.headers or {}
+                keep = {k.lower(): v for k, v in headers.items() if k.lower() in {"content-type","x-hw-id","origin","referer","accept-language"}}
+                record["request_headers"] = keep
                 try:
                     payload = response.json()
                 except Exception:
@@ -61,10 +76,14 @@ def main() -> int:
                 if isinstance(payload, (dict, list)):
                     rows = []
                     for path, row in walk(payload):
-                        rows.append({"path": path, "keys": list(row.keys())[:40], "sample": {k: row.get(k) for k in list(row.keys())[:20]}})
+                        rows.append({"path": path, "keys": list(row.keys())[:50], "sample": {k: row.get(k) for k in list(row.keys())[:45]}})
                         if len(rows) >= 4:
                             break
                     record["top_keys"] = list(payload.keys())[:40] if isinstance(payload, dict) else [f"list:{len(payload)}"]
+                    if isinstance(payload, dict) and isinstance(payload.get("data"), dict):
+                        data = payload["data"]
+                        record["data_keys"] = list(data.keys())[:50]
+                        record["page_meta"] = {k: data.get(k) for k in ("totalRows","total","pageSize","curPage","pageNo","pageNum","totalPages","startIndex","endIndex") if k in data}
                     record["jobish"] = rows
                 captures.append(record)
             except Exception as exc:
@@ -83,8 +102,8 @@ def main() -> int:
         print("TITLE", page.title())
         print("BODY_SAMPLE", json.dumps(body[:4000], ensure_ascii=False))
         print("LINK_SAMPLE", json.dumps(links[:80], ensure_ascii=False))
-        print("CAPTURES", json.dumps(captures[:80], ensure_ascii=False))
         useful = [x for x in captures if x.get("jobish")]
+        print("USEFUL", json.dumps(useful[:20], ensure_ascii=False))
         print("USEFUL_COUNT", len(useful))
         context.close(); browser.close()
     return 0 if useful or links else 2
