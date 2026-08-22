@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
 """Huawei 2027 campus jobs from the current public Huawei Careers API.
 
-The legacy ``reccampportal/portal5`` site now redirects to ``/cn`` and should not
-be treated as the job source. The current public graduate list calls Huawei's
-anonymous recruitmentPosition API. This adapter reproduces only that normal
-public request: no login, resume upload, cookies, CAPTCHA or private endpoint.
+Huawei migrated the legacy ``reccampportal/portal5`` site to ``/cn``. The new
+public graduate list calls a recruitmentPosition API that returns concrete job
+rows, but the gateway may return an empty payload to a bare HTTP client. This
+collector therefore tries the lightweight public request first and, when Huawei
+requires its normal browser context, opens the anonymous official careers page
+with system Chrome and performs the same public fetch from that page origin.
+
+No login, resume upload, CAPTCHA handling, private cookies, proxy rotation or
+access-control bypass is used.
 """
 from __future__ import annotations
 
 import hashlib
+import json
 import re
+import shutil
 import time
 from typing import Any
 from urllib.parse import urlencode
@@ -20,6 +27,7 @@ API_BASE = "https://apigw-dgg-b0.huawei.com/api/apig/channelhw/recruitmentPositi
 HW_APP_ID = "app_000000035886"
 LIST_URL = "https://career.huawei.com/cn/campus-recruitment-job-list?recruitmentType=FRESH_GRADUATE"
 TIMEOUT = 25
+NAV_TIMEOUT_MS = 45_000
 
 
 def clean(value: Any) -> str:
@@ -29,6 +37,14 @@ def clean(value: Any) -> str:
 def stable_id(*parts: str) -> str:
     raw = "|".join(clean(value).lower() for value in parts if value)
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:18]
+
+
+def browser_path() -> str:
+    for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
+        path = shutil.which(name)
+        if path:
+            return path
+    raise RuntimeError("Chrome/Chromium unavailable for Huawei public browser collector")
 
 
 def _session() -> requests.Session:
@@ -45,36 +61,38 @@ def _session() -> requests.Session:
     return session
 
 
-def _request_page(session: requests.Session, page: int, page_size: int) -> dict[str, Any]:
-    url = f"{API_BASE}?{urlencode({'X-HW-ID': HW_APP_ID})}"
-    body = {
+def request_body(page: int, page_size: int) -> dict[str, Any]:
+    return {
         "curPage": page,
         "pageSize": page_size,
         "jobType": "CR",
         "recruitmentType": ["FRESH_GRADUATE"],
     }
+
+
+def _request_page(session: requests.Session, page: int, page_size: int) -> dict[str, Any]:
+    url = f"{API_BASE}?{urlencode({'X-HW-ID': HW_APP_ID})}"
     last: Exception | None = None
     for attempt in range(3):
         try:
-            response = session.post(url, json=body, timeout=TIMEOUT)
+            response = session.post(url, json=request_body(page, page_size), timeout=TIMEOUT)
             response.raise_for_status()
             payload = response.json()
             if not isinstance(payload, dict):
                 raise RuntimeError("Huawei getJobPage returned non-object JSON")
-            if payload.get("status") not in (None, 0, "0", 200, "200", "success", "SUCCESS") and not payload.get("data"):
-                raise RuntimeError(f"Huawei API status={payload.get('status')} errors={payload.get('errors')}")
             return payload
         except Exception as exc:
             last = exc
             if attempt < 2:
-                time.sleep(1.0 * (attempt + 1))
+                time.sleep(0.8 * (attempt + 1))
     raise RuntimeError(str(last) if last else "Huawei getJobPage failed")
 
 
 def _job_url(row: dict[str, Any]) -> str:
-    # The new Huawei site renders SPA cards without stable anonymous <a> detail
-    # URLs. Keep the current official list as navigation target; position_id is
-    # the exact Huawei jobId and preserves one identity per real position.
+    # The new Huawei SPA renders cards without stable anonymous <a> detail URLs.
+    # Keep the current official list as navigation target; position_id is the
+    # exact Huawei jobId and keeps every real position independently addressable
+    # inside Path to Offer.
     return LIST_URL
 
 
@@ -103,7 +121,7 @@ def normalize_huawei_job(row: dict[str, Any]) -> dict[str, Any] | None:
     url = _job_url(row)
     job = {
         "source": "direct-official:huawei-v2",
-        "source_label": "华为校园招聘官网 · 公开职位API",
+        "source_label": "华为校园招聘官网 · 新版公开职位",
         "source_url": LIST_URL,
         "updated_at": updated,
         "company": "华为",
@@ -120,80 +138,172 @@ def normalize_huawei_job(row: dict[str, Any]) -> dict[str, Any] | None:
         "apply_url": url,
         "jd": jd[:5000],
         "tags": ["官方招聘", "华为", "2027校园招聘", scenario] + ([category] if category else []),
-        "observed_via": "employer-public-api",
+        "observed_via": "employer-public-browser-api",
         "position_id": job_id,
     }
     job["id"] = stable_id("华为", role, location, job_id)
     return job
 
 
-def collect_huawei(page_size: int = 10, max_pages: int = 20) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    # page_size=10 deliberately mirrors the public page request exactly.
-    page_size = max(1, min(50, int(page_size)))
-    max_pages = max(1, min(30, int(max_pages)))
+def _consume_payload(payload: Any, jobs: dict[str, dict[str, Any]]) -> tuple[int, int, int]:
+    if not isinstance(payload, dict):
+        return 0, 0, 0
+    data = payload.get("data") or {}
+    if not isinstance(data, dict):
+        return 0, 0, 0
+    page_vo = data.get("pageVO") or {}
+    total_rows = int(page_vo.get("totalRows") or 0) if isinstance(page_vo, dict) else 0
+    total_pages = int(page_vo.get("totalPages") or 0) if isinstance(page_vo, dict) else 0
+    rows = data.get("result") or []
+    if not isinstance(rows, list):
+        return total_rows, total_pages, 0
+    added = 0
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        job = normalize_huawei_job(row)
+        if job:
+            jobs[job["position_id"]] = job
+            added += 1
+    return total_rows, total_pages, len(rows)
+
+
+def _collect_http(page_size: int, max_pages: int) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     session = _session()
     prime_status = 0
     prime_error = ""
     try:
-        prime_headers = {
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Content-Type": "text/plain",
-        }
-        response = session.get(LIST_URL, headers=prime_headers, timeout=TIMEOUT, allow_redirects=True)
+        response = session.get(
+            LIST_URL,
+            headers={"Accept": "text/html,application/xhtml+xml,*/*;q=0.8", "Content-Type": "text/plain"},
+            timeout=TIMEOUT,
+            allow_redirects=True,
+        )
         prime_status = response.status_code
         response.raise_for_status()
     except Exception as exc:
         prime_error = f"{type(exc).__name__}: {clean(exc)[:180]}"
 
     jobs: dict[str, dict[str, Any]] = {}
-    total_rows = 0
-    total_pages = 0
-    pages_ok = 0
-    first_status: Any = None
-    first_errors: Any = None
+    total_rows = total_pages = pages_ok = 0
     for page in range(1, max_pages + 1):
         payload = _request_page(session, page, page_size)
-        if page == 1:
-            first_status = payload.get("status")
-            first_errors = payload.get("errors")
-        data = payload.get("data") or {}
-        if not isinstance(data, dict):
-            break
-        page_vo = data.get("pageVO") or {}
-        if isinstance(page_vo, dict):
-            total_rows = int(page_vo.get("totalRows") or total_rows or 0)
-            total_pages = int(page_vo.get("totalPages") or total_pages or 0)
-        rows = data.get("result") or []
-        if not isinstance(rows, list) or not rows:
+        reported, pages, row_count = _consume_payload(payload, jobs)
+        total_rows = reported or total_rows
+        total_pages = pages or total_pages
+        if not row_count:
             break
         pages_ok += 1
-        for row in rows:
-            if not isinstance(row, dict):
-                continue
-            job = normalize_huawei_job(row)
-            if job:
-                jobs[job["position_id"]] = job
         if total_pages and page >= total_pages:
             break
-        if len(rows) < page_size:
+        if row_count < page_size:
             break
-        time.sleep(0.12)
-    diagnostics = {
-        "endpoint": API_BASE,
-        "transport": "public-huawei-careers-api",
+        time.sleep(0.08)
+    return list(jobs.values()), {
+        "transport": "http-public-api",
         "prime_status": prime_status,
         "prime_error": prime_error,
-        "api_status": first_status,
-        "api_errors": first_errors,
-        "page_size": page_size,
         "pages_ok": pages_ok,
         "total_reported": total_rows,
         "total_pages": total_pages,
-        "unique_jobs": len(jobs),
-        "ai_infra_present": any(clean(j.get("role")) == "AI Infra工程师" for j in jobs.values()),
-        "beijing_jobs": sum(1 for j in jobs.values() if "北京" in clean(j.get("location"))),
     }
-    return list(jobs.values()), diagnostics
+
+
+def _collect_browser(page_size: int, max_pages: int) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    # Import lazily so syntax/unit users of the module do not need Playwright.
+    from playwright.sync_api import sync_playwright
+
+    jobs: dict[str, dict[str, Any]] = {}
+    total_rows = total_pages = pages_ok = 0
+    final_url = LIST_URL
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(
+            headless=True,
+            executable_path=browser_path(),
+            args=["--no-sandbox", "--disable-dev-shm-usage"],
+        )
+        context = browser.new_context(viewport={"width": 1440, "height": 1000}, locale="zh-CN")
+        page = context.new_page()
+        try:
+            page.goto(LIST_URL, wait_until="domcontentloaded", timeout=NAV_TIMEOUT_MS)
+            page.wait_for_timeout(2500)
+            final_url = page.url
+            for page_no in range(1, max_pages + 1):
+                result = page.evaluate(
+                    """async ({endpoint, appId, body}) => {
+                      const url = `${endpoint}?X-HW-ID=${encodeURIComponent(appId)}`;
+                      const response = await fetch(url, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                          'Accept': 'application/json,text/plain,*/*',
+                          'Accept-Language': 'zh-CN',
+                          'Content-Type': 'application/json',
+                          'X-HW-ID': appId
+                        },
+                        body: JSON.stringify(body)
+                      });
+                      const text = await response.text();
+                      return {status: response.status, ok: response.ok, text};
+                    }""",
+                    {"endpoint": API_BASE, "appId": HW_APP_ID, "body": request_body(page_no, page_size)},
+                )
+                if not isinstance(result, dict) or not result.get("ok"):
+                    raise RuntimeError(f"Huawei browser API HTTP {result}")
+                payload = json.loads(result.get("text") or "{}")
+                reported, pages, row_count = _consume_payload(payload, jobs)
+                total_rows = reported or total_rows
+                total_pages = pages or total_pages
+                if not row_count:
+                    break
+                pages_ok += 1
+                if total_pages and page_no >= total_pages:
+                    break
+                if row_count < page_size:
+                    break
+                page.wait_for_timeout(90)
+        finally:
+            context.close()
+            browser.close()
+    return list(jobs.values()), {
+        "transport": "browser-page-public-api",
+        "final_url": final_url,
+        "pages_ok": pages_ok,
+        "total_reported": total_rows,
+        "total_pages": total_pages,
+    }
+
+
+def collect_huawei(page_size: int = 10, max_pages: int = 20) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    # page_size=10 deliberately mirrors the public page exactly; current live
+    # catalogue reports 69 jobs / 7 pages.
+    page_size = max(1, min(50, int(page_size)))
+    max_pages = max(1, min(30, int(max_pages)))
+    http_jobs: list[dict[str, Any]] = []
+    http_diag: dict[str, Any] = {}
+    try:
+        http_jobs, http_diag = _collect_http(page_size, max_pages)
+    except Exception as exc:
+        http_diag = {"transport": "http-public-api", "error": f"{type(exc).__name__}: {clean(exc)[:220]}"}
+
+    if http_jobs:
+        jobs, diag = http_jobs, http_diag
+        fallback_used = False
+    else:
+        jobs, diag = _collect_browser(page_size, max_pages)
+        fallback_used = True
+
+    diagnostics = {
+        "endpoint": API_BASE,
+        **diag,
+        "http_probe": http_diag,
+        "browser_fallback_used": fallback_used,
+        "page_size": page_size,
+        "unique_jobs": len(jobs),
+        "ai_infra_present": any(clean(j.get("role")) == "AI Infra工程师" for j in jobs),
+        "beijing_jobs": sum(1 for j in jobs if "北京" in clean(j.get("location"))),
+    }
+    return jobs, diagnostics
 
 
 if __name__ == "__main__":
