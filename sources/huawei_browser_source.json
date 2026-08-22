@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "policy": "Huawei jobs are collected only from the anonymous official Huawei Careers campus portal and the public XHR/fetch traffic emitted by that page. No login, resume upload, CAPTCHA handling, private cookies or access-control bypass is used.",
+  "version": 2,
+  "policy": "Huawei jobs are collected only from the anonymous official Huawei Careers campus portal and the public XHR/fetch traffic emitted by that page. No login, resume upload, CAPTCHA handling, private cookies or access-control bypass is used. The general domestic-graduate list is paired with Huawei's own quickSearch=AI entry so AI/Infra/compute roles cannot be hidden behind the first pages of a very large campus catalogue.",
   "sources": [
     {
       "id": "huawei-campus",
@@ -16,6 +16,21 @@
       "batch": "2027校园招聘",
       "max_pages": 20,
       "evidence": "Huawei official campus page renders public jobData.result rows from HW.Portal.Reccamp.Job.findJobList; current default domestic graduate route uses jobTypes=2 and job detail links use jobId plus dataSource."
+    },
+    {
+      "id": "huawei-campus-ai",
+      "family": "huawei",
+      "company": "华为",
+      "category": "AI Infra/AI系统软件/算子/大模型/芯片软件",
+      "company_type": "民营/ICT/科技",
+      "start_url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html?jobTypes=2&quickSearch=AI",
+      "url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html?jobTypes=2&quickSearch=AI",
+      "official_url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html?quickSearch=AI",
+      "priority": 100,
+      "modes": ["browser-public-ui"],
+      "batch": "2027校园招聘",
+      "max_pages": 20,
+      "evidence": "Huawei Careers homepage itself links to campus-recruitment.html?quickSearch=AI; the campus page initializes seachParam.searchText from quickSearch before calling the same public findJobList flow."
     }
   ]
 }
