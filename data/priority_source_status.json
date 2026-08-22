@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-22T08:53:02Z",
-  "catalog_count": 2649,
+  "generated_at": "2026-08-22T09:10:29Z",
+  "catalog_count": 2720,
   "refresh_class": "priority-employer-direct",
   "nominal_interval_minutes": 10,
   "exact_pdd_position_id": "5e4eb6f3-294f-491b-9d39-42895eed98c3",
@@ -145,6 +145,81 @@
       "error": ""
     },
     {
+      "name": "huawei-v2-direct-official",
+      "label": "华为校园招聘官网 · 新版公开职位API",
+      "url": "https://career.huawei.com/cn/campus-recruitment-job-list?recruitmentType=FRESH_GRADUATE",
+      "ok": true,
+      "count": 69,
+      "preserved_previous": false,
+      "diagnostics": {
+        "endpoint": "https://apigw-dgg-b0.huawei.com/api/apig/channelhw/recruitmentPosition/pub/getJobPage",
+        "transport": "browser-native-ui-xhr",
+        "final_url": "https://career.huawei.com/cn/campus-recruitment-job-list?recruitmentType=FRESH_GRADUATE",
+        "pages_ok": 7,
+        "captured_pages": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "response_count": 7,
+        "total_reported": 69,
+        "total_pages": 7,
+        "unique_jobs": 69,
+        "ai_infra_present": true,
+        "beijing_jobs": 37,
+        "clicks": [
+          {
+            "page": 2,
+            "ok": true,
+            "count": 1,
+            "tag": "LI",
+            "cls": "pager-item-pager-pc"
+          },
+          {
+            "page": 3,
+            "ok": true,
+            "count": 1,
+            "tag": "LI",
+            "cls": "pager-item-pager-pc"
+          },
+          {
+            "page": 4,
+            "ok": true,
+            "count": 1,
+            "tag": "LI",
+            "cls": "pager-item-pager-pc"
+          },
+          {
+            "page": 5,
+            "ok": true,
+            "count": 1,
+            "tag": "LI",
+            "cls": "pager-item-pager-pc"
+          },
+          {
+            "page": 6,
+            "ok": true,
+            "count": 1,
+            "tag": "LI",
+            "cls": "pager-item-pager-pc"
+          },
+          {
+            "page": 7,
+            "ok": true,
+            "count": 1,
+            "tag": "LI",
+            "cls": "pager-item-active-pc"
+          }
+        ],
+        "errors": []
+      },
+      "error": ""
+    },
+    {
       "name": "shopee-direct-official",
       "label": "Shopee（深圳虾皮信息科技有限公司）招聘官网 · Moka公开直连",
       "url": "https://app.mokahr.com/campus-recruitment/shopee/2962#/jobs",
@@ -174,7 +249,7 @@
       "label": "美团招聘官网 · 自主直连",
       "url": "https://zhaopin.meituan.com/web/campus",
       "ok": true,
-      "count": 563,
+      "count": 564,
       "preserved_previous": false,
       "diagnostics": {
         "endpoint": "https://zhaopin.meituan.com/api/official/job/getJobList",
@@ -189,7 +264,7 @@
           }
         },
         "page_size": 100,
-        "unique_jobs": 563
+        "unique_jobs": 564
       },
       "error": ""
     },
@@ -198,12 +273,12 @@
       "label": "腾讯招聘官网 · 自主直连",
       "url": "https://careers.tencent.com/search.html",
       "ok": true,
-      "count": 1999,
+      "count": 2000,
       "preserved_previous": false,
       "diagnostics": {
         "endpoint": "https://careers.tencent.com/tencentcareer/api/post/Query",
         "total_reported": 2273,
-        "unique_jobs": 1999
+        "unique_jobs": 2000
       },
       "error": ""
     }
