@@ -1,36 +1,21 @@
 {
-  "version": 2,
-  "policy": "Huawei jobs are collected only from the anonymous official Huawei Careers campus portal and the public XHR/fetch traffic emitted by that page. No login, resume upload, CAPTCHA handling, private cookies or access-control bypass is used. The general domestic-graduate list is paired with Huawei's own quickSearch=AI entry so AI/Infra/compute roles cannot be hidden behind the first pages of a very large campus catalogue.",
+  "version": 3,
+  "policy": "Huawei migrated from the legacy reccampportal/portal5 site to career.huawei.com/cn in August 2026. The legacy browser sources are disabled because they now resolve through a compatibility/redirect shell and can collapse to announcement HTML. Current graduate positions are collected by scripts/huawei_v2_official_harvester.py from the exact anonymous public getJobPage request emitted by the new Huawei Careers page.",
   "sources": [
     {
-      "id": "huawei-campus",
+      "id": "huawei-campus-legacy-disabled",
       "family": "huawei",
       "company": "华为",
       "category": "ICT/AI/芯片/云计算",
       "company_type": "民营/ICT/科技",
       "start_url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html?jobTypes=2",
       "url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html?jobTypes=2",
-      "official_url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html",
-      "priority": 100,
-      "modes": ["browser-public-ui"],
+      "official_url": "https://career.huawei.com/cn/campus-recruitment-job-list?recruitmentType=FRESH_GRADUATE",
+      "enabled": false,
+      "priority": 0,
+      "modes": [],
       "batch": "2027校园招聘",
-      "max_pages": 20,
-      "evidence": "Huawei official campus page renders public jobData.result rows from HW.Portal.Reccamp.Job.findJobList; current default domestic graduate route uses jobTypes=2 and job detail links use jobId plus dataSource."
-    },
-    {
-      "id": "huawei-campus-ai",
-      "family": "huawei",
-      "company": "华为",
-      "category": "AI Infra/AI系统软件/算子/大模型/芯片软件",
-      "company_type": "民营/ICT/科技",
-      "start_url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html?jobTypes=2&quickSearch=AI",
-      "url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html?jobTypes=2&quickSearch=AI",
-      "official_url": "https://career.huawei.com/reccampportal/portal5/campus-recruitment.html?quickSearch=AI",
-      "priority": 100,
-      "modes": ["browser-public-ui"],
-      "batch": "2027校园招聘",
-      "max_pages": 20,
-      "evidence": "Huawei Careers homepage itself links to campus-recruitment.html?quickSearch=AI; the campus page initializes seachParam.searchText from quickSearch before calling the same public findJobList flow."
+      "reason": "superseded-by-huawei-v2-public-api"
     }
   ]
 }
