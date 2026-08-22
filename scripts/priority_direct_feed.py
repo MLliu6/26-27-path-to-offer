@@ -2,9 +2,9 @@
 """Build the fast employer-direct browser feed.
 
 This stage refreshes inexpensive proven public employer APIs and ATS surfaces:
-PDD, Shopee/Moka, Meituan and Tencent. DiDi is deliberately not queried here:
-GitHub-hosted runners may intercept its direct HTTP transport, so the immediately
-following `didi_ui_priority_seed.py` drives DiDi's public UI instead.
+PDD, Huawei, Shopee/Moka, Meituan and Tencent. DiDi is deliberately not queried
+here: GitHub-hosted runners may intercept its direct HTTP transport, so the
+immediately following `didi_ui_priority_seed.py` drives DiDi's public UI instead.
 
 Each source fails independently and preserves its last valid rows. No login,
 applicant API, CAPTCHA bypass or user cookie is used.
@@ -21,6 +21,7 @@ from urllib.parse import parse_qs, urlparse
 from scripts.aggregate_jobs import clean
 from scripts.direct_china_official import CONFIG_PATH as DIRECT_CONFIG_PATH
 from scripts.direct_china_official import ADAPTERS as LEGACY_DIRECT_ADAPTERS
+from scripts.huawei_v2_official_harvester import LIST_URL as HUAWEI_LIST_URL, collect_huawei
 from scripts.moka_public_harvester import fetch_company as fetch_moka_company, load_priority_specs as load_moka_priority_specs
 from scripts.pdd_official_harvester import collect_pdd
 
@@ -182,6 +183,21 @@ def main() -> int:
         fresh_by_source=fresh_by_source, source_runs=source_runs,
     )
 
+    def validate_huawei(jobs, diagnostics):
+        if diagnostics.get("total_reported", 0) < 60:
+            raise RuntimeError(f"Huawei graduate catalogue unexpectedly small: {diagnostics}")
+        if not diagnostics.get("ai_infra_present"):
+            raise RuntimeError(f"Huawei AI Infra role missing: {diagnostics}")
+        if diagnostics.get("beijing_jobs", 0) < 1:
+            raise RuntimeError(f"Huawei Beijing coverage missing: {diagnostics}")
+
+    record_special_source(
+        source_id="direct-official:huawei-v2", name="huawei-v2-direct-official",
+        label="华为校园招聘官网 · 新版公开职位API", url=HUAWEI_LIST_URL,
+        collector=collect_huawei, validator=validate_huawei, old_by_source=old_by_source,
+        fresh_by_source=fresh_by_source, source_runs=source_runs,
+    )
+
     # Moka priority sources are employer-owned public career tenants. Unlike the
     # broad federation, this short list runs every ten minutes so user-reported
     # omissions such as Shopee become regression failures instead of anecdotes.
@@ -219,7 +235,14 @@ def main() -> int:
         if source_id and source_id not in fresh_by_source:
             fresh_by_source[source_id] = rows
 
-    source_order = {"direct-official:pdd": 0, "direct-official:shopee": 1, "direct-official:didi": 2, "direct-official:meituan": 3, "direct-official:tencent": 4}
+    source_order = {
+        "direct-official:pdd": 0,
+        "direct-official:huawei-v2": 1,
+        "direct-official:shopee": 2,
+        "direct-official:didi": 3,
+        "direct-official:meituan": 4,
+        "direct-official:tencent": 5,
+    }
     merged: dict[str, dict[str, Any]] = {}
     for source_id in sorted(fresh_by_source, key=lambda value: (source_order.get(value, 99), value)):
         for row in fresh_by_source[source_id]:
