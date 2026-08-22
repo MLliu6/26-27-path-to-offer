@@ -132,12 +132,30 @@ def collect_huawei(page_size: int = 10, max_pages: int = 20) -> tuple[list[dict[
     page_size = max(1, min(50, int(page_size)))
     max_pages = max(1, min(30, int(max_pages)))
     session = _session()
+    prime_status = 0
+    prime_error = ""
+    try:
+        prime_headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Content-Type": "text/plain",
+        }
+        response = session.get(LIST_URL, headers=prime_headers, timeout=TIMEOUT, allow_redirects=True)
+        prime_status = response.status_code
+        response.raise_for_status()
+    except Exception as exc:
+        prime_error = f"{type(exc).__name__}: {clean(exc)[:180]}"
+
     jobs: dict[str, dict[str, Any]] = {}
     total_rows = 0
     total_pages = 0
     pages_ok = 0
+    first_status: Any = None
+    first_errors: Any = None
     for page in range(1, max_pages + 1):
         payload = _request_page(session, page, page_size)
+        if page == 1:
+            first_status = payload.get("status")
+            first_errors = payload.get("errors")
         data = payload.get("data") or {}
         if not isinstance(data, dict):
             break
@@ -163,6 +181,10 @@ def collect_huawei(page_size: int = 10, max_pages: int = 20) -> tuple[list[dict[
     diagnostics = {
         "endpoint": API_BASE,
         "transport": "public-huawei-careers-api",
+        "prime_status": prime_status,
+        "prime_error": prime_error,
+        "api_status": first_status,
+        "api_errors": first_errors,
         "page_size": page_size,
         "pages_ok": pages_ok,
         "total_reported": total_rows,
