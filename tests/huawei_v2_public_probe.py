@@ -55,35 +55,22 @@ def main() -> int:
                 if "json" not in ctype and not HINT.search(response.url):
                     return
                 req = response.request
-                record = {
-                    "url": response.url,
-                    "status": response.status,
-                    "ctype": ctype,
-                    "resource": req.resource_type,
-                    "method": req.method,
-                    "post_data": req.post_data,
-                }
-                try:
-                    headers = req.all_headers()
-                except Exception:
-                    headers = req.headers or {}
+                record = {"url": response.url,"status": response.status,"ctype": ctype,"resource": req.resource_type,"method": req.method,"post_data": req.post_data}
+                try: headers = req.all_headers()
+                except Exception: headers = req.headers or {}
                 record["request_headers"] = {k.lower(): v for k, v in headers.items() if k.lower() in {"content-type","x-hw-id","origin","referer","accept-language"}}
-                try:
-                    payload = response.json()
-                except Exception:
-                    payload = None
+                try: payload = response.json()
+                except Exception: payload = None
                 if isinstance(payload, (dict, list)):
                     rows = []
                     for path, row in walk(payload):
-                        rows.append({"path": path, "keys": list(row.keys())[:60], "sample": {k: row.get(k) for k in list(row.keys())[:55]}})
-                        if len(rows) >= 4:
-                            break
+                        rows.append({"path": path,"keys": list(row.keys())[:60],"sample": {k: row.get(k) for k in list(row.keys())[:55]}})
+                        if len(rows) >= 4: break
                     record["top_keys"] = list(payload.keys())[:40] if isinstance(payload, dict) else [f"list:{len(payload)}"]
                     if isinstance(payload, dict) and isinstance(payload.get("data"), dict):
                         data = payload["data"]
                         record["data_keys"] = list(data.keys())[:50]
-                        page_vo = data.get("pageVO") if isinstance(data.get("pageVO"), dict) else {}
-                        record["page_vo"] = page_vo
+                        record["page_vo"] = data.get("pageVO") if isinstance(data.get("pageVO"), dict) else {}
                     record["jobish"] = rows
                 captures.append(record)
             except Exception as exc:
@@ -92,42 +79,46 @@ def main() -> int:
         page.on("response", on_response)
         page.goto(URL, wait_until="domcontentloaded", timeout=45000)
         page.wait_for_timeout(8500)
-
         useful_before = [x for x in captures if x.get("jobish")]
-        print("LIST_USEFUL", json.dumps(useful_before[:10], ensure_ascii=False))
+        print("LIST_USEFUL", json.dumps(useful_before[:4], ensure_ascii=False))
 
-        target = page.get_by_text("AI Infra工程师", exact=True)
-        print("TARGET_COUNT", target.count())
-        if target.count():
-            try:
-                info = target.first.evaluate("""el => {
-                  let node=el;
-                  const chain=[];
-                  for(let i=0;i<7 && node;i++,node=node.parentElement){
-                    chain.push({tag:node.tagName,cls:node.className||'',id:node.id||'',href:node.href||'',role:node.getAttribute&&node.getAttribute('role'),data:Object.fromEntries(Array.from(node.attributes||[]).filter(a=>a.name.startsWith('data-')).map(a=>[a.name,a.value]))});
-                  }
-                  return chain;
-                }""")
-                print("TARGET_CHAIN", json.dumps(info, ensure_ascii=False))
-            except Exception as exc:
-                print("TARGET_CHAIN_ERROR", type(exc).__name__, str(exc))
+        candidate = page.evaluate("""() => {
+          const needle='AI Infra工程师';
+          const all=Array.from(document.querySelectorAll('body *')).filter(el=>((el.innerText||el.textContent||'').trim()).includes(needle));
+          all.sort((a,b)=>((a.innerText||a.textContent||'').trim().length)-((b.innerText||b.textContent||'').trim().length));
+          const el=all[0];
+          if(!el)return null;
+          let node=el, chain=[];
+          for(let i=0;i<8 && node;i++,node=node.parentElement){
+            chain.push({tag:node.tagName,cls:String(node.className||''),id:node.id||'',text:(node.innerText||node.textContent||'').trim().slice(0,600),href:node.href||'',onclick:node.getAttribute&&node.getAttribute('onclick'),role:node.getAttribute&&node.getAttribute('role'),attrs:Object.fromEntries(Array.from(node.attributes||[]).map(a=>[a.name,a.value]).filter(([k])=>k.startsWith('data-')||k==='href'||k==='onclick'||k==='role'))});
+          }
+          return {chain};
+        }""")
+        print("TARGET_CANDIDATE", json.dumps(candidate, ensure_ascii=False))
 
-            before_pages = len(context.pages)
-            try:
-                target.first.click(timeout=5000)
-                page.wait_for_timeout(6000)
-            except Exception as exc:
-                print("CLICK_ERROR", type(exc).__name__, str(exc))
-            print("PAGES_AFTER_CLICK", len(context.pages), "BEFORE", before_pages)
-            for idx, pg in enumerate(context.pages):
-                print("PAGE", idx, pg.url, pg.title())
-                try:
-                    print("PAGE_BODY", idx, json.dumps(pg.locator('body').inner_text()[:3500], ensure_ascii=False))
-                except Exception:
-                    pass
-
-        useful_after = [x for x in captures if x.get("jobish") or ("detail" in x.get("url", "").lower())]
-        print("AFTER_USEFUL", json.dumps(useful_after[-20:], ensure_ascii=False))
+        before = page.url
+        clicked = page.evaluate("""() => {
+          const needle='AI Infra工程师';
+          const all=Array.from(document.querySelectorAll('body *')).filter(el=>((el.innerText||el.textContent||'').trim()).includes(needle));
+          all.sort((a,b)=>((a.innerText||a.textContent||'').trim().length)-((b.innerText||b.textContent||'').trim().length));
+          let el=all[0];
+          if(!el)return false;
+          let node=el;
+          for(let i=0;i<8 && node;i++,node=node.parentElement){
+            const cs=getComputedStyle(node);
+            if(node.tagName==='A'||node.tagName==='BUTTON'||node.onclick||cs.cursor==='pointer'||node.getAttribute('role')==='button'){
+              node.click(); return true;
+            }
+          }
+          el.click(); return true;
+        }""")
+        print("CLICKED", clicked, "BEFORE_URL", before)
+        page.wait_for_timeout(6500)
+        print("AFTER_URL", page.url)
+        print("AFTER_TITLE", page.title())
+        print("AFTER_BODY", json.dumps(page.locator('body').inner_text()[:4500], ensure_ascii=False))
+        after = [x for x in captures if x.get("jobish") or "detail" in x.get("url", "").lower() or "position" in x.get("url", "").lower()]
+        print("AFTER_NETWORK", json.dumps(after[-25:], ensure_ascii=False))
         context.close(); browser.close()
     return 0 if useful_before else 2
 
