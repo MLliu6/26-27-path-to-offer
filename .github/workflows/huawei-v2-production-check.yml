@@ -20,8 +20,8 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Install dependency
-        run: python -m pip install --disable-pip-version-check requests==2.32.5
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 playwright
       - name: Verify Huawei current public graduate API
         run: |
           PYTHONPATH=. python - <<'PY'
@@ -36,21 +36,30 @@ jobs:
           assert ai[0].get('position_id') == '103891', ai[0]
           assert any('ICT BG' in j.get('department','') for j in ai), ai
           assert all(j.get('source') == 'direct-official:huawei-v2' for j in jobs)
+          assert d.get('transport') in {'browser-page-public-api','http-public-api'}, d
           print('Huawei live:', d)
           print('AI Infra:', ai[0])
           PY
       - name: Verify priority compact encoding
         run: |
           PYTHONPATH=. python - <<'PY'
-          from scripts.huawei_v2_official_harvester import collect_huawei
+          from scripts.huawei_v2_official_harvester import normalize_huawei_job
           from scripts.priority_direct_feed import encode
-          jobs, _ = collect_huawei()
-          rows = [encode(j) for j in jobs]
-          exact = [r for r in rows if r and r.get('r') == 'AI Infra工程师']
-          assert exact and exact[0].get('c') == '华为'
-          assert exact[0].get('z') == '103891'
-          assert exact[0].get('s') == 'direct-official:huawei-v2'
-          assert '北京' in exact[0].get('l','')
-          assert exact[0].get('g') == '2027届'
-          print('Huawei compact exact:', exact[0])
+          job = normalize_huawei_job({
+              'jobId': 103891,
+              'jobName': 'AI Infra工程师',
+              'workPlace': '苏州/杭州/北京/深圳',
+              'deptName': 'ICT BG,2012实验室,云计算BU',
+              'categoryName': '研发类',
+              'lastUpdateDate': '2026-08-17',
+              'scenarioName': '应届生',
+          })
+          row = encode(job)
+          assert row.get('c') == '华为'
+          assert row.get('r') == 'AI Infra工程师'
+          assert row.get('z') == '103891'
+          assert row.get('s') == 'direct-official:huawei-v2'
+          assert '北京' in row.get('l','')
+          assert row.get('g') == '2027届'
+          print('Huawei compact exact:', row)
           PY
