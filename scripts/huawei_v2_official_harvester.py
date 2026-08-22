@@ -98,19 +98,23 @@ def normalize_huawei_job(row: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def _click_page_number(page, target: int) -> dict[str, Any]:
-    """Click one visible native pagination number without guessing a framework."""
+    """Click Huawei's native numbered pager, with a generic fallback."""
     return page.evaluate(
         """n => {
-          const candidates=Array.from(document.querySelectorAll('body *')).filter(el=>{
-            const text=(el.innerText||el.textContent||'').trim();
-            if(text!==String(n))return false;
-            const r=el.getBoundingClientRect();
-            if(r.width<2||r.height<2||r.bottom<0||r.top>innerHeight*1.5)return false;
-            const cs=getComputedStyle(el);
-            const pcs=el.parentElement?getComputedStyle(el.parentElement):null;
-            return el.tagName==='LI'||el.tagName==='A'||el.tagName==='BUTTON'||
-                   cs.cursor==='pointer'||(pcs&&pcs.cursor==='pointer');
-          });
+          let candidates=Array.from(document.querySelectorAll('li.pager-item-pager-pc,li.pager-item-active-pc'))
+            .filter(el => (el.innerText||el.textContent||'').trim()===String(n));
+          if(!candidates.length){
+            candidates=Array.from(document.querySelectorAll('body *')).filter(el=>{
+              const text=(el.innerText||el.textContent||'').trim();
+              if(text!==String(n))return false;
+              const r=el.getBoundingClientRect();
+              if(r.width<2||r.height<2)return false;
+              const cs=getComputedStyle(el);
+              const pcs=el.parentElement?getComputedStyle(el.parentElement):null;
+              return el.tagName==='LI'||el.tagName==='A'||el.tagName==='BUTTON'||
+                     cs.cursor==='pointer'||(pcs&&pcs.cursor==='pointer');
+            });
+          }
           candidates.sort((a,b)=>{
             const ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
             return ar.width*ar.height-br.width*br.height;
