@@ -8,18 +8,27 @@ public request: no login, resume upload, cookies, CAPTCHA or private endpoint.
 """
 from __future__ import annotations
 
+import hashlib
+import re
 import time
 from typing import Any
 from urllib.parse import urlencode
 
 import requests
 
-from scripts.aggregate_jobs import clean, stable_id
-
 API_BASE = "https://apigw-dgg-b0.huawei.com/api/apig/channelhw/recruitmentPosition/pub/getJobPage"
 HW_APP_ID = "app_000000035886"
 LIST_URL = "https://career.huawei.com/cn/campus-recruitment-job-list?recruitmentType=FRESH_GRADUATE"
 TIMEOUT = 25
+
+
+def clean(value: Any) -> str:
+    return re.sub(r"\s+", " ", str(value or "")).strip()
+
+
+def stable_id(*parts: str) -> str:
+    raw = "|".join(clean(value).lower() for value in parts if value)
+    return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:18]
 
 
 def _session() -> requests.Session:
@@ -63,10 +72,9 @@ def _request_page(session: requests.Session, page: int, page_size: int) -> dict[
 
 
 def _job_url(row: dict[str, Any]) -> str:
-    # The new Huawei site renders SPA cards without a stable anchor URL in the
-    # anonymous DOM. Keep the official current list as the navigation target;
-    # ``position_id`` remains the exact Huawei jobId for identity/deep-link
-    # upgrades if Huawei exposes a stable public route later.
+    # The new Huawei site renders SPA cards without stable anonymous <a> detail
+    # URLs. Keep the current official list as navigation target; position_id is
+    # the exact Huawei jobId and preserves one identity per real position.
     return LIST_URL
 
 
