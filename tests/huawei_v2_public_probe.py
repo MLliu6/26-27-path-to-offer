@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 
 URL = "https://career.huawei.com/cn/campus-recruitment-job-list?recruitmentType=FRESH_GRADUATE"
-HINT = re.compile(r"job|position|recruit|career|campus|search|list", re.I)
+HINT = re.compile(r"job|position|recruit|career|campus|search|list|detail", re.I)
 
 
 def browser_path() -> str:
@@ -26,7 +26,7 @@ def walk(value, path="root", depth=0):
     if isinstance(value, dict):
         keys = {str(k).lower() for k in value}
         title = next((value.get(k) for k in value if str(k).lower() in {"title","jobname","job_name","jobtitle","job_title","positionname","position_name","name"}), None)
-        ident = next((value.get(k) for k in value if str(k).lower() in {"id","jobid","job_id","positionid","position_id","advertisementsintegrationid","code"}), None)
+        ident = next((value.get(k) for k in value if str(k).lower() in {"id","jobid","job_id","positionid","position_id","advertisementsintegrationid","advertisementid","code"}), None)
         if title and (ident or any(HINT.search(k) for k in keys)):
             yield path, value
         for k, v in value.items():
@@ -67,8 +67,7 @@ def main() -> int:
                     headers = req.all_headers()
                 except Exception:
                     headers = req.headers or {}
-                keep = {k.lower(): v for k, v in headers.items() if k.lower() in {"content-type","x-hw-id","origin","referer","accept-language"}}
-                record["request_headers"] = keep
+                record["request_headers"] = {k.lower(): v for k, v in headers.items() if k.lower() in {"content-type","x-hw-id","origin","referer","accept-language"}}
                 try:
                     payload = response.json()
                 except Exception:
@@ -76,14 +75,15 @@ def main() -> int:
                 if isinstance(payload, (dict, list)):
                     rows = []
                     for path, row in walk(payload):
-                        rows.append({"path": path, "keys": list(row.keys())[:50], "sample": {k: row.get(k) for k in list(row.keys())[:45]}})
+                        rows.append({"path": path, "keys": list(row.keys())[:60], "sample": {k: row.get(k) for k in list(row.keys())[:55]}})
                         if len(rows) >= 4:
                             break
                     record["top_keys"] = list(payload.keys())[:40] if isinstance(payload, dict) else [f"list:{len(payload)}"]
                     if isinstance(payload, dict) and isinstance(payload.get("data"), dict):
                         data = payload["data"]
                         record["data_keys"] = list(data.keys())[:50]
-                        record["page_meta"] = {k: data.get(k) for k in ("totalRows","total","pageSize","curPage","pageNo","pageNum","totalPages","startIndex","endIndex") if k in data}
+                        page_vo = data.get("pageVO") if isinstance(data.get("pageVO"), dict) else {}
+                        record["page_vo"] = page_vo
                     record["jobish"] = rows
                 captures.append(record)
             except Exception as exc:
@@ -91,22 +91,45 @@ def main() -> int:
 
         page.on("response", on_response)
         page.goto(URL, wait_until="domcontentloaded", timeout=45000)
-        page.wait_for_timeout(9000)
-        for fraction in (0.35, 0.7, 1.0):
-            page.evaluate(f"window.scrollTo(0, document.body.scrollHeight*{fraction})")
-            page.wait_for_timeout(1200)
+        page.wait_for_timeout(8500)
 
-        links = page.eval_on_selector_all("a[href]", "els => els.slice(0,2500).map(a=>({text:(a.innerText||a.textContent||'').trim(),href:a.href})).filter(x=>x.text||/job|position|recruit/i.test(x.href))")
-        body = page.locator("body").inner_text()[:12000]
-        print("FINAL_URL", page.url)
-        print("TITLE", page.title())
-        print("BODY_SAMPLE", json.dumps(body[:4000], ensure_ascii=False))
-        print("LINK_SAMPLE", json.dumps(links[:80], ensure_ascii=False))
-        useful = [x for x in captures if x.get("jobish")]
-        print("USEFUL", json.dumps(useful[:20], ensure_ascii=False))
-        print("USEFUL_COUNT", len(useful))
+        useful_before = [x for x in captures if x.get("jobish")]
+        print("LIST_USEFUL", json.dumps(useful_before[:10], ensure_ascii=False))
+
+        target = page.get_by_text("AI Infra工程师", exact=True)
+        print("TARGET_COUNT", target.count())
+        if target.count():
+            try:
+                info = target.first.evaluate("""el => {
+                  let node=el;
+                  const chain=[];
+                  for(let i=0;i<7 && node;i++,node=node.parentElement){
+                    chain.push({tag:node.tagName,cls:node.className||'',id:node.id||'',href:node.href||'',role:node.getAttribute&&node.getAttribute('role'),data:Object.fromEntries(Array.from(node.attributes||[]).filter(a=>a.name.startsWith('data-')).map(a=>[a.name,a.value]))});
+                  }
+                  return chain;
+                }""")
+                print("TARGET_CHAIN", json.dumps(info, ensure_ascii=False))
+            except Exception as exc:
+                print("TARGET_CHAIN_ERROR", type(exc).__name__, str(exc))
+
+            before_pages = len(context.pages)
+            try:
+                target.first.click(timeout=5000)
+                page.wait_for_timeout(6000)
+            except Exception as exc:
+                print("CLICK_ERROR", type(exc).__name__, str(exc))
+            print("PAGES_AFTER_CLICK", len(context.pages), "BEFORE", before_pages)
+            for idx, pg in enumerate(context.pages):
+                print("PAGE", idx, pg.url, pg.title())
+                try:
+                    print("PAGE_BODY", idx, json.dumps(pg.locator('body').inner_text()[:3500], ensure_ascii=False))
+                except Exception:
+                    pass
+
+        useful_after = [x for x in captures if x.get("jobish") or ("detail" in x.get("url", "").lower())]
+        print("AFTER_USEFUL", json.dumps(useful_after[-20:], ensure_ascii=False))
         context.close(); browser.close()
-    return 0 if useful or links else 2
+    return 0 if useful_before else 2
 
 
 if __name__ == "__main__":
