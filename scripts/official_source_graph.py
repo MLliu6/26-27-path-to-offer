@@ -6,7 +6,7 @@ company/application domains already observed in normalized job rows. Aggregator,
 university and government evidence may discover a URL, but only employer-owned
 career pages or explicit employer ATS tenants enter this graph.
 
-For companies listed in ``priority_browser_sources.json`` the browser-reviewed
+For companies listed in the reviewed browser registries the browser-reviewed
 endpoint is authoritative. Older guessed ATS seeds for the same company are not
 kept in the rotation graph; this prevents the plain-HTTP sampler from repeatedly
 spending its bounded budget on known 403/404 legacy portals.
@@ -29,8 +29,10 @@ DATA = ROOT / "data"
 JOBS = DATA / "jobs.json"
 OUT = DATA / "official_source_catalog.json"
 BROWSER_REGISTRY = ROOT / "sources" / "priority_browser_sources.json"
+EMERGING_BROWSER_REGISTRY = ROOT / "sources" / "emerging_compute_browser_sources.json"
+BROWSER_REGISTRIES = [BROWSER_REGISTRY, EMERGING_BROWSER_REGISTRY]
 REGISTRIES = [
-    BROWSER_REGISTRY,
+    *BROWSER_REGISTRIES,
     ROOT / "sources" / "priority_official_sources.json",
     ROOT / "sources" / "official_source_registry_v12.json",
 ]
@@ -182,11 +184,18 @@ def add(rows: dict[str, dict[str, Any]], *, company: Any, url: Any, category: An
 
 
 def browser_companies() -> set[str]:
-    try:
-        payload = json.loads(BROWSER_REGISTRY.read_text(encoding="utf-8"))
-    except Exception:
-        return set()
-    return {clean(item.get("company")) for item in payload.get("sources", []) if isinstance(item, dict) and clean(item.get("company"))}
+    companies: set[str] = set()
+    for path in BROWSER_REGISTRIES:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        companies.update(
+            clean(item.get("company"))
+            for item in payload.get("sources", [])
+            if isinstance(item, dict) and clean(item.get("company"))
+        )
+    return companies
 
 
 def load_registries(rows: dict[str, dict[str, Any]]) -> None:
@@ -196,7 +205,7 @@ def load_registries(rows: dict[str, dict[str, Any]]) -> None:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             continue
-        authoritative_browser = path == BROWSER_REGISTRY
+        authoritative_browser = path in BROWSER_REGISTRIES
         for item in payload.get("watch", []):
             if not isinstance(item, dict):
                 continue
@@ -237,7 +246,7 @@ def learn_from_jobs(rows: dict[str, dict[str, Any]]) -> int:
         company = clean(job_value(job, "c", "company"))
         source_label = clean(job_value(job, "x", "source_label"))
         source = clean(job_value(job, "s", "source"))
-        # The browser registry already owns the canonical ATS entry for these
+        # The browser registries already own the canonical ATS entry for these
         # companies. Their observed detail URLs remain on job rows but do not
         # explode the source graph into one entry per position.
         if company in preferred:

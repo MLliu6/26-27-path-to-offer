@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
 import unittest
+from pathlib import Path
 
 from scripts.priority_browser_harvester import (
+    Capture,
     dom_role,
     job_identity,
     json_candidate,
@@ -11,6 +14,7 @@ from scripts.priority_browser_harvester import (
     normalize_json_job,
     walk_json,
 )
+from scripts.priority_browser_runtime import _collect_rendered_role_blocks
 
 
 ENTRY = {
@@ -21,6 +25,26 @@ ENTRY = {
     "official_url": "https://example.com/join",
     "batch": "校园招聘",
 }
+
+
+class StaticRolePage:
+    url = "https://jobs.example.com/careers"
+
+    def eval_on_selector_all(self, selector, script):
+        self.selector = selector
+        self.script = script
+        return [
+            {
+                "text": "CUDA工程师",
+                "block": "CUDA工程师\n岗位职责：负责自研GPGPU内核与高性能算子优化。\n任职要求：熟悉C++、CUDA。",
+                "href": self.url,
+            },
+            {
+                "text": "关于我们",
+                "block": "关于我们\n我们是一家计算芯片公司。",
+                "href": self.url,
+            },
+        ]
 
 
 class PriorityBrowserHarvesterTests(unittest.TestCase):
@@ -88,6 +112,44 @@ class PriorityBrowserHarvesterTests(unittest.TestCase):
         self.assertIsNotNone(job)
         self.assertEqual(job["role"], "CUDA 算子优化工程师")
         self.assertEqual(job["location"], "北京")
+
+    def test_opt_in_static_role_blocks_recover_jobs_without_detail_links(self):
+        entry = {
+            **ENTRY,
+            "modes": ["browser-rendered-role-blocks"],
+            "start_url": StaticRolePage.url,
+            "official_url": StaticRolePage.url,
+        }
+        page = StaticRolePage()
+        capture = Capture()
+        added = _collect_rendered_role_blocks(entry, page, capture)
+        self.assertEqual(added, 1)
+        jobs = list(capture.jobs.values())
+        self.assertEqual(jobs[0]["role"], "CUDA工程师")
+        self.assertEqual(jobs[0]["apply_url"], StaticRolePage.url)
+        self.assertEqual(jobs[0]["observed_via"], "browser-rendered-role-block")
+        self.assertIn("页面公开岗位", jobs[0]["source_label"])
+
+    def test_emerging_compute_source_cluster_is_reviewed_and_official(self):
+        path = Path(__file__).resolve().parents[1] / "sources" / "emerging_compute_browser_sources.json"
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        sources = {row["id"]: row for row in payload.get("sources", [])}
+        expected = [
+            "sunrise", "infinigence", "xingyun", "calculet", "tecorigin",
+            "ecosda", "sophgo", "axera", "spacemit",
+        ]
+        for source_id in expected:
+            self.assertIn(source_id, sources)
+            self.assertTrue(str(sources[source_id].get("start_url", "")).startswith("https://"))
+            self.assertTrue(str(sources[source_id].get("official_url", "")).startswith("https://"))
+        self.assertGreaterEqual(len(sources), 9)
+        self.assertEqual(sources["sunrise"].get("family"), "feishu")
+        self.assertEqual(sources["infinigence"].get("family"), "feishu")
+        self.assertIn("browser-rendered-role-blocks", sources["xingyun"].get("modes", []))
+        self.assertIn("browser-rendered-role-blocks", sources["calculet"].get("modes", []))
+        self.assertIn("2027", sources["ecosda"].get("batch", ""))
+        self.assertIn("jobs.sophgo.com", sources["sophgo"].get("start_url", ""))
+        self.assertIn("zhaopin.axera-tech.com", sources["axera"].get("start_url", ""))
 
     def test_merge_replaces_managed_source_but_keeps_other_sources(self):
         old_managed = normalize_dom_job(ENTRY, "https://jobs.example.com/job/old", "软件研发工程师", "软件研发工程师 北京")
