@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-24T02:41:08Z",
-  "catalog_count": 2716,
+  "generated_at": "2026-08-24T03:40:14Z",
+  "catalog_count": 2717,
   "refresh_class": "priority-employer-direct",
   "nominal_interval_minutes": 10,
   "exact_pdd_position_id": "5e4eb6f3-294f-491b-9d39-42895eed98c3",
@@ -59,90 +59,9 @@
       "url": "https://careers.pddglobalhr.com/campus/grad",
       "ok": true,
       "count": 24,
-      "preserved_previous": false,
-      "diagnostics": {
-        "official_url": "https://careers.pddglobalhr.com/campus/grad",
-        "list_endpoints": [
-          "https://careers.pddglobalhr.com/api/careers/api/recruit/position/list",
-          "https://careers.pddglobalhr.com/api/careers/api/recruit/position/train/list"
-        ],
-        "scopes": [
-          {
-            "scope": "grad",
-            "pages": 3,
-            "raw": 22,
-            "reported_total": 22,
-            "unique": 22,
-            "requested_page_size": 100,
-            "observed_page_sizes": [
-              10,
-              10,
-              2
-            ],
-            "detail_errors": []
-          },
-          {
-            "scope": "intern",
-            "pages": 1,
-            "raw": 2,
-            "reported_total": 2,
-            "unique": 2,
-            "requested_page_size": 100,
-            "observed_page_sizes": [
-              2
-            ],
-            "detail_errors": []
-          }
-        ],
-        "unique_jobs": 24,
-        "categories": [
-          [
-            "技术",
-            9
-          ],
-          [
-            "职能",
-            5
-          ],
-          [
-            "运营",
-            5
-          ],
-          [
-            "产品",
-            1
-          ],
-          [
-            "市场营销",
-            1
-          ],
-          [
-            "视觉类",
-            1
-          ],
-          [
-            "设计",
-            1
-          ],
-          [
-            "语言",
-            1
-          ]
-        ],
-        "seeds": [
-          {
-            "position_id": "5e4eb6f3-294f-491b-9d39-42895eed98c3",
-            "expected_title": "AI Infra研发工程师",
-            "found": true,
-            "title_ok": true,
-            "resolved_title": "AI Infra研发工程师",
-            "url": "https://careers.pddglobalhr.com/campus/grad/detail?positionId=5e4eb6f3-294f-491b-9d39-42895eed98c3",
-            "error": ""
-          }
-        ],
-        "seed_gate_ok": true
-      },
-      "error": ""
+      "preserved_previous": true,
+      "diagnostics": {},
+      "error": "RuntimeError: exact-position seed failed: [{'position_id': '5e4eb6f3-294f-491b-9d39-42895eed98c3', 'expected_title': 'AI Infra研发工程师', 'found': False, 'title_ok': False, 'resolved_title': '', 'url': 'https://careers.pddglobalhr.com/campus/grad/detail?positionId=5e4eb6f3-294f…"
     },
     {
       "name": "huawei-v2-direct-official",
@@ -273,12 +192,12 @@
       "label": "腾讯招聘官网 · 自主直连",
       "url": "https://careers.tencent.com/search.html",
       "ok": true,
-      "count": 1999,
+      "count": 2000,
       "preserved_previous": false,
       "diagnostics": {
         "endpoint": "https://careers.tencent.com/tencentcareer/api/post/Query",
-        "total_reported": 2270,
-        "unique_jobs": 1999
+        "total_reported": 2269,
+        "unique_jobs": 2000
       },
       "error": ""
     }
