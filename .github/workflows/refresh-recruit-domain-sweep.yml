@@ -1,0 +1,125 @@
+name: refresh-recruit-domain-sweep
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 1-23/2 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/recruit_domain_expander.py'
+      - 'scripts/recruit_domain_sweep.py'
+      - 'sources/recruit_domain_overrides.json'
+      - '.github/workflows/refresh-recruit-domain-sweep.yml'
+  pull_request:
+    paths:
+      - 'scripts/recruit_domain_expander.py'
+      - 'scripts/recruit_domain_sweep.py'
+      - 'sources/recruit_domain_overrides.json'
+      - 'tests/test_recruit_domain_expander.py'
+      - '.github/workflows/refresh-recruit-domain-sweep.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: recruit-domain-sweep-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+  cancel-in-progress: true
+
+jobs:
+  sweep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 38
+    env:
+      PTO_RECRUIT_SWEEP_MAX_TARGETS: '16'
+      PTO_RECRUIT_SWEEP_TIMEOUT_MS: '14000'
+      PTO_PRIORITY_BROWSER_JD_CHARS: '1800'
+      PTO_MAX_CATALOG: '60000'
+      PTO_MAX_CN_CATALOG: '30000'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install crawler dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright pycryptodome==3.23.0
+
+      - name: Expand previous compact feed
+        run: PYTHONPATH=. python scripts/expand_feed.py
+
+      - name: Build baseline official source graph
+        run: PYTHONPATH=. python scripts/official_source_graph.py
+
+      - name: Expand all recruitment-style official domains
+        run: PYTHONPATH=. python scripts/recruit_domain_expander.py
+
+      - name: Unit-test recruitment-domain discovery and sharding
+        run: PYTHONPATH=. python -m unittest -v tests.test_recruit_domain_expander
+
+      - name: Sweep one bounded real-browser shard
+        env:
+          PTO_RECRUIT_SWEEP_FORCE_COMPANIES: ${{ github.event_name == 'pull_request' && '快手,京东' || '' }}
+          PTO_RECRUIT_SWEEP_MAX_TARGETS: ${{ github.event_name == 'pull_request' && '2' || '16' }}
+          PTO_RECRUIT_SWEEP_SHARD_INDEX: ${{ github.event_name == 'pull_request' && '0' || '' }}
+        run: PYTHONPATH=. python scripts/recruit_domain_sweep.py
+
+      - name: Rebuild graph with observed jobs and restore expanded nodes
+        run: |
+          PYTHONPATH=. python scripts/official_source_graph.py
+          PYTHONPATH=. python scripts/recruit_domain_expander.py
+
+      - name: Compact browser feeds
+        run: PYTHONPATH=. python scripts/compact_feed.py
+
+      - name: Validate sweep coverage and catalogue integrity
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          catalog=json.loads(Path('data/recruit_domain_catalog.json').read_text(encoding='utf-8'))
+          graph=json.loads(Path('data/official_source_catalog.json').read_text(encoding='utf-8'))
+          status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
+          jobs=json.loads(Path('data/jobs.json').read_text(encoding='utf-8'))
+          cn=json.loads(Path('data/jobs_cn.json').read_text(encoding='utf-8'))
+          assert catalog.get('version') == 1
+          assert catalog.get('source_count',0) >= 50, catalog.get('source_count')
+          assert catalog.get('sweepable_count',0) >= 20, catalog.get('sweepable_count')
+          companies={x.get('company') for x in catalog.get('sources',[]) if isinstance(x,dict)}
+          for company in ['快手','百度','阿里巴巴','字节跳动','小红书','地平线','寒武纪','摩尔线程','沐曦']:
+              assert company in companies, company
+          assert graph.get('recruit_domain_promoted',0) >= catalog.get('source_count',0)
+          groups={x.get('name'):x for x in status.get('sources',[]) if isinstance(x,dict)}
+          sweep=groups.get('recruit-domain-sweep'); assert sweep is not None
+          diag=sweep.get('diagnostics') or {}
+          assert diag.get('catalog_total',0) >= catalog.get('source_count',0)
+          assert diag.get('selected_targets',0) >= 1
+          assert jobs.get('schema_version') == 4 and cn.get('schema_version') == 4
+          assert len(jobs.get('jobs',[])) >= 10000 and len(cn.get('jobs',[])) >= 1000
+          if os.getenv('GITHUB_EVENT_NAME') == 'pull_request':
+              selected={x.get('company') for x in diag.get('selected',[]) if isinstance(x,dict)}
+              assert {'快手','京东'}.issubset(selected), selected
+              srcs=[x for x in diag.get('sources',[]) if isinstance(x,dict)]
+              ks=[x for x in srcs if x.get('company')=='快手']
+              jd=[x for x in srcs if x.get('company')=='京东']
+              assert ks and jd, {'kuaishou':ks,'jd':jd}
+          print('recruit domains:',catalog.get('source_count'),'sweepable=',catalog.get('sweepable_count'))
+          print('shard:',diag.get('shard_index'),'/',diag.get('shard_count'),'selected=',diag.get('selected_targets'),'fresh=',sweep.get('fresh_count'))
+          print('companies:',[(x.get('company'),x.get('count'),x.get('error')) for x in (diag.get('sources') or [])])
+          PY
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+
+      - name: Commit refreshed sweep data
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          TRACKED='data/jobs.json data/jobs_cn.json data/source_status.json data/official_source_catalog.json data/recruit_domain_catalog.json'
+          if git diff --quiet -- $TRACKED; then
+            echo 'No recruitment-domain changes.'
+            exit 0
+          fi
+          git config user.name 'path-to-offer-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add $TRACKED
+          git commit -m 'data: sweep public recruitment domains'
+          git pull --rebase origin main
+          git push origin HEAD:main
