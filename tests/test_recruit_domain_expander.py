@@ -40,13 +40,25 @@ class RecruitDomainExpanderTest(unittest.TestCase):
         self.assertGreaterEqual(meta["source_count"], 50)
         self.assertGreaterEqual(meta["sweepable_count"], 20)
         self.assertTrue(meta.get("employer_direct_only"))
-        hosts={x.get("host") for x in entries}
+        hosts = {x.get("host") for x in entries}
         self.assertNotIn("weworkremotely.com", hosts)
         self.assertNotIn("remotive.com", hosts)
+
         ks = [x for x in entries if x.get("company") == "快手" and x.get("sweep_enabled")]
-        self.assertGreaterEqual(len(ks), 2)
-        self.assertTrue(any("#/campus/jobs" in x.get("start_url", "") for x in ks))
-        self.assertTrue(any("/official/social/" in x.get("start_url", "") for x in ks))
+        self.assertGreaterEqual(len(ks), 5)
+        urls = [x.get("start_url", "") for x in ks]
+        fulltime = [u for u in urls if "recruitSubProjectCodes=20271779425607" in u]
+        intern = [u for u in urls if "recruitSubProjectCodes=20271772783534" in u]
+        self.assertGreaterEqual(len(fulltime), 2)
+        self.assertGreaterEqual(len(intern), 2)
+        self.assertTrue(any("pageNum=1" in u for u in fulltime))
+        self.assertTrue(any("pageNum=13" in u for u in fulltime))
+        self.assertTrue(any("pageNum=1" in u for u in intern))
+        self.assertTrue(any("pageNum=13" in u for u in intern))
+        self.assertTrue(any("/official/social/" in u for u in urls))
+        precise = [x for x in ks if "recruitSubProjectCodes=" in x.get("start_url", "")]
+        self.assertTrue(all(int(x.get("max_pages") or 0) == 12 for x in precise))
+        self.assertTrue(all(not x.get("click_labels") for x in precise))
 
     def test_dedup_and_override(self):
         item = {"company": "X", "url": "https://career.example.com/jobs", "priority": 50}
