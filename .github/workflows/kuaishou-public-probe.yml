@@ -1,0 +1,25 @@
+name: kuaishou-public-probe
+
+on:
+  pull_request:
+    paths:
+      - 'tests/kuaishou_public_probe.py'
+      - '.github/workflows/kuaishou-public-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install Playwright
+        run: python -m pip install --disable-pip-version-check playwright
+      - name: Observe Kuaishou public recruiting pages
+        run: python tests/kuaishou_public_probe.py
