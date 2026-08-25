@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-25T06:35:11Z",
+  "generated_at": "2026-08-25T07:12:27Z",
   "catalog_count": 60000,
   "sources": [
     {
@@ -859,49 +859,17 @@
     },
     {
       "name": "recruit-domain-sweep",
-      "label": "招聘域名图谱 · 轮转真实浏览器巡检",
+      "label": "招聘域名图谱 · 轮转真实浏览器/审核公开 API 巡检",
       "url": "",
       "ok": true,
-      "count": 426,
-      "fresh_count": 426,
+      "count": 948,
+      "fresh_count": 948,
       "error": "",
       "diagnostics": {
-        "transport": "real-browser-public-ui-xhr-dom",
+        "transport": "real-browser-public-ui-xhr-dom+reviewed-official-public-api",
         "target_count": 7,
         "fresh_companies": 6,
         "sources": [
-          {
-            "id": "recruit-kuaishou-campus",
-            "company": "快手",
-            "ok": true,
-            "count": 72,
-            "preserved_previous": false,
-            "official_url": "https://campus.kuaishou.cn/",
-            "diagnostics": {
-              "start_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs",
-              "final_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs?pageNum=9&recruitSubProjectCodes=20271772783534",
-              "unique_jobs": 72,
-              "json_responses": 31,
-              "json_candidates": 238,
-              "dom_links_seen": 90,
-              "pages_advanced": 10,
-              "observed_endpoints": [
-                "https://campus.kuaishou.cn/recruit/campus/e/api/users/user/info",
-                "https://campus.kuaishou.cn/recruit/campus/e/api/v1/open/positions/check/city?recruitSubProjectCodes=20271779425607",
-                "https://campus.kuaishou.cn/recruit/campus/e/api/v1/open/positions/simple",
-                "https://campus.kuaishou.cn/recruit/campus/e/api/v1/dictionary/batch?types=workLocation,positionCategory,positionCategoryFlatten,positionNature,recruitSubProject",
-                "https://log-sdk.ksapisrv.com/rest/wd/common/log/collect/radar?v=3.10.28&kpn=EF_Official_Campus",
-                "https://log-sdk.ksapisrv.com/rest/wd/common/log/collect/misc2?v=3.10.28&kpn=EF_Official_Campus",
-                "https://log-sdk.ksapisrv.com/rest/wd/common/log/collect/radar?encoding=gzip&v=3.10.28&kpn=EF_Official_Campus",
-                "https://campus.kuaishou.cn/recruit/campus/e/api/v1/open/positions/check/city?recruitSubProjectCodes=20271772783534"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
           {
             "id": "recruit-kuaishou-social",
             "company": "快手",
@@ -911,28 +879,32 @@
             "official_url": "https://zhaopin.kuaishou.cn/",
             "diagnostics": {
               "start_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/",
-              "final_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/index/",
+              "final_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/?workLocationCode=domestic&pageNum=13",
               "unique_jobs": 40,
-              "json_responses": 22,
-              "json_candidates": 128,
-              "dom_links_seen": 28,
-              "pages_advanced": 2,
+              "json_responses": 30,
+              "json_candidates": 174,
+              "dom_links_seen": 78,
+              "pages_advanced": 12,
               "observed_endpoints": [
                 "https://zhaopin.kuaishou.cn/recruit/e/api/v1/user/user/info",
                 "https://zhaopin.kuaishou.cn/recruit/e/api/v1/dictionary/batch?types=workLocation,positionCategory,positionExperience",
                 "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/label?channelCode=G002&positionNatureCode=C001",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=1&pageSize=10&positionNatureCode=C001&recruitProject=socialr",
                 "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=1&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=1&pageSize=10&positionNatureCode=C002",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/label?channelCode=G002&positionNatureCode=C002",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=1&pageSize=10&positionNatureCode=C002&workLocationCode=domestic",
-                "https://log-sdk.ksapisrv.com/rest/wd/common/log/collect/radar?v=3.10.28&kpn=EF_Official_Campus",
-                "https://log-sdk.ksapisrv.com/rest/wd/common/log/collect/misc2?v=3.10.28&kpn=EF_Official_Campus",
-                "https://campus.kuaishou.cn/recruit/campus/e/api/users/user/info",
-                "https://log-sdk.ksapisrv.com/rest/wd/common/log/collect/radar?encoding=gzip&v=3.10.28&kpn=EF_Official_Campus"
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=1&pageSize=10&positionNatureCode=C001&recruitProject=socialr",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=2&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=3&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=4&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=5&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=6&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=7&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=8&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=9&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=10&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=11&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=12&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
+                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=13&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic"
               ],
               "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
               "transport": "browser-public-ui-xhr-dom"
@@ -942,30 +914,53 @@
           {
             "id": "recruit-jd",
             "company": "京东",
-            "ok": true,
-            "count": 137,
+            "ok": false,
+            "count": 0,
+            "fresh_count": 0,
             "preserved_previous": false,
             "official_url": "https://zhaopin.jd.com/home",
             "diagnostics": {
               "start_url": "https://zhaopin.jd.com/home",
               "final_url": "https://campus.jd.com/#/jobs?selProjects=45",
-              "unique_jobs": 137,
-              "json_responses": 23,
-              "json_candidates": 187,
-              "dom_links_seen": 48,
-              "pages_advanced": 8,
+              "unique_jobs": 0,
+              "json_responses": 4,
+              "json_candidates": 0,
+              "dom_links_seen": 0,
+              "pages_advanced": 1,
               "observed_endpoints": [
                 "https://sgm-m.jd.com/h5/init",
                 "https://zhaopin.jd.com/web/job/job_allparams",
                 "https://stream-outside.jd.com/checkWhiteList?code=JA2018_1131048",
+                "https://stream-outside.jd.com/checkWhiteList?code=JA2024_135045"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": "zero concrete browser jobs"
+          },
+          {
+            "id": "auto-recruit-d81af9703368",
+            "company": "京东",
+            "ok": true,
+            "count": 6,
+            "preserved_previous": false,
+            "official_url": "https://campus.jd.com/",
+            "diagnostics": {
+              "start_url": "https://campus.jd.com/",
+              "final_url": "https://campus.jd.com/#/",
+              "unique_jobs": 6,
+              "json_responses": 6,
+              "json_candidates": 0,
+              "dom_links_seen": 24,
+              "pages_advanced": 0,
+              "observed_endpoints": [
                 "https://stream-outside.jd.com/checkWhiteList?code=JA2024_135045",
                 "https://campus.jd.com/api/wx/page/isInterviewer",
-                "https://campus.jd.com/api/wx/position/getProjectList",
-                "https://campus.jd.com/api/wx/requiresNewSubmission",
-                "https://campus.jd.com/api/wx/resume/checkResumeAndDelivery",
-                "https://campus.jd.com/api/wx/position/page?type=present",
-                "https://campus.jd.com/api/wx/position/dict?type=present",
                 "https://campus.jd.com/web/delivery/queryInternshipAnnouncement",
+                "https://campus.jd.com/api/wx/position/getProjectList",
+                "https://campus.jd.com/api/wx/resume/checkResumeAndDelivery",
                 "https://sgm-w.jd.com/h5"
               ],
               "errors": [
@@ -977,54 +972,33 @@
             "error": ""
           },
           {
-            "id": "auto-recruit-5340b137e090",
-            "company": "Apex Technology",
+            "id": "auto-recruit-545c339a9f43",
+            "company": "The New York Times",
             "ok": true,
-            "count": 98,
+            "count": 151,
             "preserved_previous": false,
-            "official_url": "https://jobs.ashbyhq.com/apex-technology-inc",
+            "official_url": "https://job-boards.greenhouse.io/thenewyorktimes",
             "diagnostics": {
-              "start_url": "https://jobs.ashbyhq.com/apex-technology-inc",
-              "final_url": "https://jobs.ashbyhq.com/apex-technology-inc",
-              "unique_jobs": 98,
-              "json_responses": 3,
-              "json_candidates": 99,
-              "dom_links_seen": 360,
-              "pages_advanced": 0,
+              "start_url": "https://job-boards.greenhouse.io/thenewyorktimes",
+              "final_url": "https://job-boards.greenhouse.io/thenewyorktimes?page=4",
+              "unique_jobs": 151,
+              "json_responses": 12,
+              "json_candidates": 248,
+              "dom_links_seen": 196,
+              "pages_advanced": 3,
               "observed_endpoints": [
-                "https://cdn.ashbyprd.com/frontend_non_user/298cf25cc1d6c2b32eab2688a58b8d2f592ffaa1/.vite/manifest.json",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-536787895e9b",
-            "company": "Precision AQ",
-            "ok": true,
-            "count": 2,
-            "preserved_previous": false,
-            "official_url": "https://job-boards.greenhouse.io/precisionaq",
-            "diagnostics": {
-              "start_url": "https://job-boards.greenhouse.io/precisionaq",
-              "final_url": "https://job-boards.greenhouse.io/precisionaq",
-              "unique_jobs": 2,
-              "json_responses": 6,
-              "json_candidates": 2,
-              "dom_links_seen": 144,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.wQCKZPROCgEQN30DJ4onyDa_nhsx528NMnevKlTDmnk.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
                 "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
                 "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.7-6TU4wNxeX54HIOdVxQ9aOUDMkTjCpHSCyRucHxRqo.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.wQCKZPROCgEQN30DJ4onyDa_nhsx528NMnevKlTDmnk.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json"
+                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
+                "https://job-boards.greenhouse.io/thenewyorktimes?page=2&_data=root",
+                "https://job-boards.greenhouse.io/thenewyorktimes?page=2&_data=routes%2F%24url_token",
+                "https://job-boards.greenhouse.io/thenewyorktimes?page=3&_data=root",
+                "https://job-boards.greenhouse.io/thenewyorktimes?page=3&_data=routes%2F%24url_token",
+                "https://job-boards.greenhouse.io/thenewyorktimes?page=4&_data=root",
+                "https://job-boards.greenhouse.io/thenewyorktimes?page=4&_data=routes%2F%24url_token"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -1034,44 +1008,86 @@
             "error": ""
           },
           {
-            "id": "auto-recruit-53b7daaf0a12",
-            "company": "圣邦微电子",
-            "ok": false,
-            "count": 0,
-            "fresh_count": 0,
+            "id": "auto-recruit-54666891172d",
+            "company": "科大讯飞",
+            "ok": true,
+            "count": 4,
             "preserved_previous": false,
-            "official_url": "https://sg-micro.zhiye.com/campus",
+            "official_url": "https://iflytek.zhiye.com/campus/jobs",
             "diagnostics": {
-              "start_url": "https://sg-micro.zhiye.com/campus",
-              "final_url": "https://sg-micro.zhiye.com/404?errorpath=%2fcampus",
-              "unique_jobs": 0,
-              "json_responses": 0,
+              "start_url": "https://iflytek.zhiye.com/campus/jobs",
+              "final_url": "https://iflytek.zhiye.com/campus/jobs",
+              "unique_jobs": 4,
+              "json_responses": 15,
               "json_candidates": 0,
-              "dom_links_seen": 0,
+              "dom_links_seen": 16,
               "pages_advanced": 0,
-              "observed_endpoints": [],
+              "observed_endpoints": [
+                "https://iflytek.zhiye.com/api/Common/GetPortalAIRobot?_timestamp=4541787641914868",
+                "https://iflytek.zhiye.com/api/PortalAgent/GetPortalAgentConfig?portalId=6e2235dc-4b88-4698-b96a-5a73c705d8db",
+                "https://iflytek.zhiye.com/api/Template/GetPageGlobalModules",
+                "https://iflytek.zhiye.com/api/Jobad/GetSpecialJobAdList?_timestamp=4551787641917293&category=2&type=1&langType=zh_CN",
+                "https://iflytek.zhiye.com/api/Jobad/GetJobAdSearchConditions",
+                "https://iflytek.zhiye.com/api/Jobad/GetJobAdPageList",
+                "https://iflytek.zhiye.com/api/Jobad/GetSpecialJobAdList?_timestamp=7061787641917388&category=2&type=1&langType=zh_CN",
+                "https://iflytek.zhiye.com/api/Jobad/SearchAreasTreeConditions?_timestamp=9771787641917665&categoryId=2",
+                "https://iflytek.zhiye.com/api/Jobad/GetSpecialJobAdList?_timestamp=8341787641918016&category=2&type=1&langType=zh_CN"
+              ],
               "errors": [
-                "response Error: Response.json: Response body is unavailable for redirect responses",
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
               "transport": "browser-public-ui-xhr-dom"
             },
-            "error": "zero concrete browser jobs"
+            "error": ""
           },
           {
-            "id": "auto-recruit-542dddc545c4",
-            "company": "Almedia",
+            "id": "auto-recruit-54b9cb2522ec",
+            "company": "Artefact",
             "ok": true,
             "count": 77,
             "preserved_previous": false,
-            "official_url": "https://jobs.ashbyhq.com/almedia",
+            "official_url": "https://job-boards.greenhouse.io/artefactlinkedin",
             "diagnostics": {
-              "start_url": "https://jobs.ashbyhq.com/almedia",
-              "final_url": "https://jobs.ashbyhq.com/almedia",
+              "start_url": "https://job-boards.greenhouse.io/artefactlinkedin",
+              "final_url": "https://job-boards.greenhouse.io/artefactlinkedin?page=3",
               "unique_jobs": 77,
+              "json_responses": 10,
+              "json_candidates": 124,
+              "dom_links_seen": 138,
+              "pages_advanced": 2,
+              "observed_endpoints": [
+                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.7-6TU4wNxeX54HIOdVxQ9aOUDMkTjCpHSCyRucHxRqo.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.wQCKZPROCgEQN30DJ4onyDa_nhsx528NMnevKlTDmnk.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
+                "https://job-boards.greenhouse.io/artefactlinkedin?page=2&_data=root",
+                "https://job-boards.greenhouse.io/artefactlinkedin?page=2&_data=routes%2F%24url_token",
+                "https://job-boards.greenhouse.io/artefactlinkedin?page=3&_data=root",
+                "https://job-boards.greenhouse.io/artefactlinkedin?page=3&_data=routes%2F%24url_token"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-54f47ea84a98",
+            "company": "Salmon Group",
+            "ok": true,
+            "count": 171,
+            "preserved_previous": false,
+            "official_url": "https://jobs.ashbyhq.com/salmon-group",
+            "diagnostics": {
+              "start_url": "https://jobs.ashbyhq.com/salmon-group",
+              "final_url": "https://jobs.ashbyhq.com/salmon-group",
+              "unique_jobs": 171,
               "json_responses": 3,
-              "json_candidates": 78,
-              "dom_links_seen": 224,
+              "json_candidates": 172,
+              "dom_links_seen": 512,
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://cdn.ashbyprd.com/frontend_non_user/298cf25cc1d6c2b32eab2688a58b8d2f592ffaa1/.vite/manifest.json",
@@ -1082,27 +1098,77 @@
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
               "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "recruit-kuaishou-campus-2027",
+            "company": "快手",
+            "ok": true,
+            "count": 271,
+            "fresh_count": 271,
+            "preserved_previous": false,
+            "official_url": "https://campus.kuaishou.cn/",
+            "diagnostics": {
+              "transport": "official-public-api",
+              "endpoint": "https://campus.kuaishou.cn/recruit/campus/e/api/v1/open/positions/simple",
+              "project_code": "20271779425607",
+              "reported_total": 271,
+              "page_size": 50,
+              "pages_reported": 6,
+              "pages_read": 6,
+              "unique_jobs": 271,
+              "complete": true
+            },
+            "error": ""
+          },
+          {
+            "id": "recruit-kuaishou-intern-2027",
+            "company": "快手",
+            "ok": true,
+            "count": 228,
+            "fresh_count": 228,
+            "preserved_previous": false,
+            "official_url": "https://campus.kuaishou.cn/",
+            "diagnostics": {
+              "transport": "official-public-api",
+              "endpoint": "https://campus.kuaishou.cn/recruit/campus/e/api/v1/open/positions/simple",
+              "project_code": "20271772783534",
+              "reported_total": 228,
+              "page_size": 50,
+              "pages_reported": 5,
+              "pages_read": 5,
+              "unique_jobs": 228,
+              "complete": true
             },
             "error": ""
           }
         ],
-        "catalog_sweepable": 758,
+        "catalog_sweepable": 760,
         "max_targets": 4,
         "shard_count": 189,
-        "shard_index": 63,
+        "shard_index": 64,
         "shard_mode": "clock-hour",
         "forced_companies": [
           "京东",
           "快手"
         ],
-        "forced_targets": 3,
-        "selected_targets": 7,
-        "detail_links_enriched": 98,
+        "forced_targets": 5,
+        "selected_targets": 9,
+        "reviewed_api_sources": 2,
+        "reviewed_api_fresh_jobs": 499,
+        "detail_links_enriched": 34,
         "selected": [
           {
-            "id": "recruit-kuaishou-campus",
+            "id": "recruit-kuaishou-campus-2027",
             "company": "快手",
-            "start_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs",
+            "start_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs?pageNum=1&recruitSubProjectCodes=20271779425607",
+            "origin": "reviewed-override"
+          },
+          {
+            "id": "recruit-kuaishou-intern-2027",
+            "company": "快手",
+            "start_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs?pageNum=1&recruitSubProjectCodes=20271772783534",
             "origin": "reviewed-override"
           },
           {
@@ -1118,31 +1184,37 @@
             "origin": "reviewed-override"
           },
           {
-            "id": "auto-recruit-5340b137e090",
-            "company": "Apex Technology",
-            "start_url": "https://jobs.ashbyhq.com/apex-technology-inc",
+            "id": "auto-recruit-d81af9703368",
+            "company": "京东",
+            "start_url": "https://campus.jd.com/",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-536787895e9b",
-            "company": "Precision AQ",
-            "start_url": "https://job-boards.greenhouse.io/precisionaq",
+            "id": "auto-recruit-545c339a9f43",
+            "company": "The New York Times",
+            "start_url": "https://job-boards.greenhouse.io/thenewyorktimes",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-53b7daaf0a12",
-            "company": "圣邦微电子",
-            "start_url": "https://sg-micro.zhiye.com/campus",
-            "origin": "registry:official_source_registry_v12.json"
+            "id": "auto-recruit-54666891172d",
+            "company": "科大讯飞",
+            "start_url": "https://iflytek.zhiye.com/campus/jobs",
+            "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-542dddc545c4",
-            "company": "Almedia",
-            "start_url": "https://jobs.ashbyhq.com/almedia",
+            "id": "auto-recruit-54b9cb2522ec",
+            "company": "Artefact",
+            "start_url": "https://job-boards.greenhouse.io/artefactlinkedin",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-54f47ea84a98",
+            "company": "Salmon Group",
+            "start_url": "https://jobs.ashbyhq.com/salmon-group",
             "origin": "official-source-graph"
           }
         ],
-        "catalog_total": 812
+        "catalog_total": 814
       }
     },
     {
@@ -5816,11 +5888,11 @@
     "gank-public-search",
     "offerjack"
   ],
-  "cn_catalog_count": 9821,
+  "cn_catalog_count": 10231,
   "feed_schema": 4,
   "browser_jd_chars": 220,
-  "feed_bytes": 37012446,
-  "cn_feed_bytes": 8181746,
+  "feed_bytes": 37045662,
+  "cn_feed_bytes": 8604801,
   "catalog_cap": 60000,
   "cn_catalog_cap": 30000,
   "default_product_feed": "data/jobs_cn.json",
