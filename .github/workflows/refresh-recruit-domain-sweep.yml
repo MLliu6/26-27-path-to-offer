@@ -17,6 +17,7 @@ on:
       - 'scripts/recruit_domain_sweep.py'
       - 'sources/recruit_domain_overrides.json'
       - 'tests/test_recruit_domain_expander.py'
+      - 'tests/test_recruit_domain_detail_links.py'
       - '.github/workflows/refresh-recruit-domain-sweep.yml'
 
 permissions:
@@ -53,8 +54,8 @@ jobs:
       - name: Expand all recruitment-style official domains
         run: PYTHONPATH=. python scripts/recruit_domain_expander.py
 
-      - name: Unit-test recruitment-domain discovery and sharding
-        run: PYTHONPATH=. python -m unittest -v tests.test_recruit_domain_expander
+      - name: Unit-test recruitment-domain discovery, sharding and detail links
+        run: PYTHONPATH=. python -m unittest -v tests.test_recruit_domain_expander tests.test_recruit_domain_detail_links
 
       - name: Sweep one bounded real-browser shard
         env:
@@ -62,6 +63,34 @@ jobs:
           PTO_RECRUIT_SWEEP_MAX_TARGETS: ${{ github.event_name == 'pull_request' && '2' || github.event_name == 'push' && '4' || '32' }}
           PTO_RECRUIT_SWEEP_SHARD_INDEX: ${{ github.event_name == 'pull_request' && '0' || '' }}
         run: PYTHONPATH=. python scripts/recruit_domain_sweep.py
+
+      - name: Validate reviewed job detail links before compaction
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          payload=json.loads(Path('data/jobs.json').read_text(encoding='utf-8'))
+          status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
+          jobs=[j for j in payload.get('jobs',[]) if isinstance(j,dict)]
+          expected={
+              'recruit-kuaishou-campus':'https://campus.kuaishou.cn/recruit/campus/e/#/campus/job-info/',
+              'recruit-kuaishou-social':'https://zhaopin.kuaishou.cn/recruit/e/#/official/social/job-info/',
+          }
+          for source_id,prefix in expected.items():
+              src='direct-official:browser:'+source_id
+              rows=[j for j in jobs if j.get('source')==src and str(j.get('position_id') or '').strip()]
+              assert rows, source_id
+              bad=[(j.get('role'),j.get('position_id'),j.get('apply_url')) for j in rows if not str(j.get('apply_url') or '').startswith(prefix)]
+              assert not bad, bad[:5]
+              assert all(j.get('notice_url')==j.get('apply_url') for j in rows), source_id
+          groups={x.get('name'):x for x in status.get('sources',[]) if isinstance(x,dict)}
+          sweep=groups.get('recruit-domain-sweep') or {}
+          diag=sweep.get('diagnostics') or {}
+          assert int(diag.get('detail_links_enriched') or 0) > 0, diag.get('detail_links_enriched')
+          print('kuaishou detail links verified:', {k:sum(1 for j in jobs if j.get('source')=='direct-official:browser:'+k and j.get('position_id')) for k in expected})
+          print('detail links enriched:',diag.get('detail_links_enriched'))
+          PY
 
       - name: Rebuild graph with observed jobs and restore expanded nodes
         run: |
@@ -106,6 +135,8 @@ jobs:
               assert jd and all(x.get('official_url') for x in jd), jd
               names='\n'.join((str(j.get('c',''))+' '+str(j.get('r',''))+' '+str(j.get('l',''))) for j in cn.get('jobs',[]))
               assert '快手' in names
+              links=[str(j.get('u') or '') for j in cn.get('jobs',[]) if str(j.get('c') or '')=='快手']
+              assert any('/campus/job-info/' in u or '/official/social/job-info/' in u for u in links), links[:5]
           print('recruit domains:',catalog.get('source_count'),'sweepable=',catalog.get('sweepable_count'))
           print('shard:',diag.get('shard_index'),'/',diag.get('shard_count'),'selected=',diag.get('selected_targets'),'fresh=',sweep.get('fresh_count'))
           print('companies:',[(x.get('company'),x.get('count'),x.get('error')) for x in (diag.get('sources') or [])])
