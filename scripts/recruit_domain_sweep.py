@@ -56,8 +56,6 @@ def select(entries: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[st
         shard_index = int(raw_index) % shard_count
         shard_mode = "explicit"
     else:
-        # Default cadence is one run per two-hour bucket. A separate hourly/odd-
-        # hour workflow still advances this deterministically without state.
         shard_index = int(time.time() // 3600) % shard_count
         shard_mode = "clock-hour"
     start = shard_index * max_targets
@@ -83,15 +81,20 @@ def select(entries: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[st
     }
 
 
+def override_configs() -> dict[str, dict[str, Any]]:
+    payload = load(OVERRIDES)
+    result = {}
+    for item in payload.get("sources", []) or []:
+        if isinstance(item, dict) and clean(item.get("id")):
+            result[clean(item.get("id"))] = item
+    return result
+
+
 def detail_templates() -> dict[str, str]:
     result: dict[str, str] = {}
-    payload = load(OVERRIDES)
-    for item in payload.get("sources", []) or []:
-        if not isinstance(item, dict):
-            continue
-        source_id = clean(item.get("id"))
+    for source_id, item in override_configs().items():
         template = clean(item.get("detail_url_template"))
-        if source_id and template.startswith(("http://", "https://")) and "{id}" in template:
+        if template.startswith(("http://", "https://")) and "{id}" in template:
             result[source_id] = template
     return result
 
@@ -137,6 +140,72 @@ def enrich_detail_links(selected: list[dict[str, Any]]) -> int:
     return changed
 
 
+def harvest_reviewed_api(selected: list[dict[str, Any]], h: Any) -> tuple[list[dict[str, Any]], int]:
+    configs = override_configs()
+    chosen = []
+    for entry in selected:
+        source_id = clean(entry.get("id"))
+        config = configs.get(source_id) or {}
+        if clean(config.get("adapter")).startswith("kuaishou-"):
+            chosen.append(config)
+    if not chosen:
+        return [], 0
+
+    from scripts import kuaishou_public_api_harvester as k
+
+    payload = load(JOBS)
+    existing = [x for x in payload.get("jobs", []) if isinstance(x, dict)]
+    retired = {
+        "direct-official:browser:recruit-kuaishou-campus",
+        "direct-official:browser:recruit-kuaishou-campus-2027-a",
+        "direct-official:browser:recruit-kuaishou-campus-2027-b",
+        "direct-official:browser:recruit-kuaishou-intern-2027-a",
+        "direct-official:browser:recruit-kuaishou-intern-2027-b",
+    }
+    existing = [job for job in existing if clean(job.get("source")) not in retired]
+    fresh_by_source: dict[str, list[dict[str, Any]]] = {}
+    results: list[dict[str, Any]] = []
+    fresh_total = 0
+    for config in chosen:
+        source_id = clean(config.get("id"))
+        source = f"direct-official:browser:{source_id}"
+        previous = [job for job in existing if clean(job.get("source")) == source]
+        try:
+            jobs, diagnostics = k.harvest(config)
+            fresh_by_source[source] = jobs
+            fresh_total += len(jobs)
+            results.append({
+                "id": source_id,
+                "company": config.get("company"),
+                "ok": bool(jobs),
+                "count": len(jobs),
+                "fresh_count": len(jobs),
+                "preserved_previous": False,
+                "official_url": config.get("official_url"),
+                "diagnostics": diagnostics,
+                "error": "" if jobs else "zero public API jobs",
+            })
+        except Exception as exc:
+            fresh_by_source[source] = previous
+            results.append({
+                "id": source_id,
+                "company": config.get("company"),
+                "ok": bool(previous),
+                "count": len(previous),
+                "fresh_count": 0,
+                "preserved_previous": bool(previous),
+                "official_url": config.get("official_url"),
+                "diagnostics": {"transport": "official-public-api"},
+                "error": f"{type(exc).__name__}: {clean(exc)[:220]}",
+            })
+
+    merged = h.merge(existing, fresh_by_source)
+    output = dict(payload)
+    output.update({"schema_version": 3, "generated_at": h.utc_now(), "jobs": merged})
+    JOBS.write_text(json.dumps(output, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    return results, fresh_total
+
+
 def main() -> int:
     catalog = load(CATALOG)
     entries = [x for x in (catalog.get("sources") or []) if isinstance(x, dict)]
@@ -147,10 +216,15 @@ def main() -> int:
         print(json.dumps({**meta, "message": "empty shard"}, ensure_ascii=False))
         return 0
 
-    # Import after catalogue selection so normal syntax/unit users do not need a
-    # browser. The proven browser harvester is reused instead of maintaining a
-    # second JSON/DOM job parser.
     from scripts import priority_browser_harvester as h
+
+    configs = override_configs()
+    api_ids = {
+        clean(entry.get("id"))
+        for entry in selected
+        if clean((configs.get(clean(entry.get("id"))) or {}).get("adapter")).startswith("kuaishou-")
+    }
+    browser_selected = [entry for entry in selected if clean(entry.get("id")) not in api_ids]
 
     previous_status = load(STATUS)
     previous_priority = next(
@@ -162,17 +236,15 @@ def main() -> int:
     runtime.write_text(json.dumps({
         "version": 1,
         "policy": "Auto-expanded reviewed employer recruiting surfaces; public browser UI/XHR/DOM only.",
-        "sources": selected,
+        "sources": browser_selected,
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     h.REGISTRY = runtime
     h.NAV_TIMEOUT = max(7_000, min(20_000, int(os.getenv("PTO_RECRUIT_SWEEP_TIMEOUT_MS", "14000"))))
     rc = h.main()
+    api_results, api_fresh_total = harvest_reviewed_api(selected, h)
     detail_link_updates = enrich_detail_links(selected)
 
-    # The shared harvester intentionally writes its established status group.
-    # Rename this run to a separate group and restore the real priority-browser
-    # status so the bounded sweep never erases production diagnostics.
     status = load(STATUS)
     groups = [x for x in status.get("sources", []) if isinstance(x, dict)]
     generated = next((x for x in groups if x.get("name") == "priority-browser-official"), None)
@@ -180,9 +252,17 @@ def main() -> int:
     if generated:
         generated = dict(generated)
         generated["name"] = "recruit-domain-sweep"
-        generated["label"] = "招聘域名图谱 · 轮转真实浏览器巡检"
+        generated["label"] = "招聘域名图谱 · 轮转真实浏览器/审核公开 API 巡检"
+        generated["count"] = int(generated.get("count") or 0) + sum(int(x.get("count") or 0) for x in api_results)
+        generated["fresh_count"] = int(generated.get("fresh_count") or 0) + api_fresh_total
+        if api_results:
+            generated["ok"] = bool(generated.get("ok")) or any(x.get("ok") for x in api_results)
         diag = dict(generated.get("diagnostics") or {})
         diag.update(meta)
+        diag["transport"] = "real-browser-public-ui-xhr-dom+reviewed-official-public-api" if api_results else diag.get("transport")
+        diag["sources"] = [*(diag.get("sources") or []), *api_results]
+        diag["reviewed_api_sources"] = len(api_results)
+        diag["reviewed_api_fresh_jobs"] = api_fresh_total
         diag["detail_links_enriched"] = detail_link_updates
         diag["selected"] = [
             {"id": x.get("id"), "company": x.get("company"), "start_url": x.get("start_url"), "origin": x.get("origin")}
@@ -199,6 +279,9 @@ def main() -> int:
     print(json.dumps({
         **meta,
         "selected_companies": [x.get("company") for x in selected],
+        "browser_targets": len(browser_selected),
+        "reviewed_api_targets": len(api_results),
+        "reviewed_api_fresh_jobs": api_fresh_total,
         "shared_harvester_rc": rc,
         "fresh_jobs": (generated or {}).get("fresh_count", 0),
         "retained_jobs": (generated or {}).get("count", 0),
