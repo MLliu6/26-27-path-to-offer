@@ -9,15 +9,19 @@ on:
     paths:
       - 'scripts/recruit_domain_expander.py'
       - 'scripts/recruit_domain_sweep.py'
+      - 'scripts/kuaishou_public_api_harvester.py'
       - 'sources/recruit_domain_overrides.json'
       - '.github/workflows/refresh-recruit-domain-sweep.yml'
   pull_request:
     paths:
       - 'scripts/recruit_domain_expander.py'
       - 'scripts/recruit_domain_sweep.py'
+      - 'scripts/kuaishou_public_api_harvester.py'
       - 'sources/recruit_domain_overrides.json'
       - 'tests/test_recruit_domain_expander.py'
       - 'tests/test_recruit_domain_detail_links.py'
+      - 'tests/test_kuaishou_public_api_harvester.py'
+      - 'tests/kuaishou_public_api_probe.py'
       - '.github/workflows/refresh-recruit-domain-sweep.yml'
 
 permissions:
@@ -55,16 +59,20 @@ jobs:
         run: PYTHONPATH=. python scripts/recruit_domain_expander.py
 
       - name: Unit-test recruitment-domain discovery, sharding and detail links
-        run: PYTHONPATH=. python -m unittest -v tests.test_recruit_domain_expander tests.test_recruit_domain_detail_links
+        run: PYTHONPATH=. python -m unittest -v tests.test_recruit_domain_expander tests.test_recruit_domain_detail_links tests.test_kuaishou_public_api_harvester
 
-      - name: Sweep one bounded real-browser shard
+      - name: Probe Kuaishou public campus projects
+        if: ${{ github.event_name == 'pull_request' }}
+        run: PYTHONPATH=. python tests/kuaishou_public_api_probe.py
+
+      - name: Sweep one bounded real-browser/API shard
         env:
           PTO_RECRUIT_SWEEP_FORCE_COMPANIES: ${{ github.event_name != 'schedule' && '快手,京东' || '' }}
           PTO_RECRUIT_SWEEP_MAX_TARGETS: ${{ github.event_name == 'pull_request' && '2' || github.event_name == 'push' && '4' || '32' }}
           PTO_RECRUIT_SWEEP_SHARD_INDEX: ${{ github.event_name == 'pull_request' && '0' || '' }}
         run: PYTHONPATH=. python scripts/recruit_domain_sweep.py
 
-      - name: Validate reviewed job detail links before compaction
+      - name: Validate reviewed Kuaishou jobs before compaction
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           python - <<'PY'
@@ -72,11 +80,21 @@ jobs:
           from pathlib import Path
           payload=json.loads(Path('data/jobs.json').read_text(encoding='utf-8'))
           status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
+          overrides=json.loads(Path('sources/recruit_domain_overrides.json').read_text(encoding='utf-8'))
           jobs=[j for j in payload.get('jobs',[]) if isinstance(j,dict)]
-          expected={
-              'recruit-kuaishou-campus':'https://campus.kuaishou.cn/recruit/campus/e/#/campus/job-info/',
-              'recruit-kuaishou-social':'https://zhaopin.kuaishou.cn/recruit/e/#/official/social/job-info/',
-          }
+          groups={x.get('name'):x for x in status.get('sources',[]) if isinstance(x,dict)}
+          sweep=groups.get('recruit-domain-sweep') or {}
+          diag=sweep.get('diagnostics') or {}
+          selected_ids={str(x.get('id') or '') for x in diag.get('selected',[]) if isinstance(x,dict)}
+          expected={}
+          for item in overrides.get('sources',[]):
+              if not isinstance(item,dict) or item.get('company')!='快手' or item.get('id') not in selected_ids:
+                  continue
+              template=str(item.get('detail_url_template') or '')
+              if '{id}' in template:
+                  expected[item['id']]=template.split('{id}',1)[0]
+          assert expected, selected_ids
+          rows_by_id={}
           for source_id,prefix in expected.items():
               src='direct-official:browser:'+source_id
               rows=[j for j in jobs if j.get('source')==src and str(j.get('position_id') or '').strip()]
@@ -84,12 +102,24 @@ jobs:
               bad=[(j.get('role'),j.get('position_id'),j.get('apply_url')) for j in rows if not str(j.get('apply_url') or '').startswith(prefix)]
               assert not bad, bad[:5]
               assert all(j.get('notice_url')==j.get('apply_url') for j in rows), source_id
-          groups={x.get('name'):x for x in status.get('sources',[]) if isinstance(x,dict)}
-          sweep=groups.get('recruit-domain-sweep') or {}
-          diag=sweep.get('diagnostics') or {}
-          assert int(diag.get('detail_links_enriched') or 0) > 0, diag.get('detail_links_enriched')
-          print('kuaishou detail links verified:', {k:sum(1 for j in jobs if j.get('source')=='direct-official:browser:'+k and j.get('position_id')) for k in expected})
-          print('detail links enriched:',diag.get('detail_links_enriched'))
+              rows_by_id[source_id]=rows
+          fulltime=rows_by_id['recruit-kuaishou-campus-2027']
+          intern=rows_by_id['recruit-kuaishou-intern-2027']
+          assert len(fulltime) >= 250, len(fulltime)
+          assert len(intern) >= 200, len(intern)
+          assert all(j.get('batch')=='2027校园招聘' for j in fulltime)
+          assert all(j.get('batch')=='2027留用实习招聘' for j in intern)
+          assert all(j.get('observed_via')=='official-public-api' for j in fulltime+intern)
+          source_diag={x.get('id'):x for x in diag.get('sources',[]) if isinstance(x,dict)}
+          for source_id in ('recruit-kuaishou-campus-2027','recruit-kuaishou-intern-2027'):
+              d=(source_diag[source_id].get('diagnostics') or {})
+              assert d.get('transport')=='official-public-api', d
+              assert d.get('complete') is True, d
+              assert int(d.get('reported_total') or 0)==int(d.get('unique_jobs') or -1), d
+          assert int(diag.get('reviewed_api_sources') or 0) == 2, diag.get('reviewed_api_sources')
+          assert int(diag.get('reviewed_api_fresh_jobs') or 0) >= 450, diag.get('reviewed_api_fresh_jobs')
+          print('kuaishou verified:', {k:len(v) for k,v in rows_by_id.items()})
+          print('reviewed API fresh:',diag.get('reviewed_api_fresh_jobs'),'detail links enriched:',diag.get('detail_links_enriched'))
           PY
 
       - name: Rebuild graph with observed jobs and restore expanded nodes
@@ -131,7 +161,7 @@ jobs:
               srcs=[x for x in diag.get('sources',[]) if isinstance(x,dict)]
               ks=[x for x in srcs if x.get('company')=='快手']
               jd=[x for x in srcs if x.get('company')=='京东']
-              assert len(ks)>=2 and sum(int(x.get('count') or 0) for x in ks)>=20, ks
+              assert len(ks)>=3 and sum(int(x.get('count') or 0) for x in ks)>=500, ks
               assert jd and all(x.get('official_url') for x in jd), jd
               names='\n'.join((str(j.get('c',''))+' '+str(j.get('r',''))+' '+str(j.get('l',''))) for j in cn.get('jobs',[]))
               assert '快手' in names

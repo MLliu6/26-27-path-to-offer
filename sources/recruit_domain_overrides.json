@@ -3,17 +3,36 @@
   "policy": "Reviewed anonymous employer recruiting routes that need a more specific list entry than the generic registry seed. No login, applicant, resume-upload or private endpoints are allowed. Optional detail_url_template values must be observed public job-detail routes and may interpolate only the public position {id}.",
   "sources": [
     {
-      "id": "recruit-kuaishou-campus",
+      "id": "recruit-kuaishou-campus-2027",
       "company": "快手",
       "category": "互联网/AI",
-      "start_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs",
+      "start_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs?pageNum=1&recruitSubProjectCodes=20271779425607",
       "official_url": "https://campus.kuaishou.cn/",
       "detail_url_template": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/job-info/{id}",
       "priority": 100,
-      "max_pages": 8,
-      "click_labels": ["应届招聘", "实习招聘"],
+      "max_pages": 1,
+      "adapter": "kuaishou-campus-api",
+      "api_project_code": "20271779425607",
+      "api_page_size": 50,
+      "batch": "2027校园招聘",
       "api_hosts": ["campus.kuaishou.cn"],
-      "evidence": "Current Kuaishou Campus public recruiting SPA; anonymous browser observation confirmed the public detail route #/campus/job-info/{id} and /api/v1/open/positions/find?id={id}."
+      "evidence": "Verified 2026-08-25 against Kuaishou's anonymous public positions/simple API: project 20271779425607 reports 271 released positions across 28 pages at pageSize=10. The generic SPA resets project/page hash state, so this reviewed source uses the same public API directly and checks collected count against reported total."
+    },
+    {
+      "id": "recruit-kuaishou-intern-2027",
+      "company": "快手",
+      "category": "互联网/AI",
+      "start_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs?pageNum=1&recruitSubProjectCodes=20271772783534",
+      "official_url": "https://campus.kuaishou.cn/",
+      "detail_url_template": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/job-info/{id}",
+      "priority": 100,
+      "max_pages": 1,
+      "adapter": "kuaishou-campus-api",
+      "api_project_code": "20271772783534",
+      "api_page_size": 50,
+      "batch": "2027留用实习招聘",
+      "api_hosts": ["campus.kuaishou.cn"],
+      "evidence": "Verified 2026-08-25 against Kuaishou's anonymous public positions/simple API: project 20271772783534 reports 228 released positions across 23 pages at pageSize=10. The dedicated adapter paginates the public API and fails closed if unique collected positions do not equal the reported total."
     },
     {
       "id": "recruit-kuaishou-social",
@@ -22,9 +41,8 @@
       "start_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/",
       "official_url": "https://zhaopin.kuaishou.cn/",
       "detail_url_template": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/job-info/{id}",
-      "priority": 99,
-      "max_pages": 8,
-      "click_labels": ["社会招聘", "日常实习", "校园招聘"],
+      "priority": 98,
+      "max_pages": 12,
       "api_hosts": ["zhaopin.kuaishou.cn"],
       "evidence": "Current Kuaishou public recruiting SPA social route; the public job-info route is keyed by the position id exposed by the anonymous positions/simple API and is regression-checked in the recruitment-domain workflow."
     },

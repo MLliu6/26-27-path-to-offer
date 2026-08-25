@@ -40,13 +40,26 @@ class RecruitDomainExpanderTest(unittest.TestCase):
         self.assertGreaterEqual(meta["source_count"], 50)
         self.assertGreaterEqual(meta["sweepable_count"], 20)
         self.assertTrue(meta.get("employer_direct_only"))
-        hosts={x.get("host") for x in entries}
+        hosts = {x.get("host") for x in entries}
         self.assertNotIn("weworkremotely.com", hosts)
         self.assertNotIn("remotive.com", hosts)
+
         ks = [x for x in entries if x.get("company") == "快手" and x.get("sweep_enabled")]
-        self.assertGreaterEqual(len(ks), 2)
-        self.assertTrue(any("#/campus/jobs" in x.get("start_url", "") for x in ks))
-        self.assertTrue(any("/official/social/" in x.get("start_url", "") for x in ks))
+        self.assertGreaterEqual(len(ks), 3)
+        urls = [x.get("start_url", "") for x in ks]
+        self.assertEqual(sum("recruitSubProjectCodes=20271779425607" in u for u in urls), 1)
+        self.assertEqual(sum("recruitSubProjectCodes=20271772783534" in u for u in urls), 1)
+        self.assertTrue(any("/official/social/" in u for u in urls))
+
+        reviewed = s.override_configs()
+        fulltime = reviewed["recruit-kuaishou-campus-2027"]
+        intern = reviewed["recruit-kuaishou-intern-2027"]
+        self.assertEqual(fulltime["adapter"], "kuaishou-campus-api")
+        self.assertEqual(fulltime["api_project_code"], "20271779425607")
+        self.assertEqual(fulltime["batch"], "2027校园招聘")
+        self.assertEqual(intern["adapter"], "kuaishou-campus-api")
+        self.assertEqual(intern["api_project_code"], "20271772783534")
+        self.assertEqual(intern["batch"], "2027留用实习招聘")
 
     def test_dedup_and_override(self):
         item = {"company": "X", "url": "https://career.example.com/jobs", "priority": 50}
