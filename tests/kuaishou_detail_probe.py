@@ -59,18 +59,16 @@ def main() -> None:
                     page.wait_for_timeout(1800)
                     print("AFTER_CLICK", page.url)
             elif api_first:
-                name = api_first[-1]["name"]
-                locator = page.get_by_text(name, exact=True)
-                print("ROLE", json.dumps(name, ensure_ascii=False), "COUNT", locator.count())
-                if locator.count():
-                    try:
-                        print("ROLE_META", json.dumps(locator.first.evaluate("el=>({tag:el.tagName,html:el.outerHTML.slice(0,1200)})"), ensure_ascii=False))
-                        locator.first.click(timeout=5000)
-                        page.wait_for_timeout(1800)
-                        print("AFTER_CLICK", page.url)
-                        print("AFTER_BODY", json.dumps(page.locator("body").inner_text()[:1600], ensure_ascii=False))
-                    except Exception as exc:
-                        print("CLICK_ERROR", type(exc).__name__, str(exc)[:300])
+                item = api_first[-1]
+                detail = f"https://zhaopin.kuaishou.cn/recruit/e/#/official/social/job-info/{item['id']}"
+                page.goto(detail, wait_until="domcontentloaded", timeout=30000)
+                page.wait_for_timeout(1800)
+                body = page.locator("body").inner_text()
+                print("SOCIAL_DETAIL", page.url)
+                print("SOCIAL_NAME_PRESENT", item["name"] in body)
+                print("SOCIAL_BODY", json.dumps(body[:1600], ensure_ascii=False))
+                if item["name"] not in body:
+                    raise RuntimeError(f"social detail route did not render expected job: {item}")
             print("OBSERVED", json.dumps(observed[-50:], ensure_ascii=False))
             page.close()
         context.close()
