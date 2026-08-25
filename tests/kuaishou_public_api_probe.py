@@ -4,6 +4,7 @@ import shutil
 import sys
 import time
 from typing import Any
+from urllib.parse import urlencode
 
 import requests
 from playwright.sync_api import sync_playwright
@@ -82,7 +83,7 @@ def fetch_experienced(nature: str, page: int = 1) -> dict[str, Any]:
     session.headers.update({
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/151 Safari/537.36",
         "Accept": "application/json, text/plain, */*",
-        "Referer": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/" if nature == "C001" else "https://zhaopin.kuaishou.cn/recruit/e/#/official/intern/",
+        "Referer": "https://zhaopin.kuaishou.cn/recruit/e/",
     })
     warm = session.get(EXPERIENCED_HOME, timeout=20)
     response = session.get(EXPERIENCED_URL, params=params, timeout=20)
@@ -109,7 +110,20 @@ def browser_path() -> str:
     raise RuntimeError("Chrome/Chromium unavailable")
 
 
-def probe_route(route: str) -> dict[str, Any]:
+def browser_fetch(page, params: dict[str, Any]) -> dict[str, Any]:
+    query = urlencode(params)
+    return page.evaluate(
+        """async (url) => {
+          const r = await fetch(url, {credentials:'include', headers:{Accept:'application/json, text/plain, */*'}});
+          let body = null;
+          try { body = await r.json(); } catch (_) { body = {text:(await r.text()).slice(0,500)}; }
+          return {status:r.status, url:r.url, body};
+        }""",
+        f"{EXPERIENCED_URL}?{query}",
+    )
+
+
+def probe_browser() -> dict[str, Any]:
     captured = []
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True, executable_path=browser_path(), args=["--no-sandbox", "--disable-dev-shm-usage"])
@@ -127,29 +141,45 @@ def probe_route(route: str) -> dict[str, Any]:
 
         page.on("response", on_response)
         try:
-            page.goto(route, wait_until="domcontentloaded", timeout=30000)
+            page.goto("https://zhaopin.kuaishou.cn/recruit/e/#/official/social/", wait_until="domcontentloaded", timeout=30000)
             time.sleep(5)
-            hrefs = page.locator("a").evaluate_all("els => els.map(e => e.href).filter(Boolean)")
-            links = [x for x in hrefs if "job-info" in x][:10]
-            before = page.url
-            clicked = ""
-            if not links:
-                candidates = page.get_by_text("查看职位", exact=False)
-                if candidates.count():
-                    try:
-                        candidates.first.click(timeout=5000)
-                        time.sleep(2)
-                        clicked = page.url
-                    except Exception:
-                        pass
+            nav = page.locator("a").evaluate_all("els => els.map(e => ({text:(e.innerText||e.textContent||'').trim(), href:e.href})).filter(x => x.text || x.href)")
+            nav = [x for x in nav if any(k in (x.get('text') or '') for k in ('社会招聘','日常实习','校园招聘','职位')) or 'official' in (x.get('href') or '')][:40]
+
+            direct = {}
+            for label, params in (
+                ("social_10", {"pageNum":1,"pageSize":10,"positionNatureCode":"C001","recruitProject":"socialr"}),
+                ("social_100", {"pageNum":1,"pageSize":100,"positionNatureCode":"C001","recruitProject":"socialr"}),
+                ("intern_10", {"pageNum":1,"pageSize":10,"positionNatureCode":"C002"}),
+                ("intern_100", {"pageNum":1,"pageSize":100,"positionNatureCode":"C002"}),
+            ):
+                raw = browser_fetch(page, params)
+                direct[label] = {"status": raw.get("status"), "url": raw.get("url"), **summarize_payload(raw.get("body"))}
+
+            daily_click = {"found": False, "url": "", "xhr": []}
+            daily = page.get_by_text("日常实习", exact=True)
+            if daily.count():
+                daily_click["found"] = True
+                before = len(captured)
+                try:
+                    daily.first.click(timeout=5000)
+                    time.sleep(5)
+                    daily_click["url"] = page.url
+                    daily_click["title"] = page.title()
+                    daily_click["body"] = " ".join(page.locator("body").inner_text(timeout=5000).split())[:1200]
+                    daily_click["xhr"] = captured[before:][:10]
+                    rows = page.locator("body").inner_text(timeout=5000).splitlines()
+                    visible = [x.strip() for x in rows if x.strip()]
+                    daily_click["visible_lines"] = visible[:80]
+                except Exception as exc:
+                    daily_click["error"] = f"{type(exc).__name__}: {exc}"
+
             return {
-                "requested": route,
-                "final_url": before,
-                "title": page.title(),
-                "job_links": links,
-                "clicked_url": clicked,
-                "xhr": captured[:20],
-                "body": " ".join(page.locator("body").inner_text(timeout=5000).split())[:1000],
+                "social_final_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/",
+                "nav": nav,
+                "direct_browser_fetch": direct,
+                "daily_click": daily_click,
+                "captured_xhr": captured[:20],
             }
         finally:
             browser.close()
@@ -163,12 +193,7 @@ def main() -> int:
     for label, nature in (("experienced_social_requests", "C001"), ("daily_intern_requests", "C002")):
         print(json.dumps({label: fetch_experienced(nature, 1)}, ensure_ascii=False))
 
-    for label, route in (
-        ("social_route", "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/"),
-        ("daily_intern_route", "https://zhaopin.kuaishou.cn/recruit/e/#/official/intern/"),
-    ):
-        print(json.dumps({label: probe_route(route)}, ensure_ascii=False))
-
+    print(json.dumps({"experienced_browser": probe_browser()}, ensure_ascii=False))
     sys.stdout.flush()
     return 0
 
