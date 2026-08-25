@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
 import re
 from collections import Counter
 from datetime import datetime, timezone
@@ -47,9 +46,15 @@ ATS_HINTS = (
     "recruitee.com", "workdayjobs.com", "myworkdayjobs.com", "successfactors.com",
 )
 EXCLUDED_HOSTS = {
-    "www.zhipin.com", "zhipin.com", "www.zhaopin.com", "zhaopin.com", "www.liepin.com", "liepin.com",
+    "www.zhipin.com", "zhipin.com", "bosszhipin.com", "www.bosszhipin.com",
+    "www.zhaopin.com", "zhaopin.com", "www.liepin.com", "liepin.com",
     "www.51job.com", "51job.com", "www.nowcoder.com", "nowcoder.com", "job.ncss.cn", "www.ncss.cn",
     "mp.weixin.qq.com", "weixin.qq.com", "github.com", "raw.githubusercontent.com", "gitee.com",
+    "weworkremotely.com", "www.weworkremotely.com", "remotive.com", "www.remotive.com",
+    "indeed.com", "www.indeed.com", "linkedin.com", "www.linkedin.com", "glassdoor.com", "www.glassdoor.com",
+    "wellfound.com", "www.wellfound.com", "workatastartup.com", "www.workatastartup.com",
+    "builtin.com", "www.builtin.com", "monster.com", "www.monster.com", "dice.com", "www.dice.com",
+    "simplyhired.com", "www.simplyhired.com", "jobright.ai", "www.jobright.ai",
 }
 STATIC_RE = re.compile(r"\.(?:js|css|png|jpe?g|gif|svg|webp|woff2?|ttf|map|ico)(?:$|[?#])", re.I)
 PRIVATE_ROUTE_RE = re.compile(r"(?:^|/)(?:login|signin|register|signup|offer|accept-offer|resume/upload|user/info)(?:/|$)", re.I)
@@ -103,7 +108,7 @@ def normalize_url(value: str) -> str:
         if not host or host in EXCLUDED_HOSTS or host.endswith((".edu.cn", ".gov.cn")):
             return ""
         # Keep query/hash because many Chinese recruiting SPAs encode the actual
-        # list route there; only strip obvious tracking fragments from path.
+        # list route there; only normalize duplicate path separators.
         path = re.sub(r"/{2,}", "/", parsed.path or "/")
         return urlunparse((parsed.scheme.lower(), parsed.netloc.lower(), path, "", parsed.query, parsed.fragment))
     except Exception:
@@ -120,8 +125,6 @@ def is_recruit_surface(url: str) -> bool:
         return True
     if not CAREER_RE.search(signal):
         return False
-    # Login/user shells are not recruiting sources unless a separate job/campus
-    # signal is also present in the URL.
     if PRIVATE_ROUTE_RE.search(parsed.path) and not re.search(r"job|campus|career|recruit|zhaopin", signal, re.I):
         return False
     return True
@@ -182,8 +185,6 @@ def candidate_from(item: dict[str, Any], origin: str, *, force_sweep: bool = Fal
 
 def dedupe_key(entry: dict[str, Any]) -> str:
     parsed = urlparse(entry["start_url"])
-    # Keep distinct campus/social SPA fragments for the same employer while
-    # deduplicating trailing slash/query noise.
     fragment = (parsed.fragment or "").rstrip("/").lower()
     path = (parsed.path or "/").rstrip("/").lower()
     return f"{company_key(entry['company'])}|{entry['host']}|{path}|{fragment}"
@@ -232,6 +233,7 @@ def build() -> tuple[list[dict[str, Any]], dict[str, Any]]:
         "top_hosts": hosts.most_common(20),
         "families": ats.most_common(),
         "input_files": [str(p.relative_to(ROOT)) for p in INPUTS if p.exists()],
+        "employer_direct_only": True,
     }
     return entries, meta
 
@@ -257,7 +259,6 @@ def promote_to_graph(entries: list[dict[str, Any]]) -> int:
             "sweep_enabled": bool(entry.get("sweep_enabled")),
         }
         if current:
-            # Never erase health collected by the official-source sampler.
             item = {**current, **item, **({"health": current["health"]} if current.get("health") else {})}
         else:
             added += 1
