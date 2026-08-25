@@ -239,7 +239,10 @@ def _load_experienced_page(page, config: dict[str, Any], page_num: int, *, initi
             if full_reload:
                 base = start_url.split("#", 1)[0]
                 target = f"{base}#{experienced_hash(route_fragment, page_num)}"
-                page.goto(target, wait_until="domcontentloaded", timeout=30_000)
+                if page.url == target:
+                    page.reload(wait_until="domcontentloaded", timeout=30_000)
+                else:
+                    page.goto(target, wait_until="domcontentloaded", timeout=30_000)
             else:
                 target_hash = experienced_hash(route_fragment, page_num)
                 page.evaluate("value => { location.hash = value; }", target_hash)
@@ -248,12 +251,15 @@ def _load_experienced_page(page, config: dict[str, Any], page_num: int, *, initi
             raise RuntimeError(f"{clean(config.get('id'))}: invalid public XHR page {page_num}")
         return result
 
-    try:
-        return attempt(initial)
-    except PlaywrightTimeoutError:
-        # A full public-page reload is a safe fallback if a hash transition was
-        # coalesced by the SPA or a single XHR was lost. No request is forged.
-        return attempt(True)
+    last_error: Exception | None = None
+    for attempt_index in range(3):
+        try:
+            return attempt(initial if attempt_index == 0 else True)
+        except PlaywrightTimeoutError as exc:
+            last_error = exc
+            if attempt_index < 2:
+                time.sleep(0.35 * (attempt_index + 1))
+    raise RuntimeError(f"{clean(config.get('id'))}: public SPA page {page_num} failed after 3 attempts") from last_error
 
 
 def harvest_experienced_browser(config: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
@@ -268,8 +274,25 @@ def harvest_experienced_browser(config: dict[str, Any]) -> tuple[list[dict[str, 
     pages_seen: list[int] = []
     page_size_seen: list[int] = []
     pages_read = 0
+    recovery_pages_read = 0
     boundary_duplicates = 0
     previous_ids: set[str] = set()
+
+    def merge_result(current: dict[str, Any], *, compare_boundary: bool = False) -> None:
+        nonlocal boundary_duplicates, previous_ids
+        rows = rows_from(current)
+        current_ids = {clean(row.get("id") or row.get("code")) for row in rows if clean(row.get("id") or row.get("code"))}
+        if compare_boundary and previous_ids and (previous_ids & current_ids):
+            boundary_duplicates += len(previous_ids & current_ids)
+        if compare_boundary:
+            previous_ids = current_ids
+        totals_seen.append(int(current.get("total") or 0))
+        pages_seen.append(int(current.get("pages") or 0))
+        page_size_seen.append(int(current.get("pageSize") or 10) or 10)
+        for row in rows:
+            job = normalize_job(config, row, transport="official-browser-ui-xhr")
+            if job:
+                jobs[job["position_id"]] = job
 
     with sync_playwright() as p:
         browser = p.chromium.launch(
@@ -284,7 +307,6 @@ def harvest_experienced_browser(config: dict[str, Any]) -> tuple[list[dict[str, 
             result = _load_experienced_page(page, config, 1, initial=True)
             total = int(result.get("total") or 0)
             pages = int(result.get("pages") or 0)
-            page_size = int(result.get("pageSize") or 10) or 10
             if total < 1 or pages < 1:
                 raise RuntimeError(f"{clean(config.get('id'))}: empty/invalid public catalogue metadata")
             if pages > MAX_EXPERIENCED_PAGES:
@@ -293,28 +315,26 @@ def harvest_experienced_browser(config: dict[str, Any]) -> tuple[list[dict[str, 
             for page_num in range(1, pages + 1):
                 current = result if page_num == 1 else _load_experienced_page(page, config, page_num)
                 pages_read += 1
-                rows = rows_from(current)
-                current_ids = {clean(row.get("id") or row.get("code")) for row in rows if clean(row.get("id") or row.get("code"))}
-                if previous_ids and (previous_ids & current_ids):
-                    boundary_duplicates += len(previous_ids & current_ids)
-                previous_ids = current_ids
-                totals_seen.append(int(current.get("total") or 0))
-                pages_seen.append(int(current.get("pages") or 0))
-                page_size_seen.append(int(current.get("pageSize") or page_size) or page_size)
-                for row in rows:
-                    job = normalize_job(config, row, transport="official-browser-ui-xhr")
-                    if job:
-                        jobs[job["position_id"]] = job
+                merge_result(current, compare_boundary=True)
 
-            # The catalogue is live and new roles are inserted near the front.
-            # Re-read page 1 once so a role posted during the sweep is not lost
-            # because the subsequent pages shifted by one position.
+            # The catalogue is live. New roles inserted near the front can shift
+            # every later page by one and push previously unseen tail jobs onto a
+            # new or fuller last page. Re-read page 1 and the current tail so the
+            # union reflects both ends of the live catalogue without a second full
+            # pass or any forged API request.
             refreshed_first = _load_experienced_page(page, config, 1)
-            totals_seen.append(int(refreshed_first.get("total") or 0))
-            for row in rows_from(refreshed_first):
-                job = normalize_job(config, row, transport="official-browser-ui-xhr")
-                if job:
-                    jobs[job["position_id"]] = job
+            recovery_pages_read += 1
+            merge_result(refreshed_first)
+            current_pages = int(refreshed_first.get("pages") or pages)
+            if current_pages > MAX_EXPERIENCED_PAGES:
+                raise RuntimeError(f"{clean(config.get('id'))}: refreshed {current_pages} pages exceed safe cap {MAX_EXPERIENCED_PAGES}")
+            recovery_targets = set(range(max(1, current_pages - 2), current_pages + 1))
+            if current_pages > pages:
+                recovery_targets.update(range(pages + 1, current_pages + 1))
+            for page_num in sorted(recovery_targets):
+                current = _load_experienced_page(page, config, page_num)
+                recovery_pages_read += 1
+                merge_result(current)
         finally:
             context.close()
             browser.close()
@@ -327,9 +347,9 @@ def harvest_experienced_browser(config: dict[str, Any]) -> tuple[list[dict[str, 
     denominator = reported_max or reported_end or reported_start
     coverage_ratio = len(values) / denominator if denominator else 0.0
     dynamic_delta = reported_max - reported_min if reported_min else 0
-    # Exact equality is expected for a stable catalogue. For a live catalogue,
-    # a tiny over/under count can occur when jobs are opened/closed mid-sweep;
-    # 99.5% is the fail-closed threshold and diagnostics expose the delta.
+    # Exact equality is expected only for the stable campus API. Experienced
+    # catalogues visibly change while 100+ public pages are being traversed; the
+    # tail-recovery pass compensates for insertions and 99.5% remains fail-closed.
     complete = bool(denominator and coverage_ratio >= 0.995)
     diagnostics = {
         "transport": "browser-ui-navigation+xhr-observation",
@@ -345,6 +365,7 @@ def harvest_experienced_browser(config: dict[str, Any]) -> tuple[list[dict[str, 
         "page_size": max(page_size_seen) if page_size_seen else 10,
         "pages_reported": max(pages_seen) if pages_seen else 0,
         "pages_read": pages_read,
+        "recovery_pages_read": recovery_pages_read,
         "unique_jobs": len(values),
         "boundary_duplicates": boundary_duplicates,
         "coverage_ratio": round(coverage_ratio, 6),
@@ -366,5 +387,15 @@ def harvest(config: dict[str, Any], session: requests.Session | None = None) -> 
     if adapter == "kuaishou-campus-api":
         return harvest_campus(config, session=session)
     if adapter == "kuaishou-experienced-browser":
-        return harvest_experienced_browser(config)
+        last_error: Exception | None = None
+        for source_attempt in range(1, 3):
+            try:
+                jobs, diagnostics = harvest_experienced_browser(config)
+                diagnostics["source_attempt"] = source_attempt
+                return jobs, diagnostics
+            except Exception as exc:
+                last_error = exc
+                if source_attempt == 1:
+                    time.sleep(1.0)
+        raise RuntimeError(f"{clean(config.get('id'))}: experienced public SPA failed twice: {last_error}") from last_error
     raise RuntimeError(f"unsupported Kuaishou adapter: {adapter or '<empty>'}")
