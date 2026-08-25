@@ -1,8 +1,5 @@
-import json
 import os
-import tempfile
 import unittest
-from pathlib import Path
 from unittest.mock import patch
 
 from scripts import recruit_domain_expander as e
@@ -24,7 +21,14 @@ class RecruitDomainExpanderTest(unittest.TestCase):
             self.assertTrue(e.is_recruit_surface(e.normalize_url(url)), url)
 
     def test_reject_aggregator_static_and_auth_shell(self):
-        self.assertEqual(e.normalize_url("https://www.zhipin.com/job_detail/abc.html"), "")
+        for url in [
+            "https://www.zhipin.com/job_detail/abc.html",
+            "https://weworkremotely.com/remote-jobs/example",
+            "https://remotive.com/remote-jobs/software-dev/example",
+            "https://www.indeed.com/jobs?q=ai",
+            "https://www.linkedin.com/jobs/view/1",
+        ]:
+            self.assertEqual(e.normalize_url(url), "", url)
         self.assertEqual(e.normalize_url("https://career.example.com/assets/main.js"), "")
         self.assertFalse(e.is_recruit_surface(e.normalize_url("https://example.com/login")))
 
@@ -35,6 +39,10 @@ class RecruitDomainExpanderTest(unittest.TestCase):
             self.assertIn(company, companies)
         self.assertGreaterEqual(meta["source_count"], 50)
         self.assertGreaterEqual(meta["sweepable_count"], 20)
+        self.assertTrue(meta.get("employer_direct_only"))
+        hosts={x.get("host") for x in entries}
+        self.assertNotIn("weworkremotely.com", hosts)
+        self.assertNotIn("remotive.com", hosts)
         ks = [x for x in entries if x.get("company") == "快手" and x.get("sweep_enabled")]
         self.assertGreaterEqual(len(ks), 2)
         self.assertTrue(any("#/campus/jobs" in x.get("start_url", "") for x in ks))
@@ -53,7 +61,7 @@ class RecruitDomainExpanderTest(unittest.TestCase):
             for i in range(37)
         ]
         with patch.dict(os.environ, {"PTO_RECRUIT_SWEEP_MAX_TARGETS": "7", "PTO_RECRUIT_SWEEP_FORCE_COMPANIES": ""}, clear=False):
-            first, meta = s.select(entries)
+            _, meta = s.select(entries)
             covered = set()
             for idx in range(meta["shard_count"]):
                 with patch.dict(os.environ, {"PTO_RECRUIT_SWEEP_SHARD_INDEX": str(idx)}, clear=False):
