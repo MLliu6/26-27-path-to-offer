@@ -45,20 +45,21 @@ class RecruitDomainExpanderTest(unittest.TestCase):
         self.assertNotIn("remotive.com", hosts)
 
         ks = [x for x in entries if x.get("company") == "快手" and x.get("sweep_enabled")]
-        self.assertGreaterEqual(len(ks), 5)
+        self.assertGreaterEqual(len(ks), 3)
         urls = [x.get("start_url", "") for x in ks]
-        fulltime = [u for u in urls if "recruitSubProjectCodes=20271779425607" in u]
-        intern = [u for u in urls if "recruitSubProjectCodes=20271772783534" in u]
-        self.assertGreaterEqual(len(fulltime), 2)
-        self.assertGreaterEqual(len(intern), 2)
-        self.assertTrue(any("pageNum=1" in u for u in fulltime))
-        self.assertTrue(any("pageNum=13" in u for u in fulltime))
-        self.assertTrue(any("pageNum=1" in u for u in intern))
-        self.assertTrue(any("pageNum=13" in u for u in intern))
+        self.assertEqual(sum("recruitSubProjectCodes=20271779425607" in u for u in urls), 1)
+        self.assertEqual(sum("recruitSubProjectCodes=20271772783534" in u for u in urls), 1)
         self.assertTrue(any("/official/social/" in u for u in urls))
-        precise = [x for x in ks if "recruitSubProjectCodes=" in x.get("start_url", "")]
-        self.assertTrue(all(int(x.get("max_pages") or 0) == 12 for x in precise))
-        self.assertTrue(all(not x.get("click_labels") for x in precise))
+
+        reviewed = s.override_configs()
+        fulltime = reviewed["recruit-kuaishou-campus-2027"]
+        intern = reviewed["recruit-kuaishou-intern-2027"]
+        self.assertEqual(fulltime["adapter"], "kuaishou-campus-api")
+        self.assertEqual(fulltime["api_project_code"], "20271779425607")
+        self.assertEqual(fulltime["batch"], "2027校园招聘")
+        self.assertEqual(intern["adapter"], "kuaishou-campus-api")
+        self.assertEqual(intern["api_project_code"], "20271772783534")
+        self.assertEqual(intern["batch"], "2027留用实习招聘")
 
     def test_dedup_and_override(self):
         item = {"company": "X", "url": "https://career.example.com/jobs", "priority": 50}
