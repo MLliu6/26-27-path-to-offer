@@ -58,7 +58,10 @@ jobs:
 
       - name: Sweep one bounded real-browser shard
         env:
-          PTO_RECRUIT_SWEEP_FORCE_COMPANIES: ${{ github.event_name == 'pull_request' && '快手,京东' || '' }}
+          # PRs and the first main/dispatch refresh explicitly seed the two new
+          # reviewed sources so they become visible immediately. Scheduled runs
+          # remain pure rotating shards and do not waste budget re-polling them.
+          PTO_RECRUIT_SWEEP_FORCE_COMPANIES: ${{ github.event_name != 'schedule' && '快手,京东' || '' }}
           PTO_RECRUIT_SWEEP_MAX_TARGETS: ${{ github.event_name == 'pull_request' && '2' || '32' }}
           PTO_RECRUIT_SWEEP_SHARD_INDEX: ${{ github.event_name == 'pull_request' && '0' || '' }}
         run: PYTHONPATH=. python scripts/recruit_domain_sweep.py
