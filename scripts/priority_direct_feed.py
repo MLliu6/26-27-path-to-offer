@@ -2,12 +2,15 @@
 """Build the fast employer-direct browser feed.
 
 This stage refreshes inexpensive proven public employer APIs and ATS surfaces:
-PDD, Huawei, Shopee/Moka, Meituan and Tencent. DiDi is deliberately not queried
-here: GitHub-hosted runners may intercept its direct HTTP transport, so the
-immediately following `didi_ui_priority_seed.py` drives DiDi's public UI instead.
+PDD, Huawei, Shopee/Moka, Kuaishou, Meituan and Tencent. Kuaishou campus
+projects use its anonymous public API; social and daily-intern catalogues remain
+inside the employer's real public SPA/XHR transport. DiDi is deliberately not
+queried here: GitHub-hosted runners may intercept its direct HTTP transport, so
+the immediately following `didi_ui_priority_seed.py` drives DiDi's public UI.
 
 Each source fails independently and preserves its last valid rows. No login,
-applicant API, CAPTCHA bypass or user cookie is used.
+applicant API, CAPTCHA bypass, private cookie export or request-signature
+reproduction is used.
 """
 from __future__ import annotations
 
@@ -22,6 +25,7 @@ from scripts.aggregate_jobs import clean
 from scripts.direct_china_official import CONFIG_PATH as DIRECT_CONFIG_PATH
 from scripts.direct_china_official import ADAPTERS as LEGACY_DIRECT_ADAPTERS
 from scripts.huawei_v2_official_harvester import LIST_URL as HUAWEI_LIST_URL, collect_huawei
+from scripts import kuaishou_public_api_harvester as kuaishou
 from scripts.moka_public_harvester import fetch_company as fetch_moka_company, load_priority_specs as load_moka_priority_specs
 from scripts.pdd_official_harvester import collect_pdd
 
@@ -29,7 +33,15 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 OUT = DATA / "jobs_priority.json"
 STATUS = DATA / "priority_source_status.json"
+KUAISHOU_OVERRIDES = ROOT / "sources" / "recruit_domain_overrides.json"
 MAX_JD = max(500, min(5000, int(os.getenv("PTO_PRIORITY_JD_CHARS", "1800"))))
+
+KUAISHOU_PRIORITY_IDS = (
+    "recruit-kuaishou-campus-2027",
+    "recruit-kuaishou-intern-2027",
+    "recruit-kuaishou-social",
+    "recruit-kuaishou-trainee",
+)
 
 
 def now() -> str:
@@ -142,6 +154,22 @@ def collect_legacy_direct() -> list[tuple[str, str, Callable[[dict[str, Any]], t
     return out
 
 
+def load_kuaishou_priority_specs() -> list[dict[str, Any]]:
+    try:
+        payload = json.loads(KUAISHOU_OVERRIDES.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise RuntimeError(f"cannot load Kuaishou reviewed sources: {exc}") from exc
+    by_id = {
+        clean(item.get("id")): item
+        for item in payload.get("sources", [])
+        if isinstance(item, dict) and clean(item.get("id"))
+    }
+    missing = [source_id for source_id in KUAISHOU_PRIORITY_IDS if source_id not in by_id]
+    if missing:
+        raise RuntimeError(f"missing Kuaishou reviewed sources: {missing}")
+    return [by_id[source_id] for source_id in KUAISHOU_PRIORITY_IDS]
+
+
 def source_of_compact(row: dict[str, Any]) -> str:
     return clean(row.get("s"))
 
@@ -160,6 +188,33 @@ def record_special_source(*, source_id: str, name: str, label: str, url: str, co
         kept = old_by_source.get(source_id, [])
         fresh_by_source[source_id] = kept
         source_runs.append({"name": name, "label": label, "url": url, "ok": bool(kept), "count": len(kept), "preserved_previous": bool(kept), "diagnostics": {}, "error": f"{type(exc).__name__}: {short(exc, 260)}"})
+
+
+def validate_kuaishou(spec: dict[str, Any], jobs: list[dict[str, Any]], diagnostics: dict[str, Any]) -> None:
+    source_id = clean(spec.get("id"))
+    adapter = clean(spec.get("adapter"))
+    if not diagnostics.get("complete"):
+        raise RuntimeError(f"{source_id} incomplete: {diagnostics}")
+    if adapter == "kuaishou-campus-api":
+        reported = int(diagnostics.get("reported_total") or 0)
+        unique = int(diagnostics.get("unique_jobs") or 0)
+        minimum = 250 if source_id == "recruit-kuaishou-campus-2027" else 200
+        if reported != unique or unique < minimum or len(jobs) != unique:
+            raise RuntimeError(f"{source_id} campus completeness failed: {diagnostics}")
+        if diagnostics.get("transport") != "official-public-api":
+            raise RuntimeError(f"{source_id} unexpected transport: {diagnostics}")
+        return
+    if adapter == "kuaishou-experienced-browser":
+        minimum = 1000 if source_id == "recruit-kuaishou-social" else 900
+        ratio = float(diagnostics.get("coverage_ratio") or 0)
+        if len(jobs) < minimum or ratio < 0.995:
+            raise RuntimeError(f"{source_id} live catalogue coverage failed: {diagnostics}")
+        if diagnostics.get("transport") != "browser-ui-navigation+xhr-observation":
+            raise RuntimeError(f"{source_id} unexpected transport: {diagnostics}")
+        if diagnostics.get("cookie_values_exported") is not False or diagnostics.get("request_signature_reproduced") is not False:
+            raise RuntimeError(f"{source_id} transport safety invariant failed: {diagnostics}")
+        return
+    raise RuntimeError(f"unsupported reviewed Kuaishou adapter: {adapter}")
 
 
 def main() -> int:
@@ -216,6 +271,27 @@ def main() -> int:
             source_runs=source_runs,
         )
 
+    kuaishou_names = {
+        "recruit-kuaishou-campus-2027": "kuaishou-campus-2027-direct-official",
+        "recruit-kuaishou-intern-2027": "kuaishou-retention-intern-2027-direct-official",
+        "recruit-kuaishou-social": "kuaishou-social-direct-official",
+        "recruit-kuaishou-trainee": "kuaishou-trainee-direct-official",
+    }
+    for spec in load_kuaishou_priority_specs():
+        source_key = clean(spec.get("id"))
+        source_id = f"direct-official:browser:{source_key}"
+        record_special_source(
+            source_id=source_id,
+            name=kuaishou_names[source_key],
+            label=f"快手招聘官网 · {clean(spec.get('batch'))} · {'真实浏览器公开XHR' if clean(spec.get('adapter')) == 'kuaishou-experienced-browser' else '官方公开API'}",
+            url=clean(spec.get("start_url") or spec.get("official_url")),
+            collector=lambda spec=spec: kuaishou.harvest(spec),
+            validator=lambda jobs, diagnostics, spec=spec: validate_kuaishou(spec, jobs, diagnostics),
+            old_by_source=old_by_source,
+            fresh_by_source=fresh_by_source,
+            source_runs=source_runs,
+        )
+
     for source_id, company, function, config in collect_legacy_direct():
         try:
             jobs, diagnostics = function(config)
@@ -239,9 +315,13 @@ def main() -> int:
         "direct-official:pdd": 0,
         "direct-official:huawei-v2": 1,
         "direct-official:shopee": 2,
-        "direct-official:didi": 3,
-        "direct-official:meituan": 4,
-        "direct-official:tencent": 5,
+        "direct-official:browser:recruit-kuaishou-campus-2027": 3,
+        "direct-official:browser:recruit-kuaishou-intern-2027": 4,
+        "direct-official:browser:recruit-kuaishou-social": 5,
+        "direct-official:browser:recruit-kuaishou-trainee": 6,
+        "direct-official:didi": 7,
+        "direct-official:meituan": 8,
+        "direct-official:tencent": 9,
     }
     merged: dict[str, dict[str, Any]] = {}
     for source_id in sorted(fresh_by_source, key=lambda value: (source_order.get(value, 99), value)):
