@@ -18,6 +18,7 @@ on:
       - 'sources/recruit_domain_overrides.json'
       - 'tests/test_recruit_domain_expander.py'
       - 'tests/test_recruit_domain_detail_links.py'
+      - 'tests/kuaishou_public_api_probe.py'
       - '.github/workflows/refresh-recruit-domain-sweep.yml'
 
 permissions:
@@ -57,6 +58,10 @@ jobs:
       - name: Unit-test recruitment-domain discovery, sharding and detail links
         run: PYTHONPATH=. python -m unittest -v tests.test_recruit_domain_expander tests.test_recruit_domain_detail_links
 
+      - name: Probe Kuaishou public campus projects
+        if: ${{ github.event_name == 'pull_request' }}
+        run: PYTHONPATH=. python tests/kuaishou_public_api_probe.py
+
       - name: Sweep one bounded real-browser shard
         env:
           PTO_RECRUIT_SWEEP_FORCE_COMPANIES: ${{ github.event_name != 'schedule' && '快手,京东' || '' }}
@@ -72,11 +77,21 @@ jobs:
           from pathlib import Path
           payload=json.loads(Path('data/jobs.json').read_text(encoding='utf-8'))
           status=json.loads(Path('data/source_status.json').read_text(encoding='utf-8'))
+          overrides=json.loads(Path('sources/recruit_domain_overrides.json').read_text(encoding='utf-8'))
           jobs=[j for j in payload.get('jobs',[]) if isinstance(j,dict)]
-          expected={
-              'recruit-kuaishou-campus':'https://campus.kuaishou.cn/recruit/campus/e/#/campus/job-info/',
-              'recruit-kuaishou-social':'https://zhaopin.kuaishou.cn/recruit/e/#/official/social/job-info/',
-          }
+          groups={x.get('name'):x for x in status.get('sources',[]) if isinstance(x,dict)}
+          sweep=groups.get('recruit-domain-sweep') or {}
+          diag=sweep.get('diagnostics') or {}
+          selected_ids={str(x.get('id') or '') for x in diag.get('selected',[]) if isinstance(x,dict)}
+          expected={}
+          for item in overrides.get('sources',[]):
+              if not isinstance(item,dict) or item.get('company')!='快手' or item.get('id') not in selected_ids:
+                  continue
+              template=str(item.get('detail_url_template') or '')
+              if '{id}' in template:
+                  expected[item['id']]=template.split('{id}',1)[0]
+          assert expected, selected_ids
+          id_sets={}
           for source_id,prefix in expected.items():
               src='direct-official:browser:'+source_id
               rows=[j for j in jobs if j.get('source')==src and str(j.get('position_id') or '').strip()]
@@ -84,11 +99,16 @@ jobs:
               bad=[(j.get('role'),j.get('position_id'),j.get('apply_url')) for j in rows if not str(j.get('apply_url') or '').startswith(prefix)]
               assert not bad, bad[:5]
               assert all(j.get('notice_url')==j.get('apply_url') for j in rows), source_id
-          groups={x.get('name'):x for x in status.get('sources',[]) if isinstance(x,dict)}
-          sweep=groups.get('recruit-domain-sweep') or {}
-          diag=sweep.get('diagnostics') or {}
+              id_sets[source_id]={str(j.get('position_id')) for j in rows}
+          for a,b in [
+              ('recruit-kuaishou-campus-2027-a','recruit-kuaishou-campus-2027-b'),
+              ('recruit-kuaishou-intern-2027-a','recruit-kuaishou-intern-2027-b'),
+              ('recruit-kuaishou-campus-2027-a','recruit-kuaishou-intern-2027-a'),
+          ]:
+              if a in id_sets and b in id_sets:
+                  print('source overlap:',a,b,'counts=',len(id_sets[a]),len(id_sets[b]),'intersection=',len(id_sets[a]&id_sets[b]))
           assert int(diag.get('detail_links_enriched') or 0) > 0, diag.get('detail_links_enriched')
-          print('kuaishou detail links verified:', {k:sum(1 for j in jobs if j.get('source')=='direct-official:browser:'+k and j.get('position_id')) for k in expected})
+          print('kuaishou detail links verified:', {k:len(v) for k,v in id_sets.items()})
           print('detail links enriched:',diag.get('detail_links_enriched'))
           PY
 
