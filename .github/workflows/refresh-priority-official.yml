@@ -13,9 +13,11 @@ on:
       - 'scripts/didi_official_harvester.py'
       - 'scripts/didi_browser_ui_harvester.py'
       - 'scripts/didi_ui_priority_seed.py'
+      - 'scripts/kuaishou_public_api_harvester.py'
       - 'scripts/priority_direct_feed.py'
       - 'scripts/direct_china_official.py'
       - 'sources/moka_priority_sources.json'
+      - 'sources/recruit_domain_overrides.json'
       - 'sources/official_position_seeds.json'
       - 'sources/domestic_direct_sources.json'
       - 'config.js'
@@ -30,15 +32,18 @@ on:
       - 'scripts/didi_official_harvester.py'
       - 'scripts/didi_browser_ui_harvester.py'
       - 'scripts/didi_ui_priority_seed.py'
+      - 'scripts/kuaishou_public_api_harvester.py'
       - 'scripts/priority_direct_feed.py'
       - 'scripts/direct_china_official.py'
       - 'sources/moka_priority_sources.json'
+      - 'sources/recruit_domain_overrides.json'
       - 'sources/official_position_seeds.json'
       - 'sources/domestic_direct_sources.json'
       - 'tests/test_pdd_official_harvester.py'
       - 'tests/test_moka_public_harvester.py'
       - 'tests/test_didi_official_harvester.py'
       - 'tests/test_didi_ui_priority_seed.py'
+      - 'tests/test_kuaishou_public_api_harvester.py'
       - 'tests/priority_feed_browser_smoke.py'
       - 'config.js'
       - 'ranking-v14.js'
@@ -64,6 +69,8 @@ jobs:
       PTO_DIDI_DETAIL_WORKERS: '16'
       PTO_DIDI_BROWSER_MAX_PAGES: '80'
       PTO_MOKA_MAX_PAGES: '20'
+      PTO_KUAISHOU_MAX_PAGES: '180'
+      PTO_KUAISHOU_PAGE_TIMEOUT_MS: '9000'
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -75,9 +82,9 @@ jobs:
       - name: Unit-test employer adapters
         id: unit
         continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
-        run: PYTHONPATH=. python -m unittest -v tests.test_pdd_official_harvester tests.test_moka_public_harvester tests.test_didi_official_harvester tests.test_didi_ui_priority_seed
+        run: PYTHONPATH=. python -m unittest -v tests.test_pdd_official_harvester tests.test_moka_public_harvester tests.test_didi_official_harvester tests.test_didi_ui_priority_seed tests.test_kuaishou_public_api_harvester
 
-      - name: Collect fast direct sources
+      - name: Collect fast direct and reviewed browser sources
         id: fast
         continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: PYTHONPATH=. python scripts/priority_direct_feed.py
@@ -87,7 +94,7 @@ jobs:
         continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: PYTHONPATH=. python scripts/didi_ui_priority_seed.py
 
-      - name: Enforce PDD, Shopee and DiDi first-party gates
+      - name: Enforce PDD, Shopee, Kuaishou and DiDi first-party gates
         id: gates
         continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
         run: |
@@ -124,6 +131,33 @@ jobs:
               print('Shopee exact AI Infra:',[(j.get('r'),j.get('l'),j.get('t'),j.get('u')) for j in exact_ai_infra])
               print('Shopee 2027 Beijing technical family:',[(j.get('r'),j.get('l'),j.get('t'),j.get('u')) for j in technical_bj[:12]])
 
+          ks_specs={
+              'kuaishou-campus-2027-direct-official': ('direct-official:browser:recruit-kuaishou-campus-2027',250,'2027校园招聘','/campus/job-info/','campus'),
+              'kuaishou-retention-intern-2027-direct-official': ('direct-official:browser:recruit-kuaishou-intern-2027',200,'2027留用实习招聘','/campus/job-info/','campus'),
+              'kuaishou-social-direct-official': ('direct-official:browser:recruit-kuaishou-social',1000,'社会招聘','/official/social/job-info/','browser'),
+              'kuaishou-trainee-direct-official': ('direct-official:browser:recruit-kuaishou-trainee',900,'日常实习','/official/trainee/job-info/','browser'),
+          }
+          ks_total=0
+          for status_name,(source_id,minimum,batch,path_fragment,kind) in ks_specs.items():
+              src=sources.get(status_name)
+              assert src and src.get('ok') and not src.get('preserved_previous') and int(src.get('count') or 0)>=minimum, (status_name,src)
+              diag=src.get('diagnostics') or {}
+              assert diag.get('complete') is True, (status_name,diag)
+              rows=[j for j in jobs if j.get('s')==source_id]
+              assert len(rows)==int(src.get('count') or 0) and len(rows)>=minimum, (status_name,len(rows),src)
+              assert all(j.get('b')==batch for j in rows), (status_name,{j.get('b') for j in rows[:30]})
+              assert all(str(j.get('u') or '').startswith('https://') and path_fragment in str(j.get('u') or '') for j in rows if j.get('z')), (status_name,[j.get('u') for j in rows[:5]])
+              if kind=='campus':
+                  assert diag.get('transport')=='official-public-api', (status_name,diag)
+                  assert int(diag.get('reported_total') or 0)==int(diag.get('unique_jobs') or -1)==len(rows), (status_name,diag)
+              else:
+                  assert diag.get('transport')=='browser-ui-navigation+xhr-observation', (status_name,diag)
+                  assert float(diag.get('coverage_ratio') or 0)>=0.995, (status_name,diag)
+                  assert diag.get('cookie_values_exported') is False and diag.get('request_signature_reproduced') is False, (status_name,diag)
+                  assert int(diag.get('pages_read') or 0)>=90, (status_name,diag)
+              ks_total += len(rows)
+          assert ks_total>=2350, ks_total
+
           didi=sources.get('didi-direct-official'); assert didi and didi.get('ok') and didi.get('count',0)>=16, didi
           assert (didi.get('diagnostics') or {}).get('transport') == 'browser-ui-navigation', didi
           didi_rows=[j for j in jobs if j.get('s')=='direct-official:didi']
@@ -134,6 +168,8 @@ jobs:
           assert len(didi_social)==fresh_count, {'social_rows':len(didi_social),'fresh_count':fresh_count,'didi':didi}
           print('PDD:',pdd.get('count'),categories)
           print('Shopee:',shopee.get('count'))
+          print('Kuaishou priority:',[(name,sources[name].get('count'),(sources[name].get('diagnostics') or {}).get('elapsed_seconds')) for name in ks_specs])
+          print('Kuaishou priority total:',ks_total)
           print('DiDi UI:',didi.get('count'),'social=',len(didi_social),'fresh=',fresh_count)
           PY
 
