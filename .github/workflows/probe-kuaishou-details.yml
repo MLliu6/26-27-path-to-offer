@@ -1,0 +1,23 @@
+name: probe-kuaishou-details
+
+on:
+  pull_request:
+    paths:
+      - 'tests/kuaishou_detail_probe.py'
+      - '.github/workflows/probe-kuaishou-details.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check playwright
+      - run: python -m playwright install --with-deps chromium
+      - run: python tests/kuaishou_detail_probe.py
