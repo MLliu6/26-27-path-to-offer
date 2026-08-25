@@ -16,7 +16,7 @@
       "api_page_size": 50,
       "batch": "2027校园招聘",
       "api_hosts": ["campus.kuaishou.cn"],
-      "evidence": "Verified 2026-08-25 against Kuaishou's anonymous public positions/simple API: project 20271779425607 reports 271 released positions across 28 pages at pageSize=10. The generic SPA resets project/page hash state, so this reviewed source uses the same public API directly and checks collected count against reported total."
+      "evidence": "Verified 2026-08-25 against Kuaishou's anonymous public positions/simple API: project 20271779425607 reports 271 released positions. The generic campus SPA resets project/page hash state, so this reviewed source uses the same public API directly and checks collected count against reported total."
     },
     {
       "id": "recruit-kuaishou-intern-2027",
@@ -32,19 +32,38 @@
       "api_page_size": 50,
       "batch": "2027留用实习招聘",
       "api_hosts": ["campus.kuaishou.cn"],
-      "evidence": "Verified 2026-08-25 against Kuaishou's anonymous public positions/simple API: project 20271772783534 reports 228 released positions across 23 pages at pageSize=10. The dedicated adapter paginates the public API and fails closed if unique collected positions do not equal the reported total."
+      "evidence": "Verified 2026-08-25 against Kuaishou's anonymous public positions/simple API: project 20271772783534 reports 228 released positions. The dedicated adapter paginates the public API and fails closed if unique collected positions do not equal the reported total."
     },
     {
       "id": "recruit-kuaishou-social",
       "company": "快手",
       "category": "互联网/AI",
-      "start_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/",
+      "start_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/?pageNum=1",
       "official_url": "https://zhaopin.kuaishou.cn/",
       "detail_url_template": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/job-info/{id}",
-      "priority": 98,
-      "max_pages": 12,
+      "priority": 99,
+      "max_pages": 1,
+      "adapter": "kuaishou-experienced-browser",
+      "position_nature_code": "C001",
+      "route_fragment": "official/social",
+      "batch": "社会招聘",
       "api_hosts": ["zhaopin.kuaishou.cn"],
-      "evidence": "Current Kuaishou public recruiting SPA social route; the public job-info route is keyed by the position id exposed by the anonymous positions/simple API and is regression-checked in the recruitment-domain workflow."
+      "evidence": "Verified 2026-08-25 in a real anonymous Chrome session: the official social SPA successfully requests public positions/simple pages 2, 50 and 140 when only its public pageNum hash changes; the live catalogue was about 1.4k positions and the social job-info/{id} route was previously browser-verified. Direct requests outside the employer SPA return an application error, so this reviewed adapter keeps the employer's own UI/XHR transport and never exports cookie values or reproduces request signatures."
+    },
+    {
+      "id": "recruit-kuaishou-trainee",
+      "company": "快手",
+      "category": "互联网/AI",
+      "start_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/trainee/?pageNum=1",
+      "official_url": "https://zhaopin.kuaishou.cn/",
+      "priority": 99,
+      "max_pages": 1,
+      "adapter": "kuaishou-experienced-browser",
+      "position_nature_code": "C002",
+      "route_fragment": "official/trainee",
+      "batch": "日常实习",
+      "api_hosts": ["zhaopin.kuaishou.cn"],
+      "evidence": "Verified 2026-08-25 from the employer's visible 日常实习 navigation: the current route is /official/trainee/ (not the obsolete /official/intern/). The official SPA successfully emits unfiltered public XHR for page 1, page 2 and page 111 with a live total of 1110. Detail-link template is intentionally omitted until its public trainee job-info route is independently browser-verified."
     },
     {
       "id": "recruit-jd",
