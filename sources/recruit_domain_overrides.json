@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "policy": "Reviewed anonymous employer recruiting routes that need a more specific list entry than the generic registry seed. No login, applicant, resume-upload or private endpoints are allowed.",
+  "sources": [
+    {
+      "id": "recruit-kuaishou-campus",
+      "company": "快手",
+      "category": "互联网/AI",
+      "start_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs",
+      "official_url": "https://campus.kuaishou.cn/",
+      "priority": 100,
+      "max_pages": 8,
+      "click_labels": ["应届招聘", "实习招聘"],
+      "api_hosts": ["campus.kuaishou.cn"],
+      "evidence": "Current Kuaishou Campus public recruiting SPA; the list route is reachable anonymously and login is not required to browse public jobs."
+    },
+    {
+      "id": "recruit-kuaishou-social",
+      "company": "快手",
+      "category": "互联网/AI",
+      "start_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/",
+      "official_url": "https://zhaopin.kuaishou.cn/",
+      "priority": 99,
+      "max_pages": 8,
+      "click_labels": ["社会招聘", "日常实习", "校园招聘"],
+      "api_hosts": ["zhaopin.kuaishou.cn"],
+      "evidence": "Current Kuaishou public recruiting SPA social route."
+    },
+    {
+      "id": "recruit-jd",
+      "company": "京东",
+      "category": "互联网/电商/AI",
+      "start_url": "https://zhaopin.jd.com/home",
+      "official_url": "https://zhaopin.jd.com/home",
+      "priority": 98,
+      "max_pages": 8,
+      "click_labels": ["校园招聘", "实习生招聘", "社会招聘"],
+      "api_hosts": ["zhaopin.jd.com"],
+      "evidence": "JD's current employer-owned recruiting home renders live job rows and links to social/campus/intern recruiting sections."
+    }
+  ]
+}
