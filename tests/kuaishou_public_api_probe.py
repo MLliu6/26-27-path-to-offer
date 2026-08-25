@@ -52,11 +52,9 @@ def chrome() -> str:
     raise RuntimeError("Chrome unavailable")
 
 
-def wait_page(page, nature: str, page_num: int, action, *, require_unfiltered: bool = False):
+def wait_page(page, nature: str, page_num: int, action):
     def ok(response):
-        if "positions/simple" not in response.url or f"positionNatureCode={nature}" not in response.url:
-            return False
-        if require_unfiltered and "workLocationCode=" in response.url:
+        if "positions/simple" not in response.url or f"positionNatureCode={nature}" not in response.url or "workLocationCode=" in response.url:
             return False
         try:
             payload = response.json()
@@ -78,32 +76,33 @@ def main() -> int:
         browser = p.chromium.launch(headless=True, executable_path=chrome(), args=["--no-sandbox", "--disable-dev-shm-usage"])
         page = browser.new_page(viewport={"width": 1440, "height": 1000}, locale="zh-CN")
         try:
-            # Open the official trainee route directly and capture the app's unfiltered catalogue request.
             first = wait_page(
                 page, "C002", 1,
                 lambda: page.goto("https://zhaopin.kuaishou.cn/recruit/e/#/official/trainee/?pageNum=1", wait_until="domcontentloaded", timeout=30000),
-                require_unfiltered=True,
             )
-            time.sleep(2)
-            page2 = wait_page(page, "C002", 2, lambda: set_hash(page, "/official/trainee/?pageNum=2"), require_unfiltered=True)
-            last = wait_page(page, "C002", 111, lambda: set_hash(page, "/official/trainee/?pageNum=111"), require_unfiltered=True)
+            page2 = wait_page(page, "C002", 2, lambda: set_hash(page, "/official/trainee/?pageNum=2"))
+            last = wait_page(page, "C002", 111, lambda: set_hash(page, "/official/trainee/?pageNum=111"))
 
-            # Return to page 1, then click the exact first public job title supplied by the official XHR.
-            first_again = wait_page(page, "C002", 1, lambda: set_hash(page, "/official/trainee/?pageNum=1"), require_unfiltered=True)
-            time.sleep(1)
-            job_name = first_again["names"][0]
-            target = page.get_by_text(job_name, exact=True)
-            count = target.count()
-            before = page.url
-            clicked_url = ""
-            if count:
-                target.first.click(timeout=5000)
-                time.sleep(2)
-                clicked_url = page.url
-
+            # Validate the detail-route convention against a concrete public row,
+            # rather than assuming the social-recruiting route also applies here.
+            position_id = first["ids"][1] if len(first["ids"]) > 1 else first["ids"][0]
+            role = first["names"][1] if len(first["names"]) > 1 else first["names"][0]
+            candidate = f"https://zhaopin.kuaishou.cn/recruit/e/#/official/trainee/job-info/{position_id}"
+            page.goto(candidate, wait_until="domcontentloaded", timeout=30000)
+            time.sleep(4)
+            body = " ".join(page.locator("body").inner_text(timeout=5000).split())
+            detail = {
+                "candidate": candidate,
+                "final_url": page.url,
+                "title": page.title(),
+                "position_id": position_id,
+                "role": role,
+                "role_present": role in body,
+                "body": body[:1200],
+            }
             print(json.dumps({
                 "trainee_unfiltered": {"page1": first, "page2": page2, "page111": last},
-                "detail_route": {"job": job_name, "matches": count, "before": before, "after": clicked_url, "title": page.title()},
+                "detail_route": detail,
             }, ensure_ascii=False))
         finally:
             browser.close()
