@@ -21,11 +21,12 @@
       "category": "互联网/AI",
       "start_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/",
       "official_url": "https://zhaopin.kuaishou.cn/",
+      "detail_url_template": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/job-info/{id}",
       "priority": 99,
       "max_pages": 8,
       "click_labels": ["社会招聘", "日常实习", "校园招聘"],
       "api_hosts": ["zhaopin.kuaishou.cn"],
-      "evidence": "Current Kuaishou public recruiting SPA social route; detail-route template is withheld until browser-observed."
+      "evidence": "Current Kuaishou public recruiting SPA social route; the public job-info route is keyed by the position id exposed by the anonymous positions/simple API and is regression-checked in the recruitment-domain workflow."
     },
     {
       "id": "recruit-jd",
