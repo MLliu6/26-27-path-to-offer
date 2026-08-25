@@ -10,11 +10,14 @@ import tempfile
 import time
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 CATALOG = DATA / "recruit_domain_catalog.json"
 STATUS = DATA / "source_status.json"
+JOBS = DATA / "jobs.json"
+OVERRIDES = ROOT / "sources" / "recruit_domain_overrides.json"
 
 
 def clean(value: Any) -> str:
@@ -80,6 +83,60 @@ def select(entries: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[st
     }
 
 
+def detail_templates() -> dict[str, str]:
+    result: dict[str, str] = {}
+    payload = load(OVERRIDES)
+    for item in payload.get("sources", []) or []:
+        if not isinstance(item, dict):
+            continue
+        source_id = clean(item.get("id"))
+        template = clean(item.get("detail_url_template"))
+        if source_id and template.startswith(("http://", "https://")) and "{id}" in template:
+            result[source_id] = template
+    return result
+
+
+def enrich_detail_links(selected: list[dict[str, Any]]) -> int:
+    templates = detail_templates()
+    selected_ids = {clean(x.get("id")) for x in selected if isinstance(x, dict) and clean(x.get("id"))}
+    active = {source_id: template for source_id, template in templates.items() if source_id in selected_ids}
+    if not active or not JOBS.exists():
+        return 0
+
+    payload = load(JOBS)
+    rows = payload.get("jobs", [])
+    if not isinstance(rows, list):
+        return 0
+    changed = 0
+    for job in rows:
+        if not isinstance(job, dict):
+            continue
+        source = clean(job.get("source"))
+        prefix = "direct-official:browser:"
+        if not source.startswith(prefix):
+            continue
+        source_id = source[len(prefix):]
+        template = active.get(source_id)
+        position_id = clean(job.get("position_id"))
+        if not template or not position_id:
+            continue
+        url = template.replace("{id}", quote(position_id, safe=""))
+        if not url.startswith(("http://", "https://")):
+            continue
+        if clean(job.get("apply_url")) == url and clean(job.get("notice_url")) == url:
+            continue
+        job["apply_url"] = url
+        job["notice_url"] = url
+        tags = job.get("tags") if isinstance(job.get("tags"), list) else []
+        if "官方职位详情" not in tags:
+            tags.append("官方职位详情")
+        job["tags"] = tags
+        changed += 1
+    if changed:
+        JOBS.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return changed
+
+
 def main() -> int:
     catalog = load(CATALOG)
     entries = [x for x in (catalog.get("sources") or []) if isinstance(x, dict)]
@@ -111,6 +168,7 @@ def main() -> int:
     h.REGISTRY = runtime
     h.NAV_TIMEOUT = max(7_000, min(20_000, int(os.getenv("PTO_RECRUIT_SWEEP_TIMEOUT_MS", "14000"))))
     rc = h.main()
+    detail_link_updates = enrich_detail_links(selected)
 
     # The shared harvester intentionally writes its established status group.
     # Rename this run to a separate group and restore the real priority-browser
@@ -125,6 +183,7 @@ def main() -> int:
         generated["label"] = "招聘域名图谱 · 轮转真实浏览器巡检"
         diag = dict(generated.get("diagnostics") or {})
         diag.update(meta)
+        diag["detail_links_enriched"] = detail_link_updates
         diag["selected"] = [
             {"id": x.get("id"), "company": x.get("company"), "start_url": x.get("start_url"), "origin": x.get("origin")}
             for x in selected
@@ -143,6 +202,7 @@ def main() -> int:
         "shared_harvester_rc": rc,
         "fresh_jobs": (generated or {}).get("fresh_count", 0),
         "retained_jobs": (generated or {}).get("count", 0),
+        "detail_links_enriched": detail_link_updates,
     }, ensure_ascii=False))
     return rc
 
