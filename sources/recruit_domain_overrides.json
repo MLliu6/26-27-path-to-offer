@@ -56,6 +56,7 @@
       "category": "互联网/AI",
       "start_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/trainee/?pageNum=1",
       "official_url": "https://zhaopin.kuaishou.cn/",
+      "detail_url_template": "https://zhaopin.kuaishou.cn/recruit/e/#/official/trainee/job-info/{id}",
       "priority": 99,
       "max_pages": 1,
       "adapter": "kuaishou-experienced-browser",
@@ -63,7 +64,7 @@
       "route_fragment": "official/trainee",
       "batch": "日常实习",
       "api_hosts": ["zhaopin.kuaishou.cn"],
-      "evidence": "Verified 2026-08-25 from the employer's visible 日常实习 navigation: the current route is /official/trainee/ (not the obsolete /official/intern/). The official SPA successfully emits unfiltered public XHR for page 1, page 2 and page 111 with a live total of 1110. Detail-link template is intentionally omitted until its public trainee job-info route is independently browser-verified."
+      "evidence": "Verified 2026-08-25 from the employer's visible 日常实习 navigation: the current route is /official/trainee/ (not the obsolete /official/intern/). The official SPA successfully emits unfiltered public XHR for page 1, page 2 and page 111 with a live total of 1110. The concrete public route /official/trainee/job-info/32303 was opened in anonymous Chrome and rendered the matching position title, location, update date, description and requirements, validating the job-info/{id} detail template."
     },
     {
       "id": "recruit-jd",
