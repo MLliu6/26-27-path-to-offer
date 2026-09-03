@@ -27,6 +27,7 @@ _BASE_REGISTRY = h.REGISTRY
 _EXTRA_REGISTRIES = [
     Path(__file__).resolve().parents[1] / "sources" / "huawei_browser_source.json",
     Path(__file__).resolve().parents[1] / "sources" / "reviewed_target_jobs_v15.json",
+    Path(__file__).resolve().parents[1] / "sources" / "reviewed_target_portals_v15.json",
 ]
 
 
