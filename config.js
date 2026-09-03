@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '1.4.1',
-  buildVersion: '1.4.1-feed-recovery-hotfix',
+  version: '1.4.2',
+  buildVersion: '1.4.2-target-coverage',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
