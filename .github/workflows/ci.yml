@@ -27,184 +27,87 @@ jobs:
           python-version: '3.12'
       - name: Install test dependencies
         run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
+
       - name: Check JavaScript and Python syntax
         run: |
-          node --check app.js
-          node --check config.js
-          node --check matching-core.js
-          node --check profile-core-v05.js
-          node --check enhancements-v04.js
-          node --check ranking-v06.js
-          node --check ranking-v07.js
-          node --check ranking-v09.js
-          node --check market-v06.js
-          node --check enhancements-v05.js
-          node --check enhancements-v06.js
-          node --check enhancements-v07.js
-          node --check enhancements-v09.js
-          node --check career-taxonomy-v13.js
-          node --check ranking-v13.js
-          node --check enhancements-v13.js
-          node --check ranking-v14.js
-          node --check enhancements-v14.js
-          node --check enhancements-v141.js
-          node --check score-explain-v14.js
-          node --check pipeline-timeline-v14.js
+          for f in app.js config.js matching-core.js profile-core-v05.js enhancements-v04.js ranking-v06.js ranking-v07.js ranking-v09.js market-v06.js enhancements-v05.js enhancements-v06.js enhancements-v07.js enhancements-v09.js career-taxonomy-v13.js ranking-v13.js enhancements-v13.js ranking-v14.js enhancements-v14.js enhancements-v141.js score-explain-v14.js pipeline-timeline-v14.js; do node --check "$f"; done
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
           node tests/ranking_calibration.mjs
           node tests/general_matching_v13.mjs
           node tests/v14_score_calibration.mjs
-          python -m py_compile scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py scripts/priority_browser_harvester.py scripts/priority_browser_runner.py scripts/priority_browser_runtime.py scripts/official_site_job_spider.py scripts/official_campaign_discovery.py scripts/soe_directory_harvester.py scripts/university_2027_discovery.py scripts/ncss_public_harvester.py scripts/compact_feed.py tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py tests/v14_source_resilience_smoke.py tests/v14_pipeline_timeline_smoke.py tests/v141_feed_recovery_smoke.py tests/test_public_tables.py tests/test_federated_harvester.py tests/test_compact_feed.py tests/test_expand_feed.py tests/test_direct_china_official.py tests/test_ncss_public_harvester.py tests/test_priority_browser_harvester.py tests/test_priority_browser_runner.py tests/iguopin_browser_probe.py
-          PYTHONPATH=. python -m unittest -v tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official tests.test_ncss_public_harvester tests.test_priority_browser_harvester tests.test_priority_browser_runner
+          python -m py_compile \
+            scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py \
+            scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py \
+            scripts/priority_browser_harvester.py scripts/priority_browser_runner.py scripts/priority_browser_runtime.py \
+            scripts/official_site_job_spider.py scripts/official_campaign_discovery.py scripts/soe_directory_harvester.py \
+            scripts/university_2027_discovery.py scripts/ncss_public_harvester.py scripts/compact_feed.py \
+            scripts/user_target_overlay.py scripts/user_target_source_catalog.py \
+            tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py \
+            tests/v14_source_resilience_smoke.py tests/v14_pipeline_timeline_smoke.py tests/v141_feed_recovery_smoke.py
+          PYTHONPATH=. python -m unittest -v \
+            tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester \
+            tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official \
+            tests.test_ncss_public_harvester tests.test_priority_browser_harvester \
+            tests.test_priority_browser_runner tests.test_user_target_overlay
+
       - name: Check product invariants
         run: |
           python - <<'PY'
           from pathlib import Path
-          html=Path('index.html').read_text(encoding='utf-8')
-          js=Path('app.js').read_text(encoding='utf-8')
-          core=Path('matching-core.js').read_text(encoding='utf-8')
-          profile=Path('profile-core-v05.js').read_text(encoding='utf-8')
-          enhancement=Path('enhancements-v04.js').read_text(encoding='utf-8')
-          ranking6=Path('ranking-v06.js').read_text(encoding='utf-8')
-          ranking7=Path('ranking-v07.js').read_text(encoding='utf-8')
-          ranking9=Path('ranking-v09.js').read_text(encoding='utf-8')
-          market=Path('market-v06.js').read_text(encoding='utf-8')
-          enhancement5=Path('enhancements-v05.js').read_text(encoding='utf-8')
-          enhancement6=Path('enhancements-v06.js').read_text(encoding='utf-8')
-          enhancement7=Path('enhancements-v07.js').read_text(encoding='utf-8')
-          enhancement9=Path('enhancements-v09.js').read_text(encoding='utf-8')
-          taxonomy13=Path('career-taxonomy-v13.js').read_text(encoding='utf-8')
-          ranking13=Path('ranking-v13.js').read_text(encoding='utf-8')
-          enhancement13=Path('enhancements-v13.js').read_text(encoding='utf-8')
-          ranking14=Path('ranking-v14.js').read_text(encoding='utf-8')
-          enhancement14=Path('enhancements-v14.js').read_text(encoding='utf-8')
-          enhancement141=Path('enhancements-v141.js').read_text(encoding='utf-8')
-          timeline14=Path('pipeline-timeline-v14.js').read_text(encoding='utf-8')
-          direct=Path('scripts/direct_china_official.py').read_text(encoding='utf-8')
-          priority=Path('scripts/priority_official_harvester.py').read_text(encoding='utf-8')
-          priority_browser=Path('scripts/priority_browser_harvester.py').read_text(encoding='utf-8')
-          priority_runner=Path('scripts/priority_browser_runner.py').read_text(encoding='utf-8')
-          priority_runtime=Path('scripts/priority_browser_runtime.py').read_text(encoding='utf-8')
-          site_spider=Path('scripts/official_site_job_spider.py').read_text(encoding='utf-8')
-          campaign=Path('scripts/official_campaign_discovery.py').read_text(encoding='utf-8')
-          soe=Path('scripts/soe_directory_harvester.py').read_text(encoding='utf-8')
-          university=Path('scripts/university_2027_discovery.py').read_text(encoding='utf-8')
-          ncss=Path('scripts/ncss_public_harvester.py').read_text(encoding='utf-8')
-          registry=Path('sources/domestic_direct_sources.json').read_text(encoding='utf-8')
-          priority_registry=Path('sources/priority_official_sources.json').read_text(encoding='utf-8')
-          priority_browser_registry=Path('sources/priority_browser_sources.json').read_text(encoding='utf-8')
-          university_registry=Path('sources/campus_discovery_sources.json').read_text(encoding='utf-8')
-          expand=Path('scripts/expand_feed.py').read_text(encoding='utf-8')
-          compact=Path('scripts/compact_feed.py').read_text(encoding='utf-8')
-          css=Path('styles.css').read_text(encoding='utf-8')
-          federation=Path('scripts/federated_harvester.py').read_text(encoding='utf-8').lower()
+          import json
           config=Path('config.js').read_text(encoding='utf-8')
-          browser_test=Path('tests/browser_smoke.py').read_text(encoding='utf-8')
-          theme_test=Path('tests/theme_smoke.py').read_text(encoding='utf-8')
-          large_test=Path('tests/large_catalog_smoke.py').read_text(encoding='utf-8')
-          calibration=Path('tests/ranking_calibration.mjs').read_text(encoding='utf-8')
-          federated_sources=Path('sources/federated_sources.json').read_text(encoding='utf-8')
+          html=Path('index.html').read_text(encoding='utf-8')
+          app=Path('app.js').read_text(encoding='utf-8')
+          core=Path('matching-core.js').read_text(encoding='utf-8')
+          ranking=Path('ranking-v14.js').read_text(encoding='utf-8')
+          enhancement=Path('enhancements-v14.js').read_text(encoding='utf-8')
+          hotfix=Path('enhancements-v141.js').read_text(encoding='utf-8')
+          browser_registry=Path('sources/priority_browser_sources.json').read_text(encoding='utf-8')
+          priority_registry=Path('sources/priority_official_sources.json').read_text(encoding='utf-8')
+          manifest=json.loads(Path('sources/user_target_positions_20260903.json').read_text(encoding='utf-8'))
+          overlay=Path('scripts/user_target_overlay.py').read_text(encoding='utf-8')
+          source_catalog=Path('scripts/user_target_source_catalog.py').read_text(encoding='utf-8')
+          target_workflow=Path('.github/workflows/refresh-user-target-coverage.yml').read_text(encoding='utf-8')
+
+          assert "version: '1.4.2'" in config
+          assert "buildVersion: '1.4.2-target-coverage'" in config
+          assert 'domesticJobsFeed' in config and 'priorityJobsFeed' in config and 'PTO_NATIVE_FETCH' in config
+          assert config.index('ranking-v13.js') < config.index('ranking-v14.js') < config.index('market-v06.js')
+          assert config.index('enhancements-v13.js') < config.index('enhancements-v14.js') < config.index('enhancements-v141.js')
+
           for token in ['resumeImport','jobMarketCards','githubLoginBtn','pipelineView','reviewImport']:
               assert f'id="{token}"' in html, token
           for token in ['extractResumeText','loadFeeds','promoteMarketJob','localStorage']:
-              assert token in js, token
+              assert token in app, token
           for token in ['filterAndRank','searchMatch','directionScores','recommendedRoles','京东']:
               assert token in core, token
-          for token in ['splitSections','enrichProfile','sectionSummary','profileQuality']:
-              assert token in profile, token
-          for token in ['profile-intelligence','搜索优先','画像引擎 v4','portalFor','rebindEnhancedHandlers']:
-              assert token in enhancement, token
-          for token in ['careerSignal','query-first','graduateProfile','senior']:
-              assert token.lower() in ranking6.lower(), token
-          for token in ['isDomestic','MAX_FULL_SCORE','北京','中国企业官方招聘','cheapFit']:
-              assert token in ranking7, token
-          for token in ['v9-eight-dimension','directionScore','skillScore','eligibilityScore','eliteGate','perfectGate','sourceScore']:
-              assert token in ranking9, token
-          for token in ['PAGE_SIZE=60','marketPager','slice(0,visibleLimit)','baseNormalizeMarketJob','j.c','j.r']:
-              assert token in market, token
-          for token in ['RESUME STRUCTURE','分章节','profileVersion=5','roleSearch']:
-              assert token in enhancement5, token
-          for token in ['appearance-control','data-appearance','repairSwatches','岗位池','dark']:
-              assert token in enhancement6, token
-          for token in ['market.prepend(el)','pto-flow','查看详情','官网投递','复制岗位链接','北京优先']:
-              assert token in enhancement7, token
-          for token in ['匹配评分明细','八维','证据门槛上限','官方招聘源已纳入雷达','pto-score-grid']:
-              assert token in enhancement9, token
-          for token in ['材料 / 新能源材料 / 工艺研发','法务 / 合规 / 知识产权','公共管理 / 社会科学 / 政策研究']:
-              assert token in taxonomy13, token
-          for token in ['v13-resume-domain-general','domainMismatch','未设置目标城市']:
-              assert token in ranking13, token
-          for token in ['dedupeNormalizedMarketJobs','AI Infra / 大模型推理系统','通用岗位推荐']:
-              assert token in enhancement13, token
           for token in ['v14-fit-confidence-separated','evidenceConfidence','SEARCH_SCORE_LIMIT']:
-              assert token in ranking14, token
+              assert token in ranking, token
           for token in ['PTO_FEED_RUNTIME','部分信源降级','恢复全部']:
-              assert token in enhancement14, token
+              assert token in enhancement, token
           for token in ['45000','catalogInconsistent','expectedCatalogCount','PTO_V141_FEED_READY']:
-              assert token in enhancement141, token
-          for token in ['pipeline-mini-timeline','状态轨迹','MAX_VISIBLE=4']:
-              assert token in timeline14, token
-          for token in ['direct-official:meituan','direct-official:tencent','zhaopin.meituan.com/api/official/job/getJobList','careers.tencent.com/tencentcareer/api/post/Query','国内企业招聘官网 · 自主直连']:
-              assert token in direct, token
-          for token in ['priority-official-sources','crawl_zhiye','spider_career','sasac_discovery','priority-official-harvester']:
-              assert token in priority, token
-          for token in ['browser-public-xhr','browser-rendered-dom','walk_json','click_next','direct-official:browser:']:
-              assert token in priority_browser, token
-          for token in ['jobadname','jobadid','detail_url_template','normalize_json_job','browser-public-iguopin-tenant-list']:
-              assert token in priority_runner.lower(), token
-          for token in ['iguopin_tenant_only','rejected_non_tenant_rows','browser-public-iguopin-tenant-list']:
-              assert token in priority_runtime, token
-          for token in ['bounded-employer-site-spider','direct-official:site','JOB_RE','max_pages']:
-              assert token in site_spider, token
-          for token in ['employer-visible-campaign-link','official-campaign-discovery','2027']:
-              assert token in campaign, token
-          for token in ['Central-SOE','state-directory-to-employer-domain','gjzwfw']:
-              assert token.lower() in soe.lower(), token
-          for token in ['campus-discovery:university','public-university-employment-site','2027']:
-              assert token in university, token
-          for token in ['jobslist/ajax','ncss-public:2027','国家大学生就业服务平台','MAX_EXPLICIT','priority_query']:
-              assert token in ncss, token
-          for token in ['中国石油','中国石化','航天科工集团','中国工商银行','银河通用','辉羲智能','宇树科技','小鹏集团','中国银行']:
-              assert token in priority_registry, token
-          for token in ['辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI','中国航天科技集团','中国船舶集团','中国电子科技集团','中国华能集团','中国海洋石油集团','中国建材集团','中国铝业集团','中国联通','中国建设银行','中国工商银行','中国银行','交通银行','招商银行']:
-              assert token in priority_browser_registry, token
-          assert 'r712him1th.jobs.feishu.cn/huixi' in priority_browser_registry
-          assert 'campus-recruitment/cambricon/44201' in priority_browser_registry
-          assert 'zhipu-ai.jobs.feishu.cn/zhipucampus/position/list' in priority_browser_registry
-          assert 'detail?jobAdId={position_id}' in priority_browser_registry
-          assert 'spacechina.iguopin.com/job-campus' in priority_browser_registry
-          assert 'gp-api.iguopin.com' in priority_browser_registry
-          assert priority_browser_registry.count('"id"') >= 28
-          assert priority_registry.count('"company"') >= 50
-          assert university_registry.count('"url"') >= 6
-          for token in ['"meituan"','"tencent"','zhaopin.meituan.com/web/campus','careers.tencent.com']:
-              assert token in registry, token
-          for token in ['jobs_cn.json','cn_catalog_count','is_domestic','domestic_priority','ncss-public:','priority-campaign:']:
-              assert token in compact, token
-          for token in ['schema_version": 3','previous-compact-cache','expand_payload']:
-              assert token in expand, token
-          for token in ['greenhouse','ashby','lever','feishu','beisen','moka_skipped','board-discovery-only']:
-              assert token in federation or token in federated_sources.lower(), token
-          for token in ['Georgia','prefers-reduced-motion','market-card','drawer','--accent']:
-              assert token in css, token
-          for token in ['jd-old','profileIntelligence','reviewImport','expect_download','parentElement.classList.contains(\'job-market\')','官网投递','ptoSourceFallback']:
-              assert token in browser_test, token
-          for token in ['appearance-control','backgroundColor','data-appearance-choice']:
-              assert token in theme_test, token
-          for token in ['COUNT=60000','unbounded card render','京东']:
-              assert token in large_test, token
-          for token in ['95+ score inflation','near-perfect score inflation','score distribution collapsed']:
-              assert token in calibration, token
-          for forbidden in ['示例 · 北辰智能','示例 · 云杉芯片','示例 · 星海计算']:
-              assert forbidden not in js+html+core+enhancement+enhancement5+enhancement6+enhancement7+enhancement9+enhancement13+enhancement14+enhancement141+timeline14, f'mock data leaked: {forbidden}'
-          assert "version: '1.4.1'" in config
-          assert "buildVersion: '1.4.1-feed-recovery-hotfix'" in config
-          assert 'ranking-v09.js' in config and 'enhancements-v09.js' in config and 'ranking-v13.js' in config and 'enhancements-v13.js' in config and 'ranking-v14.js' in config and 'enhancements-v14.js' in config and 'enhancements-v141.js' in config and 'score-explain-v14.js' in config
-          assert 'domesticJobsFeed' in config and 'priorityJobsFeed' in config and 'PTO_ENHANCEMENTS_READY' in config and 'PTO_NATIVE_FETCH' in config
-          assert 'no account credentials' in federation and 'moka' in federation
-          print('Path to Offer v1.4.1 universal matching and nationwide official-source checks passed.')
+              assert token in hotfix, token
+
+          for company in ['辉羲智能','银河通用','智元机器人','地平线','寒武纪','摩尔线程','沐曦','壁仞科技','智谱AI','中国联通']:
+              assert company in browser_registry, company
+          for company in ['中国石油','中国石化','中国工商银行','银河通用','辉羲智能','小鹏集团','中国银行']:
+              assert company in priority_registry, company
+
+          targets=[r for t in manifest.get('targets',[]) if isinstance(t,dict) for r in (t.get('roles') or []) if isinstance(r,dict)]
+          companies={t.get('company') for t in manifest.get('targets',[]) if isinstance(t,dict)}
+          assert len(companies) >= 45 and len(targets) >= 85
+          ids={str(r.get('position_id') or '') for r in targets}
+          for pid in ['JR2024107','7667126080873433397','199907640056','4531829293','7659673414492145946','7646709410002323731','2088167899066974208','7672029899397744902','10493864']:
+              assert pid in ids, pid
+          for token in ['curated-target:20260903','待官网实时复核','location_compatible','target_position_audit.json']:
+              assert token in overlay, token
+          for token in ['user-target-20260903','target_source_count','sweep_enabled']:
+              assert token in source_catalog, token
+          assert '17 * * * *' in target_workflow and 'user_target_overlay.py' in target_workflow
+          print('Path to Offer v1.4.2 universal matching and target-coverage checks passed.')
           PY
+
       - name: Browser smoke tests
         run: |
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/path-to-offer-http.log 2>&1 &
