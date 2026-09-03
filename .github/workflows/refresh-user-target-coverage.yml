@@ -1,0 +1,103 @@
+name: refresh-user-target-coverage
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'sources/user_target_positions_20260903.json'
+      - 'scripts/user_target_overlay.py'
+      - 'scripts/user_target_source_catalog.py'
+      - 'tests/test_user_target_overlay.py'
+      - 'config.js'
+      - '.github/workflows/refresh-user-target-coverage.yml'
+  pull_request:
+    paths:
+      - 'sources/user_target_positions_20260903.json'
+      - 'scripts/user_target_overlay.py'
+      - 'scripts/user_target_source_catalog.py'
+      - 'tests/test_user_target_overlay.py'
+      - 'config.js'
+      - '.github/workflows/refresh-user-target-coverage.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: user-target-coverage-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+  cancel-in-progress: true
+
+jobs:
+  audit-and-overlay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Check target overlay syntax and units
+        run: |
+          python -m py_compile scripts/user_target_overlay.py scripts/user_target_source_catalog.py
+          PYTHONPATH=. python -m unittest -v tests.test_user_target_overlay
+
+      - name: Audit live feeds and overlay missing target leads
+        run: PYTHONPATH=. python scripts/user_target_overlay.py
+
+      - name: Promote reviewed target portals into source catalogues
+        run: PYTHONPATH=. python scripts/user_target_source_catalog.py
+
+      - name: Validate target coverage semantics
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          audit=json.loads(Path('data/target_position_audit.json').read_text(encoding='utf-8'))
+          priority=json.loads(Path('data/jobs_priority.json').read_text(encoding='utf-8'))
+          recruit=json.loads(Path('data/recruit_domain_catalog.json').read_text(encoding='utf-8'))
+          graph=json.loads(Path('data/official_source_catalog.json').read_text(encoding='utf-8'))
+          assert audit['companies'] >= 45, audit
+          assert audit['targets'] >= 85, audit
+          assert audit['present_live'] + audit['missing_before_overlay'] == audit['targets'], audit
+          assert audit['seeded_target_leads'] + audit['missing_no_official_url'] == audit['missing_before_overlay'], audit
+          assert audit['exact_id_targets'] >= 15, audit
+          curated=[j for j in priority.get('jobs',[]) if j.get('s')=='curated-target:20260903']
+          assert len(curated)==audit['seeded_target_leads'], (len(curated),audit)
+          assert all(j.get('q')==6 and '待官网实时复核' in str(j.get('b','')) for j in curated)
+          assert all(str(j.get('u','')).startswith(('http://','https://')) for j in curated)
+          assert recruit.get('target_source_count',0) >= 40, recruit.get('target_source_count')
+          assert graph.get('target_source_count',0) >= 40, graph.get('target_source_count')
+          rows=audit.get('rows') or []
+          required=['JR2024107','7667126080873433397','199907640056','4531829293','7659673414492145946','7646709410002323731','2088167899066974208','7672029899397744902','10493864']
+          blob='\n'.join(str(x) for x in rows)
+          for pid in required:
+              assert pid in blob, pid
+          print('target audit:', {k:audit[k] for k in ['companies','targets','present_live','missing_before_overlay','seeded_target_leads','missing_no_official_url','exact_id_targets','exact_id_present_live']})
+          print('target source catalogue:',recruit.get('target_source_count'),'graph=',graph.get('target_source_count'))
+          PY
+
+      - name: Upload target audit
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: target-position-audit
+          path: data/target_position_audit.json
+          retention-days: 7
+
+      - name: Commit refreshed target coverage
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          TRACKED='data/jobs_priority.json data/target_position_audit.json data/recruit_domain_catalog.json data/official_source_catalog.json'
+          if git diff --quiet -- $TRACKED; then
+            echo 'No target-coverage changes.'
+            exit 0
+          fi
+          git config user.name 'path-to-offer-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add $TRACKED
+          git commit -m 'data: refresh Sep 3 target coverage'
+          git pull --rebase origin main
+          git push origin HEAD:main
