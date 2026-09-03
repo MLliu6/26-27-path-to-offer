@@ -74,8 +74,8 @@ jobs:
           explainer=Path('score-explain-v14.js').read_text(encoding='utf-8')
           timeline=Path('pipeline-timeline-v14.js').read_text(encoding='utf-8')
           report=Path('docs/V14_PRODUCT_EXPERIENCE_AND_OPTIMIZATION_REPORT_CN.md').read_text(encoding='utf-8')
-          assert re.search(r"version:\s*'1\.4\.1'",config)
-          assert "buildVersion: '1.4.1-feed-recovery-hotfix'" in config
+          assert re.search(r"version:\s*'1\.4\.2'",config)
+          assert "buildVersion: '1.4.2-target-coverage'" in config
           assert config.index("ranking-v13.js") < config.index("ranking-v14.js") < config.index("market-v06.js")
           assert config.index("enhancements-v13.js") < config.index("enhancements-v14.js") < config.index("enhancements-v141.js") < config.index("score-explain-v14.js")
           for token in ['v14-fit-confidence-separated','evidenceConfidence','SEARCH_SCORE_LIMIT','rankCache','searchRankFast','fitCore']:
@@ -90,7 +90,7 @@ jobs:
               assert token in timeline, token
           for token in ['Match Score','Evidence Confidence','60,000','P0-3']:
               assert token in report, token
-          print('Path to Offer v1.4.1 product invariants: PASS')
+          print('Path to Offer v1.4.2 product invariants: PASS')
           PY
       - name: Browser source resilience, v1.4.1 recovery and kanban timeline
         run: |
