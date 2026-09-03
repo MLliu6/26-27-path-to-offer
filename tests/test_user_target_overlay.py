@@ -32,11 +32,20 @@ class UserTargetOverlayTest(unittest.TestCase):
         ]:
             self.assertIn(pid, ids)
 
-    def test_role_and_company_matching(self):
+    def test_role_company_and_city_matching(self):
         self.assertTrue(o.role_match("AI Infra 研发工程师", "AI Infra研发工程师"))
         self.assertTrue(o.role_match("高性能计算/系统开发", "高性能计算系统开发工程师"))
         self.assertEqual(o.company_norm("Shopee（深圳虾皮信息科技有限公司）"), o.company_norm("Shopee"))
         self.assertEqual(o.company_norm("小鹏汽车"), o.company_norm("小鹏集团"))
+        self.assertTrue(o.location_compatible("北京/合肥", "北京市"))
+        self.assertFalse(o.location_compatible("北京", "湖南·长沙市"))
+        live = [
+            {"c": "沐曦", "r": "GPU验证和Agentic AI工程师", "l": "湖南·长沙市", "s": "live"},
+            {"c": "沐曦", "r": "AI 工程师", "l": "北京", "s": "live"},
+        ]
+        hit = o.live_match("沐曦", "北京", {"title": "AI 工程师"}, live)
+        self.assertIsNotNone(hit)
+        self.assertEqual(hit["l"], "北京")
 
     def test_curated_seed_is_explicitly_not_live(self):
         target = {"company": "Example", "location": "北京", "portal_url": "https://careers.example.com/jobs"}
