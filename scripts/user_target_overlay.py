@@ -24,6 +24,9 @@ PRIORITY = DATA / "jobs_priority.json"
 DOMESTIC = DATA / "jobs_cn.json"
 AUDIT = DATA / "target_position_audit.json"
 SOURCE = "curated-target:20260903"
+CITY_RE = re.compile(
+    r"北京|上海|深圳|广州|杭州|南京|成都|武汉|西安|苏州|合肥|无锡|天津|重庆|长沙|厦门|青岛|济南|宁波|东莞|珠海|佛山|嘉兴|常州|保定|烟台|香港|新加坡"
+)
 
 
 def clean(value: Any) -> str:
@@ -74,6 +77,10 @@ def row_role(row: dict[str, Any]) -> str:
     return clean(row.get("r") or row.get("role"))
 
 
+def row_location(row: dict[str, Any]) -> str:
+    return clean(row.get("l") or row.get("location"))
+
+
 def row_pid_blob(row: dict[str, Any]) -> str:
     return " ".join(clean(row.get(k)) for k in ("z", "position_id", "u", "n", "apply_url", "notice_url", "id", "i"))
 
@@ -94,17 +101,36 @@ def role_match(expected: str, actual: str) -> bool:
     return False
 
 
-def live_match(company: str, role: dict[str, Any], live_rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+def location_compatible(expected_location: str, actual_location: str) -> bool:
+    expected = set(CITY_RE.findall(clean(expected_location)))
+    actual = set(CITY_RE.findall(clean(actual_location)))
+    # Empty/unknown live location must not create a false negative; it remains a
+    # title-level match. But when both sides expose cities, require intersection.
+    if expected and actual:
+        return bool(expected & actual)
+    return True
+
+
+def live_match(company: str, expected_location: str, role: dict[str, Any], live_rows: list[dict[str, Any]]) -> dict[str, Any] | None:
     cn = company_norm(company)
     expected = clean(role.get("title"))
     pid = clean(role.get("position_id"))
+    # A position id is the strongest identity signal. Keep it even if a target
+    # list's city note later proves stale; audit output exposes matched_location.
     for row in live_rows:
         if row_company(row) != cn:
             continue
         if pid and pid.lower() in row_pid_blob(row).lower():
             return row
+    # Fuzzy title matching is only valid within a compatible target city. This
+    # prevents e.g. a Beijing target "AI 工程师" from being satisfied by a
+    # different Changsha role at the same employer.
     for row in live_rows:
-        if row_company(row) == cn and role_match(expected, row_role(row)):
+        if row_company(row) != cn:
+            continue
+        if not location_compatible(expected_location, row_location(row)):
+            continue
+        if role_match(expected, row_role(row)):
             return row
     return None
 
@@ -162,6 +188,7 @@ def main() -> int:
         if not isinstance(target, dict):
             continue
         company = clean(target.get("company"))
+        expected_location = clean(target.get("location"))
         if not company:
             continue
         companies.add(company)
@@ -171,7 +198,7 @@ def main() -> int:
             total += 1
             if clean(role.get("position_id")):
                 exact_id_targets += 1
-            hit = live_match(company, role, live_rows)
+            hit = live_match(company, expected_location, role, live_rows)
             if hit:
                 present += 1
                 if clean(role.get("position_id")):
@@ -179,9 +206,11 @@ def main() -> int:
                 audit_rows.append({
                     "company": company,
                     "target_role": clean(role.get("title")),
+                    "target_location": expected_location,
                     "position_id": clean(role.get("position_id")),
                     "status": "present_live",
                     "matched_role": row_role(hit),
+                    "matched_location": row_location(hit),
                     "matched_source": clean(hit.get("s") or hit.get("source")),
                     "matched_url": clean(hit.get("u") or hit.get("apply_url") or hit.get("n") or hit.get("notice_url")),
                 })
@@ -197,6 +226,7 @@ def main() -> int:
             audit_rows.append({
                 "company": company,
                 "target_role": clean(role.get("title")),
+                "target_location": expected_location,
                 "position_id": clean(role.get("position_id")),
                 "status": status,
                 "official_url": clean(role.get("url") or target.get("portal_url")),
