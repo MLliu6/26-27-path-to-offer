@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '1.4.1',
-  buildVersion: '1.4.1-feed-recovery-hotfix',
+  version: '1.5.0',
+  buildVersion: '1.5.0-reviewed-target-source-expansion',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -51,10 +51,6 @@ function ptoJobKeys(job) {
   if (applyUrl && company && role) keys.push(`url:${applyUrl}|${company}|${role}`);
   if (noticeUrl && company && role) keys.push(`url:${noticeUrl}|${company}|${role}`);
   if (positionId && company) keys.push(`position:${company}|${positionId}`);
-  // Product identity is intentionally simple: one company + one role + one city
-  // is one visible opportunity. The priority feed is merged first, so when
-  // several public sources describe that opportunity we keep one directly
-  // clickable source instead of showing duplicate cards.
   if (company && role && location) keys.push(`fallback:${company}|${role}|${location}`);
   if (!keys.length && company && role) keys.push(`role:${company}|${role}`);
   if (!keys.length && rawId) keys.push(`id:${rawId}`);
