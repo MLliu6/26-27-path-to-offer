@@ -1,0 +1,75 @@
+name: release-v151-sync
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/release_v151_patch.py'
+      - '.github/workflows/release-v151-sync.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-v151-sync
+  cancel-in-progress: false
+
+jobs:
+  patch-test-sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Install collector dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright pycryptodome==3.23.0
+      - name: Apply v1.5.1 patch
+        run: python scripts/release_v151_patch.py
+      - name: Validate UI and privacy invariants
+        run: |
+          node --check config.js
+          node --check workspace-v15.js
+          node tests/account_vault.mjs
+          node tests/account_vault_security.mjs
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          c=Path('config.js').read_text(encoding='utf-8')
+          css=Path('workspace-v15.css').read_text(encoding='utf-8')
+          js=Path('workspace-v15.js').read_text(encoding='utf-8')
+          src=json.loads(Path('sources/workspace_sources_v15.json').read_text(encoding='utf-8'))
+          assert "version: '1.5.1'" in c
+          assert "buildVersion: '1.5.1-theme-source-sync'" in c
+          assert 'v1.5.1 accent controls' in css and 'var(--v151-accent)' in css
+          assert 'working theme controls' in js and 'pto.ui.theme.v151' in js
+          companies={x.get('company') for x in src.get('sources',[])}
+          for x in ['小米','招商银行','国家电网','中国航天科技集团']:
+              assert x in companies,x
+          sec=Path('enhancements-v12-adminfix.js').read_text(encoding='utf-8')
+          assert 'pto.secure.device-account.v1' in sec
+          assert 'localStorage.clear()' not in js
+          print('v1.5.1 UI/source/privacy invariants PASS')
+          PY
+      - name: Refresh expanded employer feeds
+        env:
+          PTO_V15_FULL: '1'
+        run: PYTHONPATH=. python scripts/workspace_source_refresh.py
+      - name: Commit release and observed jobs
+        run: |
+          TRACKED='config.js index.html workspace-v15.css workspace-v15.js sources/workspace_sources_v15.json sources/official_source_registry_v12.json data/jobs_supplemental.json data/supplemental_source_status.json'
+          git config user.name 'path-to-offer-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add $TRACKED
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'v1.5.1: restore accent controls and expand official source sync'
+          git pull --rebase origin main
+          git push origin HEAD:main
