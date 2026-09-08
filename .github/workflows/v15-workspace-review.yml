@@ -53,15 +53,9 @@ jobs:
           PID=$!
           trap 'kill $PID 2>/dev/null || true' EXIT
           sleep 1
-          python tests/browser_smoke.py
-          python tests/theme_smoke.py
-          python tests/large_catalog_smoke.py
-          python tests/v14_source_resilience_smoke.py
-          python tests/v141_feed_recovery_smoke.py
-          python tests/v14_pipeline_timeline_smoke.py
-          python tests/v12_security_browser_smoke.py
+          PYTHONPATH=. python tests/v15_legacy_runner.py
       - name: Observe expanded official sources with precision checks
-        if: ${{ hashFiles('scripts/finalize_workspace_review.py') != '' }}
+        if: ${{ always() && hashFiles('scripts/finalize_workspace_review.py') != '' }}
         env:
           PTO_V15_FULL: '1'
         run: PYTHONPATH=. python scripts/workspace_source_refresh.py
@@ -82,6 +76,6 @@ jobs:
           git config user.name 'path-to-offer-bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm scripts/finalize_workspace_review.py
-          git add workspace-core-v15.js workspace-v15.js workspace-v15.css ranking-v14.js README.md scripts/workspace_source_refresh.py tests/ data/jobs_supplemental.json data/supplemental_source_status.json
+          git add -u workspace-core-v15.js workspace-v15.js workspace-v15.css ranking-v14.js README.md scripts/workspace_source_refresh.py tests/ data/jobs_supplemental.json data/supplemental_source_status.json
           git commit -m 'fix: finalize verified workspace UX and reject source false positives'
           git push origin "HEAD:$BRANCH"

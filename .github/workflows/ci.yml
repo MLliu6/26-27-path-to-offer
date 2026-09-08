@@ -30,26 +30,27 @@ jobs:
 
       - name: Check JavaScript and Python syntax
         run: |
-          for f in app.js config.js matching-core.js profile-core-v05.js enhancements-v04.js ranking-v06.js ranking-v07.js ranking-v09.js market-v06.js enhancements-v05.js enhancements-v06.js enhancements-v07.js enhancements-v09.js career-taxonomy-v13.js ranking-v13.js enhancements-v13.js ranking-v14.js enhancements-v14.js enhancements-v141.js score-explain-v14.js pipeline-timeline-v14.js; do node --check "$f"; done
+          for f in app.js config.js matching-core.js profile-core-v05.js enhancements-v04.js ranking-v06.js ranking-v07.js ranking-v09.js market-v06.js enhancements-v05.js enhancements-v06.js enhancements-v07.js enhancements-v09.js career-taxonomy-v13.js ranking-v13.js enhancements-v13.js ranking-v14.js enhancements-v14.js enhancements-v141.js score-explain-v14.js pipeline-timeline-v14.js workspace-core-v15.js workspace-v15.js; do node --check "$f"; done
           node tests/persona_trials.mjs
           node tests/profile_sections.mjs
           node tests/ranking_calibration.mjs
           node tests/general_matching_v13.mjs
           node tests/v14_score_calibration.mjs
+          node tests/workspace_v15.mjs
           python -m py_compile \
             scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py \
             scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py \
             scripts/priority_browser_harvester.py scripts/priority_browser_runner.py scripts/priority_browser_runtime.py \
             scripts/official_site_job_spider.py scripts/official_campaign_discovery.py scripts/soe_directory_harvester.py \
             scripts/university_2027_discovery.py scripts/ncss_public_harvester.py scripts/compact_feed.py \
-            scripts/user_target_overlay.py scripts/user_target_source_catalog.py \
+            scripts/user_target_overlay.py scripts/user_target_source_catalog.py scripts/workspace_source_refresh.py \
             tests/browser_smoke.py tests/theme_smoke.py tests/large_catalog_smoke.py \
             tests/v14_source_resilience_smoke.py tests/v14_pipeline_timeline_smoke.py tests/v141_feed_recovery_smoke.py
           PYTHONPATH=. python -m unittest -v \
             tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester \
             tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official \
             tests.test_ncss_public_harvester tests.test_priority_browser_harvester \
-            tests.test_priority_browser_runner tests.test_user_target_overlay
+            tests.test_priority_browser_runner tests.test_user_target_overlay tests.test_workspace_v15
 
       - name: Check product invariants
         run: |
@@ -70,11 +71,12 @@ jobs:
           source_catalog=Path('scripts/user_target_source_catalog.py').read_text(encoding='utf-8')
           target_workflow=Path('.github/workflows/refresh-user-target-coverage.yml').read_text(encoding='utf-8')
 
-          assert "version: '1.4.2'" in config
-          assert "buildVersion: '1.4.2-target-coverage'" in config
+          assert "version: '1.5.0'" in config
+          assert "buildVersion: '1.5.0-neutral-workspace'" in config
           assert 'domesticJobsFeed' in config and 'priorityJobsFeed' in config and 'PTO_NATIVE_FETCH' in config
           assert config.index('ranking-v13.js') < config.index('ranking-v14.js') < config.index('market-v06.js')
           assert config.index('enhancements-v13.js') < config.index('enhancements-v14.js') < config.index('enhancements-v141.js')
+          assert config.index('workspace-core-v15.js') < config.index('workspace-v15.js')
 
           for token in ['resumeImport','jobMarketCards','githubLoginBtn','pipelineView','reviewImport']:
               assert f'id="{token}"' in html, token
@@ -105,7 +107,7 @@ jobs:
           for token in ['user-target-20260903','target_source_count','sweep_enabled']:
               assert token in source_catalog, token
           assert '17 * * * *' in target_workflow and 'user_target_overlay.py' in target_workflow
-          print('Path to Offer v1.4.2 universal matching and target-coverage checks passed.')
+          print('Path to Offer v1.5.0 universal matching and target-coverage checks passed.')
           PY
 
       - name: Browser smoke tests
