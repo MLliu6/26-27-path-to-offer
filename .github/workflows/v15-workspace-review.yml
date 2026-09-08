@@ -1,0 +1,40 @@
+name: v15-workspace-review
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '**.js'
+      - '**.css'
+      - 'index.html'
+      - 'scripts/**'
+      - 'sources/**'
+      - 'tests/**'
+      - '.github/workflows/v15-workspace-review.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v15-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install requests beautifulsoup4 playwright pycryptodome
+      - name: Regression checks
+        run: |
+          if test -f tests/test_workspace_v15.py; then PYTHONPATH=. python -m unittest -v tests.test_workspace_v15; fi
+          if test -f tests/workspace_v15_smoke.py; then PYTHONPATH=. python tests/workspace_v15_smoke.py; fi
+      - name: Review snapshot (public app files only)
+        if: always()
+        run: PYTHONPATH=. python tests/v15_review_snapshot.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pto-v15-review
+          path: /tmp/pto-v15-review/
+          retention-days: 5
