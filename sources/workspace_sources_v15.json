@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "policy": "Employer public recruiting surfaces only. Registration is not proof of vacancies. No login, resume upload, private cookies or access-control bypass. Roles/cities/years must be observed, not copied from candidate preferences. Bounded collection is not complete catalogue coverage.",
   "sources": [
     {
@@ -254,24 +254,22 @@
     {
       "id": "supplemental-xiaomi-campus",
       "company": "小米",
-      "family": "browser",
-      "start_url": "https://hr.xiaomi.com/website/campus.html",
-      "official_url": "https://hr.xiaomi.com/website/campus.html",
+      "family": "feishu",
+      "start_url": "https://xiaomi.jobs.f.mioffice.cn/campus",
+      "official_url": "https://hr.xiaomi.com/",
       "api_hosts": [
-        "hr.xiaomi.com"
+        "xiaomi.jobs.f.mioffice.cn"
       ],
-      "max_pages": 6,
+      "max_pages": 8,
       "priority": 99
     },
     {
       "id": "supplemental-cmb-campus",
       "company": "招商银行",
       "family": "browser",
-      "start_url": "https://cmb-recruitment-mobile.paas.cmbchina.com/positionSchool",
+      "start_url": "https://career.cmbchina.com/positionlist/96574F8D-C7ED-4772-AE7C-BAC896D190C1",
       "official_url": "https://career.cmbchina.com/campus/home",
       "api_hosts": [
-        "cmb-recruitment-mobile.paas.cmbchina.com",
-        "cmb-recruitment-pc.paas.cmbchina.com",
         "career.cmbchina.com"
       ],
       "max_pages": 8,
@@ -292,7 +290,7 @@
     {
       "id": "supplemental-spacechina-campus",
       "company": "中国航天科技集团",
-      "family": "browser",
+      "family": "iguopin",
       "start_url": "https://spacechina.iguopin.com/job-campus",
       "official_url": "https://spacechina.iguopin.com/job-campus",
       "api_hosts": [
