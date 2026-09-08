@@ -1,0 +1,50 @@
+name: refresh-workspace-sources
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '43 0-22/2 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'sources/workspace_sources_v15.json'
+      - 'scripts/workspace_source_refresh.py'
+      - '.github/workflows/refresh-workspace-sources.yml'
+permissions:
+  contents: write
+concurrency:
+  group: workspace-supplemental-main
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install requests==2.32.5 beautifulsoup4==4.13.4 playwright pycryptodome==3.23.0
+      - name: Refresh isolated supplemental feed
+        env:
+          PTO_V15_FULL: ${{ github.event_name != 'schedule' && '1' || '0' }}
+        run: PYTHONPATH=. python scripts/workspace_source_refresh.py
+      - name: Validate public-only output
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          feed=json.loads(Path('data/jobs_supplemental.json').read_text())
+          assert feed['schema_version']==4
+          assert all(j.get('s','').startswith('direct-official:v15:') for j in feed['jobs'])
+          assert all(j.get('observed_at') and j.get('u','').startswith('https://') for j in feed['jobs'])
+          print('Validated observed positions:', len(feed['jobs']))
+          PY
+      - name: Commit only supplemental public data
+        run: |
+          git config user.name 'path-to-offer-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/jobs_supplemental.json data/supplemental_source_status.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'data: refresh observed workspace employer sources'
+          git pull --rebase origin main
+          git push origin HEAD:main

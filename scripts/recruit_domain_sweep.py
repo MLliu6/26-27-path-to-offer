@@ -56,8 +56,8 @@ def select(entries: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[st
         shard_index = int(raw_index) % shard_count
         shard_mode = "explicit"
     else:
-        shard_index = int(time.time() // 3600) % shard_count
-        shard_mode = "clock-hour"
+        shard_index = int(time.time() // 7200) % shard_count
+        shard_mode = "clock-two-hour"
     start = shard_index * max_targets
     normal = non_forced[start : start + max_targets]
 

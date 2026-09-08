@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '1.4.2',
-  buildVersion: '1.4.2-target-coverage',
+  version: '1.5.0',
+  buildVersion: '1.5.0-neutral-workspace',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -199,8 +199,9 @@ function loadPtoScript(src) {
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
     s.src = `${src}?v=${encodeURIComponent(window.PTO_CONFIG.buildVersion || window.PTO_CONFIG.version)}`;
-    s.onload = resolve;
-    s.onerror = () => reject(new Error(`failed to load ${src}`));
+    const timer = setTimeout(() => { s.remove(); reject(new Error(`script timeout: ${src}`)); }, 15000);
+    s.onload = () => { clearTimeout(timer); resolve(); };
+    s.onerror = () => { clearTimeout(timer); reject(new Error(`failed to load ${src}`)); };
     document.head.appendChild(s);
   });
 }
@@ -232,10 +233,14 @@ window.addEventListener('load', async () => {
     await loadPtoScript('enhancements-v14.js');
     await loadPtoScript('enhancements-v141.js');
     await loadPtoScript('score-explain-v14.js');
+    await loadPtoScript('workspace-core-v15.js');
+    await loadPtoScript('workspace-v15.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {
     window.PTO_ENHANCEMENTS_READY = true;
     console.warn('Path to Offer enhancement load failed; base app remains usable.', err);
+    const health = document.querySelector('#feedHealth');
+    if (health) health.textContent = '部分组件加载失败，请刷新重试。不要清除站点数据；原账户密文仍保留。';
   }
 });
