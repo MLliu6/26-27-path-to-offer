@@ -1,0 +1,105 @@
+name: separate-admin-vault-v152
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/separate-admin-vault-v152.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: separate-admin-vault-v152
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Move source admin away from personal account identity
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          config=Path('config.js')
+          c=config.read_text(encoding='utf-8')
+          old="  adminAccount: 'MLliu6',"
+          if old not in c:
+              raise SystemExit('admin account anchor missing')
+          c=c.replace(old,"  adminAccount: 'pto-source-admin',",1)
+          c=c.replace("buildVersion: '1.5.2-account-recovery'","buildVersion: '1.5.2-account-recovery-r2'",1)
+          config.write_text(c,encoding='utf-8')
+
+          sec=Path('enhancements-v12-security.js')
+          s=sec.read_text(encoding='utf-8')
+          old="    const resolvedRepo=String(repo||(resolvedOwner.toLowerCase()===APP_OWNER.toLowerCase()?APP_REPO:DEFAULT_USER_REPO)).trim();"
+          if old not in s:
+              raise SystemExit('personal repo default anchor missing')
+          s=s.replace(old,"    const resolvedRepo=String(repo||DEFAULT_USER_REPO).trim();",1)
+          sec.write_text(s,encoding='utf-8')
+
+          adminfix=Path('enhancements-v12-adminfix.js')
+          a=adminfix.read_text(encoding='utf-8')
+          old="""  function preferredRepo(hint){
+    if(hint?.repo)return hint.repo;
+    const owner=String(hint?.owner||hint?.username||'');
+    return owner.toLowerCase()===OWNER.toLowerCase()?REPO:DEFAULT_USER_REPO;
+  }"""
+          new="""  function preferredRepo(hint){
+    if(hint?.mode==='github'&&hint?.repo)return hint.repo;
+    return DEFAULT_USER_REPO;
+  }"""
+          if old not in a:
+              raise SystemExit('device repo preference anchor missing')
+          a=a.replace(old,new,1)
+          adminfix.write_text(a,encoding='utf-8')
+
+          recovery=Path('recovery.html')
+          r=recovery.read_text(encoding='utf-8')
+          r=r.replace("repo:String(oldPayload.repo||'26-27-path-to-offer')","repo:String(oldPayload.repo||'path-to-offer-vault')")
+          r=r.replace("repo:'26-27-path-to-offer',mode:'local'","repo:'path-to-offer-vault',mode:'local'")
+          recovery.write_text(r,encoding='utf-8')
+
+          index=Path('index.html')
+          h=index.read_text(encoding='utf-8').replace('?v=1.5.2','?v=1.5.2-r2')
+          index.write_text(h,encoding='utf-8')
+
+          assert "adminAccount: 'pto-source-admin'" in c
+          assert "repo||DEFAULT_USER_REPO" in s
+          assert "mode==='github'&&hint?.repo" in a
+          assert "path-to-offer-vault" in r
+          assert '?v=1.5.2-r2' in h
+          print('admin/person identity separation PASS')
+          PY
+
+          git rm vaults/v1/64b15fa8f9cbfad759b636c28413aa5b9f68b57cc7a4f28ce9c85cc3bfbd6385.json
+
+      - name: Syntax and vault checks
+        run: |
+          node --check config.js
+          node --check enhancements-v12-security.js
+          node --check enhancements-v12-adminfix.js
+          test -f vaults/v1/499e49b3e8429b30cdbd483e47183e5d7743cb5e1725d0dfedbb2e28ded14bbf.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          v=json.loads(Path('vaults/v1/499e49b3e8429b30cdbd483e47183e5d7743cb5e1725d0dfedbb2e28ded14bbf.json').read_text())
+          assert v['context'].endswith('/499e49b3e8429b30cdbd483e47183e5d7743cb5e1725d0dfedbb2e28ded14bbf')
+          assert v['schema']=='pto-encrypted-vault'
+          PY
+
+      - name: Commit directly to main
+        run: |
+          git config user.name 'path-to-offer-recovery-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f .github/workflows/separate-admin-vault-v152.yml
+          git add config.js index.html enhancements-v12-security.js enhancements-v12-adminfix.js recovery.html vaults/v1 .github/workflows/separate-admin-vault-v152.yml
+          git commit -m 'security: separate source admin from mlliu6 personal account'
+          git pull --rebase origin main
+          git push origin HEAD:main
