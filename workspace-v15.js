@@ -146,3 +146,37 @@
   window.PTO_WORKSPACE_V15={quickUpdate,backup,restoreBackup,sourcesPanel,version:'1.5.0'};
   setup();
 })();
+
+
+/* v1.5.1 working theme controls */
+(function(){
+  const KEY='pto.ui.theme.v151';
+  const palettes={
+    blue:{name:'蓝',accent:'#6f82e8',strong:'#5268d9',soft:'#edf0ff'},
+    violet:{name:'紫',accent:'#9478d8',strong:'#7457bf',soft:'#f2edff'},
+    slate:{name:'石墨',accent:'#7e8794',strong:'#5e6875',soft:'#eef0f3'},
+    rose:{name:'玫瑰',accent:'#d47b92',strong:'#b85c76',soft:'#fbeef2'},
+    amber:{name:'琥珀',accent:'#c59a55',strong:'#9c7535',soft:'#fbf3e5'},
+    sage:{name:'灰绿',accent:'#8eaa9d',strong:'#66877a',soft:'#edf3f0'}
+  };
+  let saved={palette:'blue',appearance:'system'};try{saved={...saved,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(_){}
+  const root=document.documentElement;
+  function effectiveAppearance(v){return v==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):v}
+  function apply(){
+    const p=palettes[saved.palette]||palettes.blue;
+    root.style.setProperty('--accent',p.accent);root.style.setProperty('--accent-strong',p.strong);root.style.setProperty('--accent-soft',p.soft);
+    root.dataset.appearance=effectiveAppearance(saved.appearance);
+    try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(_){}
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content',root.dataset.appearance==='dark'?'#111113':'#f5f5f7');
+  }
+  function render(){
+    const pop=document.querySelector('#themePopover');if(!pop)return;
+    pop.innerHTML='<p><strong>外观与强调色</strong></p><div class="v151-appearance">'+[['light','浅色'],['dark','深色'],['system','跟随系统']].map(([k,n])=>`<button data-v151-appearance="${k}" class="${saved.appearance===k?'active':''}">${n}</button>`).join('')+'</div><div class="v151-theme-grid">'+Object.entries(palettes).map(([k,p])=>`<button class="v151-swatch ${saved.palette===k?'active':''}" data-v151-palette="${k}" style="--swatch:${p.strong}"><i></i><span>${p.name}</span></button>`).join('')+'</div><small>背景保持中性黑灰；这里只改变强调色。设置仅保存在本机。</small>';
+    pop.querySelectorAll('[data-v151-palette]').forEach(b=>b.onclick=e=>{e.stopPropagation();saved.palette=b.dataset.v151Palette;apply();render();});
+    pop.querySelectorAll('[data-v151-appearance]').forEach(b=>b.onclick=e=>{e.stopPropagation();saved.appearance=b.dataset.v151Appearance;apply();render();});
+  }
+  function openTheme(e){e?.preventDefault();e?.stopImmediatePropagation();const pop=document.querySelector('#themePopover');if(!pop)return;render();const opening=!pop.classList.contains('open');pop.classList.toggle('open',opening);pop.style.display=opening?'block':'none';}
+  addEventListener('load',()=>{apply();const btn=document.querySelector('#themeBtn');if(btn){btn.title='外观与强调色';btn.addEventListener('click',openTheme,true);}render();});
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if(saved.appearance==='system')apply();});
+  document.addEventListener('click',e=>{const pop=document.querySelector('#themePopover');if(pop?.classList.contains('open')&&!e.target.closest('#themePopover')&&!e.target.closest('#themeBtn')){pop.classList.remove('open');pop.style.display='none';}},true);
+})();
