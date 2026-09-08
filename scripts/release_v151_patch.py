@@ -33,18 +33,20 @@ def patch_workspace_js(text):
 
 def add_workspace_sources():
     path=ROOT/'sources/workspace_sources_v15.json';data=json.loads(path.read_text(encoding='utf-8'))
-    rows=data.setdefault('sources',[]);ids={x.get('id') for x in rows}
-    additions=[
-      {"id":"supplemental-xiaomi-campus","company":"小米","family":"browser","start_url":"https://hr.xiaomi.com/website/campus.html","official_url":"https://hr.xiaomi.com/website/campus.html","api_hosts":["hr.xiaomi.com"],"max_pages":6,"priority":99},
-      {"id":"supplemental-cmb-campus","company":"招商银行","family":"browser","start_url":"https://cmb-recruitment-mobile.paas.cmbchina.com/positionSchool","official_url":"https://career.cmbchina.com/campus/home","api_hosts":["cmb-recruitment-mobile.paas.cmbchina.com","cmb-recruitment-pc.paas.cmbchina.com","career.cmbchina.com"],"max_pages":8,"priority":99},
+    rows=data.setdefault('sources',[])
+    desired=[
+      {"id":"supplemental-xiaomi-campus","company":"小米","family":"feishu","start_url":"https://xiaomi.jobs.f.mioffice.cn/campus","official_url":"https://hr.xiaomi.com/","api_hosts":["xiaomi.jobs.f.mioffice.cn"],"max_pages":8,"priority":99},
+      {"id":"supplemental-cmb-campus","company":"招商银行","family":"browser","start_url":"https://career.cmbchina.com/positionlist/96574F8D-C7ED-4772-AE7C-BAC896D190C1","official_url":"https://career.cmbchina.com/campus/home","api_hosts":["career.cmbchina.com"],"max_pages":8,"priority":99},
       {"id":"supplemental-sgcc-campus","company":"国家电网","family":"browser","start_url":"https://zhaopin.sgcc.com.cn/","official_url":"https://zhaopin.sgcc.com.cn/","api_hosts":["zhaopin.sgcc.com.cn"],"max_pages":8,"priority":99},
-      {"id":"supplemental-spacechina-campus","company":"中国航天科技集团","family":"browser","start_url":"https://spacechina.iguopin.com/job-campus","official_url":"https://spacechina.iguopin.com/job-campus","api_hosts":["spacechina.iguopin.com","gp-api.iguopin.com"],"max_pages":10,"priority":99}
+      {"id":"supplemental-spacechina-campus","company":"中国航天科技集团","family":"iguopin","start_url":"https://spacechina.iguopin.com/job-campus","official_url":"https://spacechina.iguopin.com/job-campus","api_hosts":["spacechina.iguopin.com","gp-api.iguopin.com"],"max_pages":10,"priority":99}
     ]
-    for row in additions:
-        if row['id'] not in ids:rows.append(row)
-    data['version']=2
+    by_id={x.get('id'):i for i,x in enumerate(rows) if isinstance(x,dict)}
+    for row in desired:
+        if row['id'] in by_id:rows[by_id[row['id']]]=row
+        else:rows.append(row)
+    data['version']=3
     path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print('workspace sources',len(rows))
+    print('workspace sources',len(rows),'current Xiaomi/CMB routes installed')
 
 def add_registry_sources():
     path=ROOT/'sources/official_source_registry_v12.json';data=json.loads(path.read_text(encoding='utf-8'))
