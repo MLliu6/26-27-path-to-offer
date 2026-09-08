@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/v151_direct_upgrade.py'
+      - 'scripts/v151_hotfix.py'
       - '.github/workflows/v151-direct-upgrade.yml'
   workflow_dispatch:
 
@@ -32,7 +33,9 @@ jobs:
       - name: Install UI and crawler dependencies
         run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright pycryptodome==3.23.0
       - name: Apply v1.5.1 UI and source patch
-        run: python scripts/v151_direct_upgrade.py
+        run: |
+          python scripts/v151_direct_upgrade.py
+          python scripts/v151_hotfix.py
       - name: Syntax and account-preservation checks
         run: |
           node --check app.js
@@ -43,7 +46,7 @@ jobs:
           node tests/account_vault.mjs
           node tests/account_vault_security.mjs
           python -m py_compile scripts/workspace_source_refresh.py tests/theme_smoke.py
-          if grep -R "localStorage.clear" -n workspace-v15.js enhancements-v06.js enhancements-v13.js scripts/v151_direct_upgrade.py; then exit 1; fi
+          if grep -R "localStorage.clear" -n workspace-v15.js enhancements-v06.js enhancements-v13.js scripts/v151_direct_upgrade.py scripts/v151_hotfix.py; then exit 1; fi
       - name: Theme and workspace browser regression
         run: |
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/pto-v151-http.log 2>&1 &
@@ -73,7 +76,7 @@ jobs:
         run: |
           git config user.name 'path-to-offer-bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git rm scripts/v151_direct_upgrade.py .github/workflows/v151-direct-upgrade.yml
+          git rm scripts/v151_direct_upgrade.py scripts/v151_hotfix.py .github/workflows/v151-direct-upgrade.yml
           git add -A
           git commit -m 'v1.5.1: restore accent themes and deepen official source sync'
           git pull --rebase origin main
