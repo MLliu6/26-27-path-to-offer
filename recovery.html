@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#f4f5f7">
+  <title>Path to Offer · 本机数据恢复</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--text:#17191d;--muted:#646a73;--line:#dfe2e7;--accent:#315f9b;--accent-soft:#e8eff8;--danger:#a33a3a;--ok:#28754d;--shadow:0 16px 48px #1112}
+    @media(prefers-color-scheme:dark){:root{--bg:#111216;--panel:#1a1c21;--text:#f2f3f5;--muted:#a7acb4;--line:#343840;--accent:#8ab4eb;--accent-soft:#202d3f;--danger:#ff9b9b;--ok:#7bd6a6;--shadow:0 20px 60px #0008}}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    main{max-width:1080px;margin:0 auto;padding:28px 18px 72px}.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:20px}.top h1{font-size:28px;margin:0 0 5px}.top p{margin:0;color:var(--muted)}a{color:var(--accent)}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0;box-shadow:var(--shadow)}.warning{border-left:5px solid var(--danger)}.ok{border-left:5px solid var(--ok)}
+    .actions{display:flex;flex-wrap:wrap;gap:9px;align-items:center}.btn{appearance:none;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--text);padding:9px 13px;font-weight:650;cursor:pointer;text-decoration:none}.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.danger{border-color:color-mix(in srgb,var(--danger) 55%,var(--line));color:var(--danger)}.btn:disabled{opacity:.45;cursor:not-allowed}
+    input[type=password],input[type=text]{width:min(420px,100%);border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:9px;padding:10px 12px;font:inherit}.muted{color:var(--muted)}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92em;overflow-wrap:anywhere}
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.stat{border:1px solid var(--line);border-radius:11px;padding:11px}.stat strong{display:block;font-size:22px}.stat span{color:var(--muted);font-size:12px}
+    .candidate{border:1px solid var(--line);border-radius:13px;padding:14px;margin:10px 0}.candidate.selected{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 20%,transparent)}.candidate-head{display:flex;justify-content:space-between;gap:12px}.candidate h3{font-size:16px;margin:0}.candidate small{color:var(--muted)}.candidate .meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin:8px 0 10px;font-size:13px}.candidate .result{margin-top:10px;padding:10px;border-radius:9px;background:var(--accent-soft)}.candidate .bad{color:var(--danger)}.candidate .good{color:var(--ok)}
+    .companies{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.chip{border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:12px}.file{position:relative;overflow:hidden}.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+    .empty{padding:22px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.log{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;max-height:240px;overflow:auto;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+    details{margin-top:10px}summary{cursor:pointer;font-weight:650}@media(max-width:700px){.top{display:block}.top .actions{margin-top:12px}.stats{grid-template-columns:repeat(2,1fr)}.candidate .meta{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div><h1>Path to Offer 本机数据恢复</h1><p>只读取当前浏览器、当前 GitHub Pages 域名下的存储；密码和数据均不会上传。</p></div>
+    <div class="actions"><a class="btn" href="./">返回主站</a><button class="btn" id="rescan">重新扫描</button></div>
+  </div>
+
+  <section class="panel warning">
+    <strong>先不要清除站点数据，也不要在主站点击“创建 / 覆盖”或“跨设备读取”。</strong>
+    <div class="muted">本页会优先查找主密文、v1.5 自动保存的最近 3 份旧密文快照、旧版明文 localStorage，以及恢复隔离副本。</div>
+  </section>
+
+  <section class="panel">
+    <h2>1. 扫描结果</h2>
+    <div id="summary" class="stats"></div>
+    <div class="actions">
+      <button class="btn primary" id="exportAll">导出全部恢复候选</button>
+      <label class="btn file">导入备份文件<input id="importFile" type="file" accept=".json,application/json"></label>
+      <span class="muted">支持 raw vault、v1.5 设备备份、紧急存储导出、明文账户导出。</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>2. 用密码检查候选</h2>
+    <p class="muted">密码只参与本机 Web Crypto 解密，不会被保存。建议先输入你原先用于个人账户的密码，再逐项检查。</p>
+    <div class="actions">
+      <input id="password" type="password" autocomplete="off" placeholder="输入候选密文对应的密码">
+      <button class="btn primary" id="inspectAll">检查全部加密候选</button>
+      <button class="btn" id="clearPassword">清空密码</button>
+    </div>
+    <div id="candidates"></div>
+  </section>
+
+  <section class="panel">
+    <h2>3. 恢复</h2>
+    <p class="muted">只有已成功解密并显示内容统计的候选才能恢复。恢复前，本页会把当前主密文另外隔离保存，不会直接销毁。</p>
+    <div class="actions">
+      <input id="username" type="text" value="mlliu6" aria-label="恢复目标账号">
+      <button class="btn primary" id="restore" disabled>把选中候选恢复为主账户</button>
+    </div>
+    <div id="restoreStatus" class="muted"></div>
+  </section>
+
+  <section class="panel">
+    <h2>没有找到快照时</h2>
+    <p>立即关闭所有该网站标签页，完整复制浏览器配置目录中的 <code>Local Storage\leveldb</code> 文件夹，再做下一步。Edge 常见路径为 <code>%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Local Storage\leveldb</code>；使用其他 Profile 时将 <code>Default</code> 替换为实际目录。不要先清缓存或让浏览器长时间运行，以免 LevelDB 压缩覆盖可恢复记录。</p>
+    <details><summary>技术诊断日志</summary><div id="log" class="log"></div></details>
+  </section>
+</main>
+<script>
+(() => {
+  'use strict';
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  const PRIMARY = 'pto.secure.local.v2.';
+  const SNAP = 'pto.secure.snapshots.v15.';
+  const DEVICE = 'pto.secure.device-account.v1';
+  const LEGACY = ['pathToOffer.v0.2','pathToOffer.v0.1'];
+  const QUARANTINE = 'pto.recovery.quarantine.v1.';
+  const imported = [];
+  let candidates = [], selected = null;
+  const $ = s => document.querySelector(s);
+  const log = (...xs) => { $('#log').textContent += xs.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join(' ') + '\n'; };
+  const esc = s => String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const b64 = s => Uint8Array.from(atob(String(s||'')), c => c.charCodeAt(0));
+  const toB64 = b => { let s=''; for(const x of new Uint8Array(b)) s+=String.fromCharCode(x); return btoa(s); };
+  const bytes = s => new Blob([String(s||'')]).size;
+  const norm = s => String(s||'').trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9._@+-]/g,'').slice(0,80);
+  async function sha256(s){ const d=await crypto.subtle.digest('SHA-256',enc.encode(s)); return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+  async function accountId(user){ const u=norm(user); if(!u) throw Error('账号不能为空'); return sha256('path-to-offer:'+u); }
+  async function derive(password,salt,iterations){
+    if(String(password||'').length < 10) throw Error('密码至少需要 10 位');
+    const base=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt,iterations:Number(iterations)||650000},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+  }
+  async function decryptVault(v,password){
+    if(!v || v.schema!=='pto-encrypted-vault') throw Error('不是 Path to Offer 加密密文');
+    const key=await derive(password,b64(v.salt),v.iterations);
+    const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(v.iv),additionalData:enc.encode(v.context||'path-to-offer')},key,b64(v.ciphertext));
+    return JSON.parse(dec.decode(plain));
+  }
+  async function encryptVault(value,password,context){
+    const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+    const key=await derive(password,salt,650000);
+    const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:enc.encode(context)},key,enc.encode(JSON.stringify(value)));
+    return {schema:'pto-encrypted-vault',version:1,kdf:'PBKDF2-SHA256',iterations:650000,cipher:'AES-GCM-256',salt:toB64(salt),iv:toB64(iv),context,ciphertext:toB64(cipher),updatedAt:new Date().toISOString()};
+  }
+  function stateFrom(payload){
+    const state = payload && typeof payload==='object' && payload.state && typeof payload.state==='object' ? payload.state : payload;
+    return state && typeof state==='object' ? state : {};
+  }
+  function stats(state){
+    return {
+      jobs:Array.isArray(state.jobs)?state.jobs.length:0,
+      reviews:Array.isArray(state.reviews)?state.reviews.length:0,
+      resumes:Array.isArray(state.resumes)?state.resumes.length:0,
+      assets:Array.isArray(state.assets)?state.assets.length:0,
+      decisions:state.decisions&&typeof state.decisions==='object'?Object.keys(state.decisions).length:0
+    };
+  }
+  function companies(state){
+    return [...new Set((state.jobs||[]).map(j=>String(j.company||'').trim()).filter(Boolean))].slice(0,30);
+  }
+  function addCandidate(c){ if(!c) return; c.uid=c.uid||('c_'+Math.random().toString(36).slice(2)); candidates.push(c); }
+  function parseVault(raw,source,key,savedAt=''){
+    try{
+      const v=typeof raw==='string'?JSON.parse(raw):raw;
+      if(v?.schema!=='pto-encrypted-vault') return;
+      addCandidate({source,key,savedAt:savedAt||v.updatedAt||'',vault:v,raw:JSON.stringify(v),encrypted:true,bytes:bytes(JSON.stringify(v))});
+    }catch(e){log('无法解析密文',key,e.message);}
+  }
+  function scan(){
+    candidates=[]; selected=null; $('#restore').disabled=true; $('#restoreStatus').textContent='';
+    let primary=0,snapshots=0,legacy=0,quarantine=0;
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i),raw=localStorage.getItem(key);
+      if(key.startsWith(PRIMARY)){primary++;parseVault(raw,'当前主密文',key);}
+      else if(key.startsWith(SNAP)){
+        try{
+          const arr=JSON.parse(raw);
+          if(Array.isArray(arr)) arr.forEach((x,idx)=>{snapshots++;parseVault(x?.vault,'自动旧密文快照 '+(idx+1),key,x?.savedAt||'');});
+        }catch(e){log('快照数组解析失败',key,e.message);}
+      }else if(LEGACY.includes(key)){
+        try{
+          const state=JSON.parse(raw);legacy++;addCandidate({source:'旧版明文 localStorage',key,savedAt:'',state,raw,encrypted:false,bytes:bytes(raw),inspection:{payload:state,state,stats:stats(state),companies:companies(state)}});
+        }catch(e){log('旧版状态解析失败',key,e.message);}
+      }else if(key.startsWith(QUARANTINE)){
+        quarantine++;parseVault(raw,'恢复隔离副本',key);
+      }
+    }
+    for(const c of imported) addCandidate({...c});
+    candidates.sort((a,b)=>String(b.savedAt||'').localeCompare(String(a.savedAt||'')));
+    $('#summary').innerHTML=[
+      ['主密文',primary],['自动快照',snapshots],['旧版状态',legacy],['隔离/导入',quarantine+imported.length]
+    ].map(([k,v])=>`<div class="stat"><strong>${v}</strong><span>${k}</span></div>`).join('');
+    render();
+    log('扫描完成', {primary,snapshots,legacy,quarantine,imported:imported.length,total:candidates.length});
+  }
+  function render(){
+    const root=$('#candidates');
+    if(!candidates.length){root.innerHTML='<div class="empty">当前 origin 的 localStorage 中没有找到恢复候选。请先不要清理浏览器数据，按页面底部说明备份 LevelDB。</div>';return;}
+    root.innerHTML=candidates.map((c,i)=>{
+      const v=c.vault||{},r=c.inspection,s=r?.stats;
+      const emptyAdmin = r && s.jobs===0 && (r.payload?.mode==='github') && String(r.payload?.repo||'').includes('26-27-path-to-offer');
+      return `<article class="candidate ${selected===c.uid?'selected':''}" data-uid="${esc(c.uid)}">
+        <div class="candidate-head"><div><h3>${esc(c.source)}</h3><small>${esc(c.key||'导入文件')}</small></div><label><input type="radio" name="candidate" value="${esc(c.uid)}" ${selected===c.uid?'checked':''}> 选择</label></div>
+        <div class="meta"><span>时间：${esc(c.savedAt||v.updatedAt||'未知')}</span><span>大小：${c.bytes.toLocaleString()} B</span><span>上下文：<code>${esc(v.context||'明文状态')}</code></span><span>类型：${c.encrypted?'AES-GCM 密文':'旧版明文状态'}</span></div>
+        <div class="actions">${c.encrypted?`<button class="btn inspect" data-uid="${esc(c.uid)}">用上方密码检查</button>`:''}<button class="btn export-one" data-uid="${esc(c.uid)}">导出此候选</button></div>
+        ${r?`<div class="result"><div class="${emptyAdmin?'bad':'good'}"><strong>${emptyAdmin?'疑似被管理员凭据误写入的空账户':'解密/解析成功'}</strong></div>
+          <div class="stats"><div class="stat"><strong>${s.jobs}</strong><span>岗位</span></div><div class="stat"><strong>${s.reviews}</strong><span>面经</span></div><div class="stat"><strong>${s.resumes}</strong><span>简历</span></div><div class="stat"><strong>${s.assets}</strong><span>资料</span></div></div>
+          <div class="companies">${r.companies.map(x=>`<span class="chip">${esc(x)}</span>`).join('')||'<span class="muted">没有公司记录</span>'}</div></div>`:''}
+      </article>`;
+    }).join('');
+    root.querySelectorAll('input[name=candidate]').forEach(x=>x.onchange=()=>{selected=x.value;render();updateRestore();});
+    root.querySelectorAll('.inspect').forEach(b=>b.onclick=()=>inspectOne(b.dataset.uid));
+    root.querySelectorAll('.export-one').forEach(b=>b.onclick=()=>exportOne(b.dataset.uid));
+    updateRestore();
+  }
+  function updateRestore(){
+    const c=candidates.find(x=>x.uid===selected);
+    $('#restore').disabled=!(c?.inspection?.state);
+  }
+  async function inspectOne(uid){
+    const c=candidates.find(x=>x.uid===uid); if(!c) return;
+    const password=$('#password').value;
+    try{
+      const payload=await decryptVault(c.vault,password),state=stateFrom(payload);
+      c.inspection={payload,state,stats:stats(state),companies:companies(state),password};
+      selected=uid; render();
+    }catch(e){
+      c.inspection=null; render();
+      alert('该密码无法解密此候选。密文不一定损坏，也可能只是密码不匹配。');
+      log('解密失败',c.source,c.savedAt||'',e.name||e.message);
+    }
+  }
+  async function inspectAll(){
+    const password=$('#password').value;
+    if(password.length<10){alert('请输入至少 10 位密码');return;}
+    $('#inspectAll').disabled=true; $('#inspectAll').textContent='正在检查…';
+    for(const c of candidates){
+      if(!c.encrypted) continue;
+      try{
+        const payload=await decryptVault(c.vault,password),state=stateFrom(payload);
+        c.inspection={payload,state,stats:stats(state),companies:companies(state),password};
+      }catch(_){ c.inspection=null; }
+    }
+    const viable=candidates.filter(c=>c.inspection?.stats?.jobs>0).sort((a,b)=>b.inspection.stats.jobs-a.inspection.stats.jobs);
+    if(viable[0]) selected=viable[0].uid;
+    render(); $('#inspectAll').disabled=false; $('#inspectAll').textContent='检查全部加密候选';
+    log('批量检查完成','成功',candidates.filter(c=>c.inspection).length,'含岗位',viable.length);
+  }
+  function download(name,text){
+    const a=document.createElement('a'),url=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+    a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1200);
+  }
+  function exportOne(uid){
+    const c=candidates.find(x=>x.uid===uid); if(!c) return;
+    download('pto-recovery-candidate.json',c.raw||JSON.stringify(c.vault||c.state,null,2));
+  }
+  function exportAll(){
+    const entries={};
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k.startsWith(PRIMARY)||k.startsWith(SNAP)||k.startsWith(QUARANTINE)||LEGACY.includes(k)||k===DEVICE) entries[k]=localStorage.getItem(k);
+    }
+    download('pto-emergency-storage-dump.json',JSON.stringify({format:'pto-emergency-storage-dump-v1',createdAt:new Date().toISOString(),entries},null,2));
+  }
+  async function importDoc(file){
+    if(!file) return;
+    try{
+      const raw=await file.text(),doc=JSON.parse(raw),name=file.name;
+      if(doc?.schema==='pto-encrypted-vault'){
+        imported.push({source:'导入 raw vault',key:name,savedAt:doc.updatedAt||'',vault:doc,raw:JSON.stringify(doc),encrypted:true,bytes:bytes(raw)});
+      }else if(doc?.entries&&typeof doc.entries==='object'){
+        for(const [key,value] of Object.entries(doc.entries)){
+          if(key.startsWith(PRIMARY)){
+            parseImportedVault(value,'导入设备主密文',`${name} · ${key}`);
+          }else if(key.startsWith(SNAP)){
+            try{const arr=JSON.parse(value);if(Array.isArray(arr))arr.forEach((x,i)=>parseImportedVault(x?.vault,`导入设备快照 ${i+1}`,`${name} · ${key}`,x?.savedAt||''));}catch(_){}
+          }else if(LEGACY.includes(key)){
+            try{const state=JSON.parse(value);imported.push({source:'导入旧版明文状态',key:`${name} · ${key}`,savedAt:'',state,raw:value,encrypted:false,bytes:bytes(value),inspection:{payload:state,state,stats:stats(state),companies:companies(state)}});}catch(_){}
+          }
+        }
+      }else if(Array.isArray(doc?.jobs)||doc?.schemaVersion){
+        imported.push({source:'导入明文账户数据',key:name,savedAt:'',state:doc,raw,encrypted:false,bytes:bytes(raw),inspection:{payload:doc,state:doc,stats:stats(doc),companies:companies(doc)}});
+      }else throw Error('无法识别该备份格式');
+      scan();
+    }catch(e){alert('导入失败：'+e.message);}
+  }
+  function parseImportedVault(value,source,key,savedAt=''){
+    try{
+      const v=typeof value==='string'?JSON.parse(value):value;
+      if(v?.schema==='pto-encrypted-vault') imported.push({source,key,savedAt:savedAt||v.updatedAt||'',vault:v,raw:JSON.stringify(v),encrypted:true,bytes:bytes(JSON.stringify(v))});
+    }catch(_){}
+  }
+  async function restore(){
+    const c=candidates.find(x=>x.uid===selected);
+    if(!c?.inspection?.state) return;
+    const user=norm($('#username').value),password=c.inspection.password||$('#password').value;
+    if(!user||password.length<10){alert('账号或密码无效');return;}
+    const s=c.inspection.stats;
+    const msg=`准备恢复：${s.jobs} 个岗位、${s.reviews} 条面经、${s.resumes} 份简历、${s.assets} 项资料。\n\n当前主密文会先保存到隔离区。确认继续？`;
+    if(!confirm(msg)) return;
+    try{
+      const id=await accountId(user),primaryKey=PRIMARY+id,current=localStorage.getItem(primaryKey);
+      if(current){
+        localStorage.setItem(`${QUARANTINE}${Date.now()}.${id}`,current);
+        try{
+          const histKey=SNAP+id,hist=JSON.parse(localStorage.getItem(histKey)||'[]');
+          const currentVault=JSON.parse(current);
+          localStorage.setItem(histKey,JSON.stringify([{savedAt:new Date().toISOString(),vault:currentVault},...hist].slice(0,8)));
+        }catch(_){}
+      }
+      const oldPayload=c.inspection.payload||{};
+      const payload={
+        username:user,
+        owner:String(oldPayload.owner||'MLliu6'),
+        repo:String(oldPayload.repo||'26-27-path-to-offer'),
+        mode:'local',
+        includeResumeText:!!oldPayload.includeResumeText,
+        portableWrite:false,
+        writeToken:'',
+        revision:Number(oldPayload.revision||0)+1,
+        updatedAt:new Date().toISOString(),
+        state:c.inspection.state
+      };
+      const vault=await encryptVault(payload,password,'local:'+id);
+      localStorage.setItem(primaryKey,JSON.stringify(vault));
+      localStorage.setItem(DEVICE,JSON.stringify({version:1,username:user,owner:'MLliu6',repo:'26-27-path-to-offer',mode:'local',updatedAt:new Date().toISOString()}));
+      $('#restoreStatus').innerHTML=`<strong class="good">恢复完成。</strong> 已写入 ${s.jobs} 个岗位；当前错误主密文已隔离保留。请关闭本页，重新打开主站，然后用刚才的同一密码解锁本机账户。`;
+      log('恢复成功',{user,id,stats:s});
+    }catch(e){alert('恢复失败：'+e.message);log('恢复失败',e.message);}
+  }
+
+  $('#rescan').onclick=scan;
+  $('#exportAll').onclick=exportAll;
+  $('#importFile').onchange=e=>importDoc(e.target.files[0]);
+  $('#inspectAll').onclick=inspectAll;
+  $('#clearPassword').onclick=()=>{$('#password').value='';};
+  $('#restore').onclick=restore;
+  scan();
+})();
+</script>
+</body>
+</html>
