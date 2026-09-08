@@ -35,11 +35,17 @@
       marketJobs=C.mergeJobs(marketJobs,supplemental.jobs.map(normalizeMarketJob));
       window.PTO_FEED_RUNTIME.jobsLoaded=marketJobs.length;
       window.PTO_RANKING_V14?.clearCache?.();renderDiscovery();return marketJobs;
-    })().finally(()=>{flight=null;if(button){button.disabled=false;button.textContent='刷新职位';}});
+    })().finally(()=>{flight=null;renderFeedHealth();if(button){button.disabled=false;button.textContent='刷新职位';}});
     return flight;
   };
   const baseVisible=visibleMarketJobs;
-  visibleMarketJobs=function(){return baseVisible().filter(j=>{
+  function leadRows(){
+    // A verification queue is not a recommendation. Do not hide uncertain leads
+    // behind the resume-fit threshold, but preserve explicit metadata/search filters.
+    const q=$('#jobSearch')?.value||'',loc=$('#jobLocationFilter')?.value||'all',typ=$('#jobTypeFilter')?.value||'all',batch=$('#jobBatchFilter')?.value||'all';
+    return marketJobs.filter(j=>C.isLead(j)&&state.decisions[j.id]!=='hidden'&&(loc==='all'||j.location.includes(loc))&&(typ==='all'||j.companyType===typ)&&(batch==='all'||j.batch===batch)&&window.PTO_MATCHING.searchMatch(j,q).matched).map(j=>({...j,match:{score:null,reasons:[],hits:[],components:{}}}));
+  }
+  visibleMarketJobs=function(){return (prefs.evidence==='leads'?leadRows():baseVisible()).filter(j=>{
     if(prefs.evidence==='official'&&!C.official(j))return false;
     if(prefs.evidence==='leads'&&!C.isLead(j))return false;
     const label=String(j.batch||'')+' '+String(j.role||'');
@@ -49,12 +55,21 @@
     return true;
   });};
   const baseFilters=renderMarketFilters;
-  renderMarketFilters=function(){baseFilters();const sel=$('#jobLocationFilter'),old=sel?.value;if(!sel)return;const cities=['北京','上海','深圳','广州','杭州','南京','成都','武汉','西安','苏州','天津','合肥','长沙','重庆'];const choices=cities.filter(c=>marketJobs.some(j=>String(j.location||j.role||'').includes(c)));if(old&&old!=='all'&&!choices.includes(old))choices.push(old);sel.innerHTML='<option value="all">全部地点</option>'+choices.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');sel.value=old||'all';};
+  renderMarketFilters=function(){
+    const selected=$('#jobLocationFilter')?.value||'all';baseFilters();const sel=$('#jobLocationFilter');if(!sel)return;
+    const cities=['北京','上海','深圳','广州','杭州','南京','成都','武汉','西安','苏州','天津','合肥','长沙','重庆'];
+    const observed=[...new Set(marketJobs.flatMap(j=>String(j.location||'').split(/[ ,，、/]+/).filter(x=>x.length>=2&&x.length<=24)))].sort((a,b)=>a.localeCompare(b,'zh-CN'));
+    const popular=cities.filter(c=>observed.some(x=>x.includes(c)));
+    const rest=observed.filter(x=>!popular.includes(x));if(selected!=='all'&&!popular.includes(selected)&&!rest.includes(selected))rest.push(selected);
+    const options=xs=>xs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    sel.innerHTML='<option value="all">全部地点</option><optgroup label="常用城市">'+options(popular)+'</optgroup><optgroup label="其他已观测地点">'+options(rest)+'</optgroup>';sel.value=selected;
+  };
   function knownJob(j){return state.jobs.find(x=>x.sourceJobId===j.id||(C.company(x)===C.company(j)&&C.positionId(x)&&C.positionId(x)===C.positionId(j))||(C.company(x)===C.company(j)&&x.role===j.role&&x.url&&C.canonicalUrl(x.url)===C.canonicalUrl(j.applyUrl)));}
   const basePromote=promoteMarketJob;
   promoteMarketJob=function(id,close=true){const j=marketJobs.find(x=>x.id===id);const known=j&&knownJob(j);if(known){toast('该岗位已在你的流程中');openJob(known.id);return;}basePromote(id,close);};
   function decorateMarket(){
     const leads=marketJobs.filter(C.isLead).length;
+    if(!currentProfile()&&Number(($('#marketCount')?.textContent||'0').replace(/,/g,''))>0)$('#jobMarketEmpty')?.classList.add('hidden');
     let meta=$('#v15EvidenceCount');if(!meta){meta=document.createElement('p');meta.id='v15EvidenceCount';meta.className='v15-search-count';$('.market-head')?.insertAdjacentElement('afterend',meta);}
     meta.textContent=`目录 ${marketJobs.length.toLocaleString()} 条 · 其中 ${leads} 条为待复核线索；页面可访问不等于岗位仍在招聘。`;
     for(const card of $$('#jobMarketCards [data-market-id]')){
@@ -70,11 +85,11 @@
     }
   }
   const baseMarket=renderMarket;renderMarket=function(){const out=baseMarket.apply(this,arguments);decorateMarket();return out;};
-  renderFeedHealth=function(){const el=$('#feedHealth');if(!el)return;const s=sourceStatus?.sources||[],bad=s.filter(x=>!x.ok).length,r=window.PTO_FEED_RUNTIME||{};const degraded=bad>0||r.failures?.length;el.dataset.health=degraded?'degraded':'healthy';const t=sourceStatus?.priority_generated_at||sourceStatus?.generated_at;el.innerHTML=`<span class="pulse-dot"></span><span>${flight?'正在刷新':degraded?'部分来源需要关注':'岗位目录已载入'} · ${bad}/${s.length} 个采集组异常<br>${t?'目录时间 '+esc(new Date(t).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})):'目录时间未知'}${r.usedPrevious?' · 保留上次数据':''}</span>`;};
+  renderFeedHealth=function(){const el=$('#feedHealth');if(!el)return;const s=sourceStatus?.sources||[],bad=s.filter(x=>!x.ok).length,r=window.PTO_FEED_RUNTIME||{};const degraded=bad>0||r.failures?.length;el.dataset.health=degraded?'degraded':'healthy';const t=sourceStatus?.priority_generated_at||sourceStatus?.generated_at;el.innerHTML=`<span class="pulse-dot"></span><span>${flight?'正在刷新':degraded?'部分信源降级':'岗位目录已载入'} · ${marketJobs.length.toLocaleString()} 岗位 · ${bad}/${s.length} 个采集组异常<br>${t?'目录时间 '+esc(new Date(t).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})):'目录时间未知'}${r.usedPrevious?' · 已保留上一版数据':''}</span>`;};
   function setUndo(label,fn){undo={fn,owner:account()};$('#v15Undo')?.remove();const el=document.createElement('div');el.id='v15Undo';el.className='v15-undo';el.setAttribute('role','status');el.innerHTML=`<span>${esc(label)}</span><button class="text-btn">撤销</button>`;el.querySelector('button').onclick=()=>{if(undo?.owner===account()){undo.fn();saveState();}else toast('账户已切换，未执行撤销');undo=null;el.remove();};document.body.appendChild(el);clearTimeout(undoTimer);undoTimer=setTimeout(()=>{undo=null;el.remove();},18000);}
   function quickUpdate(id){const job=state.jobs.find(j=>j.id===id);if(!job)return;const owner=account();openModal(`${job.company} · 更新进度`,`<form id="v15Update" class="v15-form"><p class="v15-note">${esc(job.role)} · 更新仅保存到你的求职账户，不会向招聘方提交申请。</p><label>当前阶段<select name="status">${stages.map(([k,v])=>`<option value="${k}" ${k===job.status?'selected':''}>${v}</option>`).join('')}</select></label><label>状态日期<input type="date" name="date" value="${today()}" required></label><label>下次跟进日期（可留空）<input type="date" name="followUpAt" value="${esc(job.followUpAt||'')}"></label><label>本次记录 / 下一步<textarea name="note" placeholder="例如：已完成测评，等待一面通知"></textarea></label><div class="v15-actions"><button type="button" id="v15Full" class="btn ghost">编辑完整记录</button><button class="btn primary">保存进度</button></div></form>`);
     $('#v15Full').onclick=()=>{closeModal();openJob(id);};
-    $('#v15Update').onsubmit=e=>{e.preventDefault();if(account()!==owner){toast('账户已切换，请重新打开记录');closeModal();return;}const current=state.jobs.find(j=>j.id===id);if(!current)return;const before=clone(current),f=e.currentTarget.elements;try{const next=C.updateStatus(current,f.status.value,f.date.value,f.note.value.trim(),f.followUpAt.value);Object.assign(current,next);saveState();closeModal();setUndo('进度已保存',()=>{const live=state.jobs.find(j=>j.id===id);if(live&&JSON.stringify(live)===JSON.stringify(next))Object.assign(live,before);else toast('记录已有后续修改，未回退');});}catch(err){toast(err.message);}};
+    $('#v15Update').onsubmit=e=>{e.preventDefault();if(account()!==owner){toast('账户已切换，请重新打开记录');closeModal();return;}const current=state.jobs.find(j=>j.id===id);if(!current)return;const before=clone(current),f=e.currentTarget.elements;try{const next=C.updateStatus(current,f.status.value,f.date.value,f.note.value.trim(),f.followUpAt.value);Object.assign(current,next);saveState();closeModal();setUndo('进度已保存',()=>{const live=state.jobs.find(j=>j.id===id);if(live&&JSON.stringify(live)===JSON.stringify(next)){for(const key of Object.keys(live))delete live[key];Object.assign(live,before);}else toast('记录已有后续修改，未回退');});}catch(err){toast(err.message);}};
   }
   const baseFiltered=filteredPipelineJobs;
   filteredPipelineJobs=function(){return baseFiltered().filter(j=>prefs.scope==='all'||(prefs.scope==='active'&&!['rejected','signed'].includes(j.status))||(prefs.scope==='due'&&j.followUpAt&&j.followUpAt<=today()&&!['rejected','signed'].includes(j.status))||(prefs.scope==='interview'&&/^interview|^hr$/.test(j.status)));};
@@ -120,7 +135,7 @@
     const toolbar=document.createElement('div');toolbar.className='v15-toolbar';toolbar.innerHTML='<label>证据<select id="v15Evidence"><option value="all">全部记录</option><option value="official">仅官网采集</option><option value="leads">仅待复核线索</option></select></label><label>招聘类型<select id="v15Kind"><option value="all">全部类型</option><option value="campus">校园 / 应届</option><option value="intern">实习</option><option value="social">明确社招</option></select></label><button id="v15ResetFilters" class="btn ghost">清除筛选</button><button id="v15SourceButton" class="text-btn">信源覆盖</button>';
     $('.discovery-toolbar').insertAdjacentElement('afterend',toolbar);
     for(const [id,key] of [['v15Evidence','evidence'],['v15Kind','kind']]){$('#'+id).value=prefs[key];$('#'+id).onchange=e=>{prefs[key]=e.target.value;storePrefs();renderMarket();};}
-    $('#v15ResetFilters').onclick=()=>{prefs.kind=prefs.evidence='all';$('#v15Evidence').value=$('#v15Kind').value='all';for(const s of ['#jobLocationFilter','#jobTypeFilter','#jobBatchFilter'])$(s).value='all';storePrefs();window.PTO_RANKING_V14?.clearCache?.();renderMarket();};$('#v15SourceButton').onclick=sourcesPanel;
+    $('#v15ResetFilters').onclick=()=>{prefs.kind=prefs.evidence='all';$('#jobSearch').value='';$('#v15Evidence').value=$('#v15Kind').value='all';for(const s of ['#jobLocationFilter','#jobTypeFilter','#jobBatchFilter'])$(s).value='all';storePrefs();window.PTO_RANKING_V14?.clearCache?.();renderMarket();};$('#v15SourceButton').onclick=sourcesPanel;
     const actions=document.createElement('div');actions.className='v15-toolbar';actions.innerHTML='<label>范围<select id="v15Scope"><option value="all">全部记录</option><option value="active">正在推进</option><option value="interview">面试阶段</option><option value="due">到期跟进</option></select></label><label><input type="checkbox" id="v15HideEmpty">隐藏空阶段</label><button class="btn ghost" id="v15Backup">导出加密备份</button><label class="btn ghost">导入加密备份<input hidden type="file" id="v15Restore" accept=".json"></label><span class="v15-backup-status">加密账户另保留最近 3 个本机密文快照</span>';
     $('#pipelineView .filter-row').insertAdjacentElement('afterend',actions);$('#v15Scope').onchange=e=>{prefs.scope=e.target.value;storePrefs();renderPipeline();};$('#v15HideEmpty').checked=prefs.hideEmpty;$('#v15HideEmpty').onchange=e=>{prefs.hideEmpty=e.target.checked;storePrefs();renderPipeline();};$('#v15Backup').onclick=backup;$('#v15Restore').onchange=e=>restoreBackup(e.target.files[0]);
     $('#toast').setAttribute('role','status');$('#toast').setAttribute('aria-live','polite');$('#jobSearch').setAttribute('aria-label','搜索公司、岗位、技能或城市');$('#closeModal').setAttribute('aria-label','关闭对话框');

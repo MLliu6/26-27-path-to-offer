@@ -37,7 +37,7 @@ def main():
             else: route.continue_()
         page.route("**/*",route)
         page.goto(BASE,wait_until="domcontentloaded")
-        page.wait_for_selector(".appearance-control",timeout=12000)
+        page.wait_for_function("window.PTO_WORKSPACE_V15",timeout=20000)
         page.locator("#themeBtn").click()
         page.wait_for_selector("#themePopover.show")
         swatches=page.locator(".swatch")
@@ -56,12 +56,12 @@ def main():
         assert page.locator("html").get_attribute("data-appearance")=="dark"
         bg=page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()")
         surface=page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()")
-        assert bg.lower()=="#101512"
-        assert surface.lower()=="#171d1a"
+        assert bg.lower()=="#111113"
+        assert surface.lower()=="#19191c"
         assert page.locator(".panel").count()>0 or page.locator(".market-empty").count()>0
 
         page.reload(wait_until="domcontentloaded")
-        page.wait_for_selector(".appearance-control",timeout=12000)
+        page.wait_for_function("window.PTO_WORKSPACE_V15",timeout=20000)
         assert page.locator("html").get_attribute("data-appearance")=="dark"
         page.locator("#themeBtn").click()
         assert page.locator('button[data-appearance-choice="dark"]').evaluate("el => el.classList.contains('active')")

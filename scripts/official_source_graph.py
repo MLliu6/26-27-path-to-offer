@@ -29,8 +29,10 @@ DATA = ROOT / "data"
 JOBS = DATA / "jobs.json"
 OUT = DATA / "official_source_catalog.json"
 BROWSER_REGISTRY = ROOT / "sources" / "priority_browser_sources.json"
+WORKSPACE_REGISTRY = ROOT / "sources" / "workspace_sources_v15.json"
 REGISTRIES = [
     BROWSER_REGISTRY,
+    WORKSPACE_REGISTRY,
     ROOT / "sources" / "priority_official_sources.json",
     ROOT / "sources" / "official_source_registry_v12.json",
 ]
@@ -196,7 +198,7 @@ def load_registries(rows: dict[str, dict[str, Any]]) -> None:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             continue
-        authoritative_browser = path == BROWSER_REGISTRY
+        authoritative_browser = path in (BROWSER_REGISTRY, WORKSPACE_REGISTRY)
         for item in payload.get("watch", []):
             if not isinstance(item, dict):
                 continue

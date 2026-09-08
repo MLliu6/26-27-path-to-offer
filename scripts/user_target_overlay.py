@@ -51,7 +51,9 @@ def company_norm(value: Any) -> str:
         "月之暗面": "月之暗面",
         "智谱ai": "智谱ai",
         "智谱": "智谱ai",
-        "千寻智能spiritai": "千寻智能spiritai",
+        "千寻智能spiritai": "千寻智能",
+        "英伟达": "nvidia",
+        "新浪微博": "新浪",
     }
     return norm(aliases.get(text, text))
 
@@ -117,11 +119,15 @@ def live_match(company: str, expected_location: str, role: dict[str, Any], live_
     pid = clean(role.get("position_id"))
     # A position id is the strongest identity signal. Keep it even if a target
     # list's city note later proves stale; audit output exposes matched_location.
+    live_rows = [r for r in live_rows if not str(r.get("s") or r.get("source") or "").startswith("curated-target:")]
     for row in live_rows:
         if row_company(row) != cn:
             continue
-        if pid and pid.lower() in row_pid_blob(row).lower():
+        blob = row_pid_blob(row) + " " + row_role(row)
+        if pid and re.search(r"(?<![0-9a-zA-Z])" + re.escape(pid) + r"(?![0-9a-zA-Z])", blob, re.I):
             return row
+    if pid:
+        return None
     # Fuzzy title matching is only valid within a compatible target city. This
     # prevents e.g. a Beijing target "AI 工程师" from being satisfied by a
     # different Changsha role at the same employer.
@@ -147,7 +153,7 @@ def seed_row(target: dict[str, Any], role: dict[str, Any], reported_at: str) -> 
         return None
     tier = clean(role.get("tier"))
     note = "用户目标岗位清单；当前实时职位库未命中。此条用于防漏投与持续巡检，不代表岗位仍开放，提交前必须以官方页面为准。"
-    if tier:
+    if tier and tier != "applied":
         note += f" 用户清单优先级：{tier}。"
     out: dict[str, Any] = {
         "i": seed_id(company, title, url),
@@ -177,7 +183,7 @@ def main() -> int:
     priority_rows = [x for x in (priority_payload.get("jobs") or []) if isinstance(x, dict)]
     # Never let yesterday's curated overlay satisfy today's live audit.
     base_priority = [x for x in priority_rows if clean(x.get("s")) != SOURCE]
-    live_rows = [*base_priority, *rows(DOMESTIC)]
+    live_rows = [*base_priority, *rows(DOMESTIC), *rows(DATA / "jobs_supplemental.json")]
 
     audit_rows: list[dict[str, Any]] = []
     seeds: list[dict[str, Any]] = []

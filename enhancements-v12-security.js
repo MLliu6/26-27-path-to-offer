@@ -14,6 +14,7 @@
   let session=null;
   let adminUnlocked=false;
   let saveTimer=null;
+  let persistChain=Promise.resolve(), pendingWrites=0;
 
   const $=s=>document.querySelector(s);
   const clone=v=>JSON.parse(JSON.stringify(v));
@@ -69,26 +70,30 @@
     button.onclick=openSecureAccountModal;
   }
 
-  async function persistEncryptedLocal(){
-    if(!session)return;
+  function persistEncryptedLocal(){
+    // Capture identity before asynchronous encryption and serialize writes.
+    const active=session;
+    if(!active)return Promise.resolve();
     const payload={
-      username:session.username,
-      owner:session.owner||'',repo:session.repo||'',mode:session.mode,
-      includeResumeText:!!session.includeResumeText,
-      portableWrite:!!session.portableWrite,
-      writeToken:session.portableWrite?(session.token||''):'',
-      revision:Number(session.revision||0),
-      updatedAt:new Date().toISOString(),
-      state:VAULT.sanitizeState(state,{includeResumeText:!!session.includeResumeText})
+      username:active.username,owner:active.owner||'',repo:active.repo||'',mode:active.mode,
+      includeResumeText:!!active.includeResumeText,portableWrite:!!active.portableWrite,
+      writeToken:active.portableWrite?(active.token||''):'',revision:Number(active.revision||0),
+      updatedAt:new Date().toISOString(),state:VAULT.sanitizeState(state,{includeResumeText:!!active.includeResumeText})
     };
-    const vault=await VAULT.encryptJson(payload,session.password,`local:${session.id}`);
-    localStorage.setItem(localKey(session.id),JSON.stringify(vault));
-    session.localUpdatedAt=payload.updatedAt;
+    pendingWrites++;
+    const task=persistChain.catch(()=>{}).then(async()=>{
+      const vault=await VAULT.encryptJson(payload,active.password,`local:${active.id}`);
+      localStorage.setItem(localKey(active.id),JSON.stringify(vault));
+      active.localUpdatedAt=payload.updatedAt;
+    });
+    persistChain=task;
+    return task.finally(()=>{pendingWrites--;});
   }
+  async function flushLocal(){clearTimeout(saveTimer);saveTimer=null;await persistEncryptedLocal();}
   function queuePersist(){
     if(!session)return;
     session.dirty=true;clearTimeout(saveTimer);
-    saveTimer=setTimeout(()=>persistEncryptedLocal().catch(err=>console.warn('local vault save failed',err)),180);
+    saveTimer=setTimeout(()=>{saveTimer=null;persistEncryptedLocal().catch(err=>{console.warn('local vault save failed',err);toast('加密保存失败，请勿关闭页面；请导出备份或释放浏览器空间。');});},180);
   }
 
   saveState=function(render=true){
@@ -196,7 +201,8 @@
     await persistEncryptedLocal();
     toast('已读取远端加密数据');openSecureAccountModal();
   }
-  function logout(){
+  async function logout(){
+    await flushLocal();
     session=null;window.PTO_ACCOUNT_SESSION=null;adminUnlocked=false;
     state=normalize(clone(initialGuest));
     if(typeof STORAGE_KEY!=='undefined')localStorage.removeItem(STORAGE_KEY);
@@ -215,7 +221,7 @@
     <section class="account-panel"><h3>跨设备 GitHub 加密仓库</h3><p>账号默认等于 GitHub 用户名，默认仓库为 <code>path-to-offer-vault</code>；你本人可使用本项目仓库。公共仓库支持新设备仅凭账号密码读取，写入仍需 Token，除非明确开启便携写入凭据。</p><div class="vault-inline"><label><span>账号 / GitHub owner</span><input id="secureRemoteUser" autocomplete="username" value="${escaped(session?.username||'')}"></label><label><span>仓库</span><input id="secureRemoteRepo" value="${escaped(session?.repo||DEFAULT_USER_REPO)}"></label></div><label><span>加密密码</span><input id="secureRemotePass" type="password" autocomplete="current-password"></label><label><span>Fine-grained Token（首次写入 / 私有仓库读取）</span><input id="secureRemoteToken" type="password" autocomplete="off" placeholder="仅限该仓库 Contents 读写"></label><label class="vault-check"><input id="secureRemoteResume" type="checkbox"><span>把简历解析原文纳入远端加密包（默认关闭）</span></label><label class="vault-check"><input id="securePortableWrite" type="checkbox"><span>便携写入：把最小权限 Token 一并加密，使新设备只凭账号密码也可写回。安全性低于每台设备单独输入 Token。</span></label><div class="account-actions"><button class="btn primary" id="secureRemoteUnlock">跨设备读取</button><button class="btn ghost" id="secureRemoteInit">首次初始化 / 覆盖</button></div><div class="vault-security-note"><strong>零明文原则：</strong>仓库中只有 AES-GCM 密文；密码从不上传。Git 删除不能抹除历史，因此系统不会把明文简历“上传后再删”。</div></section></div></div>`;
   }
   function bindAccountActions(){
-    $('#secureLogout')?.addEventListener('click',logout);
+    $('#secureLogout')?.addEventListener('click',()=>logout().catch(err=>toast('退出前保存失败：'+err.message)));
     $('#secureExport')?.addEventListener('click',()=>{const blob=new Blob([JSON.stringify(VAULT.sanitizeState(state,{includeResumeText:!!session?.includeResumeText}),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`path-to-offer-account-${today()}.json`;a.click();URL.revokeObjectURL(a.href);});
     $('#securePush')?.addEventListener('click',()=>pushRemote().catch(err=>toast(err.message)));
     $('#securePull')?.addEventListener('click',()=>pullRemote().catch(err=>toast(err.message)));
@@ -251,5 +257,6 @@
   injectSecurityStyles();
   setAccountButton();
   const sourceButton=$('#openSourcePanel');if(sourceButton)sourceButton.onclick=showAdminSources;
-  window.PTO_SECURE_ACCOUNT_V2={openAccount:openSecureAccountModal,showSources:showAdminSources,companyInitial};
+  window.PTO_SECURE_ACCOUNT_V2={openAccount:openSecureAccountModal,showSources:showAdminSources,companyInitial,flushLocal,pending:()=>!!saveTimer||pendingWrites>0};
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&session&&(saveTimer||pendingWrites))flushLocal().catch(err=>console.warn('vault flush failed',err));});
 })();

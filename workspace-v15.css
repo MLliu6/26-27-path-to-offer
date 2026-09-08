@@ -34,3 +34,24 @@ html body .feed-health{max-width:500px;line-height:1.7}.v15-skip{position:fixed;
 @media(max-width:1000px){html body main{padding:20px}.v15-summary{gap:8px}html body .topbar{padding:10px 16px;gap:12px}.v15-backup-status{display:none}}
 @media(max-width:700px){html body .topbar{flex-wrap:wrap;gap:8px}html body .brand small{display:none}html body .brand strong{font-size:15px}html body .main-nav{order:3;width:100%;display:flex;justify-content:space-between;overflow-x:auto}html body .top-actions{margin-left:auto;gap:6px}html body .top-actions .btn{padding:7px 10px}html body .main-nav .nav-item{flex:1;padding:7px;font-size:13px}html body main{padding:16px 12px 50px}html body h1{font-size:25px}html body .discovery-layout{display:block}.match-rail{margin-bottom:16px}html body .job-market-cards{grid-template-columns:1fr}html body .discovery-toolbar{display:flex;flex-wrap:wrap}html body .discovery-toolbar .search-wrap{flex:1 0 100%}html body .discovery-toolbar select{min-width:0;flex:1 1 42%;width:42%}.v15-summary{grid-template-columns:repeat(2,1fr)}.v15-summary button{padding:12px 16px}.v15-summary strong{font-size:24px}html body .resume-onboarding{padding:20px;display:block}html body .privacy-note{margin-top:14px}html body .page-head{display:block}html body .feed-health{margin-top:12px}.v15-toolbar{gap:10px}.v15-toolbar label{flex:1 1 40%}.v15-toolbar select{min-width:0;width:100%;max-width:none}html body .market-card{padding:16px}.v15-source-row{display:block}.v15-undo{bottom:12px}html body .modal{width:94vw}html body .btn,html body .nav-item{min-height:42px}}
 @media(prefers-reduced-motion:reduce){html body *,html body *:before,html body *:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Fix off-canvas overflow; retain a usable bottom navigation on small screens. */
+html body .drawer:not(.open){visibility:hidden;pointer-events:none}
+html body .drawer.open{visibility:visible;pointer-events:auto}
+html body :is(.main-nav,.view-switch,.drawer-head,.timeline-box,.intel-card,.detail-facts div,.job-table th){background:var(--surface-2)!important;background-image:none!important;border-color:var(--line)!important;color:var(--text)}
+html body :is(.jd-text,.intel-card p,.source-foot,.profile-summary){color:var(--muted)!important}
+html body .main-nav{box-shadow:none}
+html body select{border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+html body .market-head h2>span:not(#marketCount){display:none!important}
+html body .v15-toolbar{align-items:center}
+html body .v15-toolbar label{white-space:nowrap}
+html body .v15-source-row{overflow-wrap:anywhere}
+@media(max-width:760px){
+  html body .topbar{display:flex;height:auto;min-height:62px;flex-wrap:nowrap}
+  html body .main-nav{position:fixed;left:12px;right:12px;bottom:12px;top:auto;width:auto;box-sizing:border-box;background:var(--surface)!important;z-index:100;border:1px solid var(--line)!important}
+  html body main{padding-bottom:94px}
+  html body .v15-toolbar label{flex:1 1 42%;min-width:0;white-space:normal}
+  html body .v15-toolbar label select{width:100%;min-width:0}
+  html body .v15-summary{min-width:0}
+  html body :is(.kanban,.view,.discovery-layout,.job-market,.app-shell){min-width:0;max-width:100%}
+}

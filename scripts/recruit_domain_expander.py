@@ -32,6 +32,7 @@ INPUTS = [
     SOURCES / "external_discovered_sources.json",
     SOURCES / "moka_public_sources.json",
     SOURCES / "recruit_domain_overrides.json",
+    SOURCES / "workspace_sources_v15.json",
     GRAPH,
 ]
 OVERRIDES = SOURCES / "recruit_domain_overrides.json"
@@ -180,6 +181,9 @@ def candidate_from(item: dict[str, Any], origin: str, *, force_sweep: bool = Fal
     if not force_sweep and company in explicit_browser_companies():
         entry["sweep_enabled"] = False
         entry["handled_by"] = "dedicated-or-priority-adapter"
+    if origin == "registry:workspace_sources_v15.json":
+        entry["sweep_enabled"] = False
+        entry["handled_by"] = "workspace-source-refresh"
     return entry
 
 

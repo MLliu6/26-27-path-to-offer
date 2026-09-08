@@ -42,11 +42,11 @@ try:
         page.wait_for_timeout(400)
         assert not errors,errors
         assert page.evaluate('marketJobs.length')==3
-        assert '部分来源' in page.locator('#feedHealth').inner_text()
+        assert '部分信源降级' in page.locator('#feedHealth').inner_text()
         page.locator('#jobSearch').fill('推理工程师');page.wait_for_timeout(250)
         assert page.locator('#jobMarketCards .market-card').count()==2
         page.locator('#v15Evidence').select_option('leads');page.locator('#jobSearch').fill('');page.wait_for_timeout(250)
-        assert page.locator('#jobMarketCards .market-card').count()==1
+        assert page.locator('#jobMarketCards .market-card').count()==1, page.evaluate('({count:visibleMarketJobs().length,threshold:document.querySelector("#scoreThreshold").value,body:document.body.innerText.slice(0,2500)})')
         assert '待复核线索' in page.locator('.v15-badge.lead').inner_text()
         page.locator('#v15ResetFilters').click()
         page.screenshot(path=str(OUT/'v15-discover-light.png'))
