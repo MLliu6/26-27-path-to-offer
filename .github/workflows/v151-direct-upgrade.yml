@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/v151_direct_upgrade.py'
       - 'scripts/v151_hotfix.py'
+      - 'scripts/v151_theme_diag.py'
       - '.github/workflows/v151-direct-upgrade.yml'
   workflow_dispatch:
 
@@ -45,7 +46,7 @@ jobs:
           node --check config.js
           node tests/account_vault.mjs
           node tests/account_vault_security.mjs
-          python -m py_compile scripts/workspace_source_refresh.py tests/theme_smoke.py
+          python -m py_compile scripts/workspace_source_refresh.py tests/theme_smoke.py scripts/v151_theme_diag.py
           if grep -R "localStorage.clear" -n workspace-v15.js enhancements-v06.js enhancements-v13.js scripts/v151_direct_upgrade.py scripts/v151_hotfix.py; then exit 1; fi
       - name: Theme and workspace browser regression
         run: |
@@ -53,6 +54,7 @@ jobs:
           PID=$!
           trap 'kill $PID 2>/dev/null || true' EXIT
           sleep 1
+          python scripts/v151_theme_diag.py
           python tests/theme_smoke.py
           python tests/workspace_v15_smoke.py
       - name: Deep refresh all reviewed supplemental sources
@@ -76,7 +78,7 @@ jobs:
         run: |
           git config user.name 'path-to-offer-bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git rm scripts/v151_direct_upgrade.py scripts/v151_hotfix.py .github/workflows/v151-direct-upgrade.yml
+          git rm scripts/v151_direct_upgrade.py scripts/v151_hotfix.py scripts/v151_theme_diag.py .github/workflows/v151-direct-upgrade.yml
           git add -A
           git commit -m 'v1.5.1: restore accent themes and deepen official source sync'
           git pull --rebase origin main
