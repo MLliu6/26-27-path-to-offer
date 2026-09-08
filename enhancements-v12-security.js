@@ -15,6 +15,8 @@
   let adminUnlocked=false;
   let saveTimer=null;
   let persistChain=Promise.resolve(), pendingWrites=0;
+  const ADMIN_PROOF_KEY='pto.source-admin-until.v2';
+  const ADMIN_PROOF_TTL=20*60*1000;
 
   const $=s=>document.querySelector(s);
   const clone=v=>JSON.parse(JSON.stringify(v));
@@ -57,6 +59,13 @@
     return {username:account,owner:resolvedOwner,repo:resolvedRepo,id:await VAULT.accountId(account)};
   }
   const remoteContext=spec=>`github:${spec.owner.toLowerCase()}/${spec.repo.toLowerCase()}/${spec.id}`;
+  const isReservedAdminTarget=spec=>spec.username===ADMIN_ACCOUNT&&String(spec.owner).toLowerCase()===APP_OWNER.toLowerCase()&&String(spec.repo).toLowerCase()===APP_REPO.toLowerCase();
+  async function guardLocalVaultBeforeRemoteActivation(spec,password){
+    const raw=localStorage.getItem(localKey(spec.id));
+    if(!raw)return;
+    try{await VAULT.decryptJson(JSON.parse(raw),password,`local:${spec.id}`);}
+    catch(_){throw new Error('此设备已有由另一密码保护的本机账户。为防止覆盖，跨设备读取已被阻止；请打开“数据恢复”。');}
+  }
 
   function setAccountButton(){
     const button=$('#githubLoginBtn');if(!button)return;
@@ -141,6 +150,7 @@
   }
   async function initializeRemote({username,password,owner,repo,token,includeResumeText,portableWrite}){
     const spec=await accountSpec(username,owner,repo);
+    if(isReservedAdminTarget(spec))throw new Error('主仓库中的该路径仅用于信源管理员验证，不是个人求职账户；请使用本机账户或独立私有仓库。');
     if(!token||token.length<20)throw new Error('首次初始化需要仅授权该仓库 Contents 读写的 Fine-grained Token');
     await VAULT.verifyGithubToken({token,expectedLogin:spec.owner});
     const remote=await fetchRemote(spec,token);
@@ -164,8 +174,10 @@
     if(!remote)throw new Error('未找到远端账户。公共仓库可直接读取；私有仓库需提供 Token');
     const payload=await VAULT.decryptJson(remote.vault,password,remoteContext(spec));
     if(VAULT.normalizeAccount(payload.username)!==spec.username)throw new Error('账户校验失败');
+    if(activateAccount&&isReservedAdminTarget(spec))throw new Error('该远端文件是信源管理员凭据，不是个人求职账户；已阻止覆盖本机数据。');
     const localToken=token||payload.writeToken||'';
     if(activateAccount){
+      await guardLocalVaultBeforeRemoteActivation(spec,password);
       activate(payload,{...spec,mode:'github',password,token:localToken,remoteSha:remote.sha,remoteUpdatedAt:payload.updatedAt,remoteVerified:true,includeResumeText:!!payload.includeResumeText,portableWrite:!!payload.portableWrite});
       await persistEncryptedLocal();
       adminUnlocked=spec.username===ADMIN_ACCOUNT&&spec.owner.toLowerCase()===APP_OWNER.toLowerCase()&&spec.repo.toLowerCase()===APP_REPO.toLowerCase();
@@ -231,14 +243,23 @@
     $('#secureRemoteInit')?.addEventListener('click',()=>initializeRemote(remoteArgs()).catch(err=>toast(err.message)));
     $('#secureRemoteUnlock')?.addEventListener('click',()=>unlockRemote(remoteArgs()).catch(err=>toast(err.message)));
   }
-  function openSecureAccountModal(){openModal('账户、隐私与同步',accountHtml());bindAccountActions();}
+  function openSecureAccountModal(){
+    openModal('账户、隐私与同步',accountHtml());bindAccountActions();
+    const grid=$('.account-grid');
+    if(grid&&!$('#ptoRecoveryBanner'))grid.insertAdjacentHTML('beforebegin','<div id="ptoRecoveryBanner" class="vault-security-note"><strong>账户或记录异常？</strong> 不要覆盖账户。先打开 <a href="./recovery.html">本机数据恢复</a>，检查主密文、自动快照和旧版缓存。</div>');
+  }
+  function installRecoveryEntry(){
+    if($('#ptoRecoveryTop'))return;
+    const anchor=$('#addJobBtn');if(!anchor)return;
+    const link=document.createElement('a');link.id='ptoRecoveryTop';link.className='btn ghost';link.href='./recovery.html';link.textContent='数据恢复';link.title='检查本机加密快照与旧版缓存';anchor.parentNode.insertBefore(link,anchor);
+  }
 
   function sourceRowsHtml(){
     const sources=sourceStatus?.sources||[];
     if(!sources.length)return '<div class="empty-state"><strong>尚无刷新记录</strong><p>定时任务完成后显示来源、数量、最近错误与保留状态。</p></div>';
     return sources.map(source=>`<div class="source-status-row"><div><strong>${escaped(source.label||source.name||'招聘源')}</strong><small>${escaped(source.url||'')}</small></div><span class="source-health ${source.ok?'ok':'bad'}">${source.ok?`${Number(source.count||0).toLocaleString()} 条${source.preserved_previous?' · 保留上次有效数据':''}`:`异常 · ${escaped(source.error||'unknown')}`}</span></div>`).join('');
   }
-  function adminVerified(){return !!(adminUnlocked&&session?.username===ADMIN_ACCOUNT&&session?.remoteVerified&&String(session.owner).toLowerCase()===APP_OWNER.toLowerCase()&&String(session.repo).toLowerCase()===APP_REPO.toLowerCase());}
+  function adminVerified(){return Number(sessionStorage.getItem(ADMIN_PROOF_KEY)||0)>Date.now();}
   function showAdminSources(){
     const rows=sourceRowsHtml();
     if(adminVerified()){
@@ -247,7 +268,9 @@
     openModal('岗位源与刷新状态',`<div class="admin-source-wrap"><div class="admin-source-blur source-modal" aria-hidden="true"><p>管理员详细来源、数量、错误与抓取诊断。</p>${rows}</div><div class="admin-source-gate"><div class="admin-source-card"><h3>管理员信息已雾化</h3><p>输入管理员加密账户密码后查看详细来源健康状态。账号固定为 ${escaped(ADMIN_ACCOUNT)}，验证目标固定为 ${escaped(APP_OWNER)}/${escaped(APP_REPO)}。</p><input id="secureAdminPass" type="password" autocomplete="current-password" placeholder="管理员密码"><input id="secureAdminToken" type="password" autocomplete="off" placeholder="私有仓库时填写 Token（公共仓库可留空）"><button class="btn primary" id="secureAdminUnlock">解锁管理员视图</button><div class="vault-admin-proof">密码只在浏览器本地用于解密管理员 vault，不会发送给招聘源。</div></div></div></div>`);
     $('#secureAdminUnlock')?.addEventListener('click',async()=>{
       try{
-        await unlockRemote({username:ADMIN_ACCOUNT,password:value('#secureAdminPass'),owner:APP_OWNER,repo:APP_REPO,token:value('#secureAdminToken')},{activateAccount:true});
+        const proof=await unlockRemote({username:ADMIN_ACCOUNT,password:value('#secureAdminPass'),owner:APP_OWNER,repo:APP_REPO,token:value('#secureAdminToken')},{activateAccount:false});
+        if(VAULT.normalizeAccount(proof.payload.username)!==ADMIN_ACCOUNT)throw new Error('管理员账户校验失败');
+        sessionStorage.setItem(ADMIN_PROOF_KEY,String(Date.now()+ADMIN_PROOF_TTL));
         adminUnlocked=true;closeModal();showAdminSources();
       }catch(err){toast(err.message||'管理员验证失败');}
     });
@@ -256,6 +279,7 @@
 
   injectSecurityStyles();
   setAccountButton();
+  installRecoveryEntry();
   const sourceButton=$('#openSourcePanel');if(sourceButton)sourceButton.onclick=showAdminSources;
   window.PTO_SECURE_ACCOUNT_V2={openAccount:openSecureAccountModal,showSources:showAdminSources,companyInitial,flushLocal,pending:()=>!!saveTimer||pendingWrites>0};
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&session&&(saveTimer||pendingWrites))flushLocal().catch(err=>console.warn('vault flush failed',err));});
