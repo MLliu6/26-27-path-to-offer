@@ -39,6 +39,8 @@ jobs:
       PTO_RECRUIT_SWEEP_MAX_TARGETS: '32'
       PTO_RECRUIT_SWEEP_TIMEOUT_MS: '14000'
       PTO_PRIORITY_BROWSER_JD_CHARS: '1800'
+      PTO_KUAISHOU_MAX_PAGES: '180'
+      PTO_KUAISHOU_PAGE_TIMEOUT_MS: '9000'
       PTO_MAX_CATALOG: '60000'
       PTO_MAX_CN_CATALOG: '30000'
     steps:
@@ -61,7 +63,7 @@ jobs:
       - name: Unit-test recruitment-domain discovery, sharding and detail links
         run: PYTHONPATH=. python -m unittest -v tests.test_recruit_domain_expander tests.test_recruit_domain_detail_links tests.test_kuaishou_public_api_harvester
 
-      - name: Probe Kuaishou public campus projects
+      - name: Probe Kuaishou public recruitment routes
         if: ${{ github.event_name == 'pull_request' }}
         run: PYTHONPATH=. python tests/kuaishou_public_api_probe.py
 
@@ -86,40 +88,41 @@ jobs:
           sweep=groups.get('recruit-domain-sweep') or {}
           diag=sweep.get('diagnostics') or {}
           selected_ids={str(x.get('id') or '') for x in diag.get('selected',[]) if isinstance(x,dict)}
-          expected={}
-          for item in overrides.get('sources',[]):
-              if not isinstance(item,dict) or item.get('company')!='快手' or item.get('id') not in selected_ids:
-                  continue
-              template=str(item.get('detail_url_template') or '')
-              if '{id}' in template:
-                  expected[item['id']]=template.split('{id}',1)[0]
-          assert expected, selected_ids
-          rows_by_id={}
-          for source_id,prefix in expected.items():
+          specs={
+              'recruit-kuaishou-campus-2027': (250,'2027校园招聘','official-public-api','official-public-api','/campus/job-info/'),
+              'recruit-kuaishou-intern-2027': (200,'2027留用实习招聘','official-public-api','official-public-api','/campus/job-info/'),
+              'recruit-kuaishou-social': (1000,'社会招聘','official-browser-ui-xhr','browser-ui-navigation+xhr-observation','/official/social/job-info/'),
+              'recruit-kuaishou-trainee': (900,'日常实习','official-browser-ui-xhr','browser-ui-navigation+xhr-observation','/official/trainee/job-info/'),
+          }
+          assert set(specs).issubset(selected_ids), selected_ids
+          source_diag={x.get('id'):x for x in diag.get('sources',[]) if isinstance(x,dict)}
+          total=0
+          for source_id,(minimum,batch,observed,transport,path_fragment) in specs.items():
               src='direct-official:browser:'+source_id
               rows=[j for j in jobs if j.get('source')==src and str(j.get('position_id') or '').strip()]
-              assert rows, source_id
-              bad=[(j.get('role'),j.get('position_id'),j.get('apply_url')) for j in rows if not str(j.get('apply_url') or '').startswith(prefix)]
-              assert not bad, bad[:5]
+              assert len(rows)>=minimum, (source_id,len(rows))
+              assert all(j.get('batch')==batch for j in rows), (source_id,{j.get('batch') for j in rows[:30]})
+              assert all(j.get('observed_via')==observed for j in rows), source_id
               assert all(j.get('notice_url')==j.get('apply_url') for j in rows), source_id
-              rows_by_id[source_id]=rows
-          fulltime=rows_by_id['recruit-kuaishou-campus-2027']
-          intern=rows_by_id['recruit-kuaishou-intern-2027']
-          assert len(fulltime) >= 250, len(fulltime)
-          assert len(intern) >= 200, len(intern)
-          assert all(j.get('batch')=='2027校园招聘' for j in fulltime)
-          assert all(j.get('batch')=='2027留用实习招聘' for j in intern)
-          assert all(j.get('observed_via')=='official-public-api' for j in fulltime+intern)
-          source_diag={x.get('id'):x for x in diag.get('sources',[]) if isinstance(x,dict)}
-          for source_id in ('recruit-kuaishou-campus-2027','recruit-kuaishou-intern-2027'):
-              d=(source_diag[source_id].get('diagnostics') or {})
-              assert d.get('transport')=='official-public-api', d
-              assert d.get('complete') is True, d
-              assert int(d.get('reported_total') or 0)==int(d.get('unique_jobs') or -1), d
-          assert int(diag.get('reviewed_api_sources') or 0) == 2, diag.get('reviewed_api_sources')
-          assert int(diag.get('reviewed_api_fresh_jobs') or 0) >= 450, diag.get('reviewed_api_fresh_jobs')
-          print('kuaishou verified:', {k:len(v) for k,v in rows_by_id.items()})
-          print('reviewed API fresh:',diag.get('reviewed_api_fresh_jobs'),'detail links enriched:',diag.get('detail_links_enriched'))
+              assert all(path_fragment in str(j.get('apply_url') or '') for j in rows), (source_id,[j.get('apply_url') for j in rows[:5]])
+              status_row=source_diag.get(source_id) or {}
+              assert status_row.get('ok') and not status_row.get('preserved_previous'), (source_id,status_row)
+              d=status_row.get('diagnostics') or {}
+              assert d.get('transport')==transport and d.get('complete') is True, (source_id,d)
+              assert int(d.get('unique_jobs') or 0)==len(rows), (source_id,d,len(rows))
+              if observed=='official-public-api':
+                  assert int(d.get('reported_total') or 0)==len(rows), (source_id,d)
+              else:
+                  assert float(d.get('coverage_ratio') or 0)>=0.995, (source_id,d)
+                  assert int(d.get('pages_read') or 0)>=90, (source_id,d)
+                  assert d.get('cookie_values_exported') is False, (source_id,d)
+                  assert d.get('request_signature_reproduced') is False, (source_id,d)
+              total += len(rows)
+          assert int(diag.get('reviewed_api_sources') or 0) == 4, diag.get('reviewed_api_sources')
+          assert int(diag.get('reviewed_api_fresh_jobs') or 0) >= 2800, diag.get('reviewed_api_fresh_jobs')
+          assert total>=2800, total
+          print('kuaishou reviewed catalogues:',[(source_id,len([j for j in jobs if j.get('source')=='direct-official:browser:'+source_id])) for source_id in specs])
+          print('reviewed fresh:',diag.get('reviewed_api_fresh_jobs'),'combined=',total)
           PY
 
       - name: Rebuild graph with observed jobs and restore expanded nodes
@@ -161,12 +164,14 @@ jobs:
               srcs=[x for x in diag.get('sources',[]) if isinstance(x,dict)]
               ks=[x for x in srcs if x.get('company')=='快手']
               jd=[x for x in srcs if x.get('company')=='京东']
-              assert len(ks)>=3 and sum(int(x.get('count') or 0) for x in ks)>=500, ks
+              assert len(ks)>=4 and sum(int(x.get('count') or 0) for x in ks)>=2800, ks
+              assert all(x.get('ok') and not x.get('preserved_previous') for x in ks), ks
               assert jd and all(x.get('official_url') for x in jd), jd
               names='\n'.join((str(j.get('c',''))+' '+str(j.get('r',''))+' '+str(j.get('l',''))) for j in cn.get('jobs',[]))
               assert '快手' in names
               links=[str(j.get('u') or '') for j in cn.get('jobs',[]) if str(j.get('c') or '')=='快手']
-              assert any('/campus/job-info/' in u or '/official/social/job-info/' in u for u in links), links[:5]
+              for fragment in ['/campus/job-info/','/official/social/job-info/','/official/trainee/job-info/']:
+                  assert any(fragment in u for u in links), (fragment,links[:10])
           print('recruit domains:',catalog.get('source_count'),'sweepable=',catalog.get('sweepable_count'))
           print('shard:',diag.get('shard_index'),'/',diag.get('shard_count'),'selected=',diag.get('selected_targets'),'fresh=',sweep.get('fresh_count'))
           print('companies:',[(x.get('company'),x.get('count'),x.get('error')) for x in (diag.get('sources') or [])])
