@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 import json
+import shutil
 import sys
+import time
 from typing import Any
 
-import requests
-
-URL = "https://campus.kuaishou.cn/recruit/campus/e/api/v1/open/positions/simple"
-PROJECTS = {
-    "fulltime_2027": "20271779425607",
-    "retention_intern_2027": "20271772783534",
-}
-PAGES = (1, 7, 8, 13, 23)
+from playwright.sync_api import sync_playwright
 
 
 def scalar_meta(value: Any, prefix: str = "root", depth: int = 0) -> dict[str, Any]:
@@ -28,44 +23,89 @@ def scalar_meta(value: Any, prefix: str = "root", depth: int = 0) -> dict[str, A
     return out
 
 
-def rows_from(result: Any) -> list[dict[str, Any]]:
-    if isinstance(result, dict):
-        for key in ("list", "rows", "records", "positions", "data"):
-            rows = result.get(key)
-            if isinstance(rows, list):
-                return [x for x in rows if isinstance(x, dict)]
-    return []
+def rows_from(payload: Any) -> list[dict[str, Any]]:
+    result = payload.get("result") if isinstance(payload, dict) else None
+    rows = result.get("list") if isinstance(result, dict) else None
+    return [x for x in rows if isinstance(x, dict)] if isinstance(rows, list) else []
 
 
-def fetch(project: str, page: int) -> dict[str, Any]:
-    response = requests.post(
-        URL,
-        json={"recruitSubProjectCodes": [project], "pageSize": 10, "pageNum": page},
-        timeout=20,
-        headers={"User-Agent": "Mozilla/5.0 Path-to-Offer public recruitment regression"},
-    )
-    response.raise_for_status()
+def summarize(response) -> dict[str, Any]:
     payload = response.json()
-    if not isinstance(payload, dict) or payload.get("code") not in (0, 200, "0", "200", None):
-        raise RuntimeError(f"unexpected response: {payload!r}")
-    result = payload.get("result")
-    rows = rows_from(result)
+    result = payload.get("result") if isinstance(payload, dict) else {}
+    rows = rows_from(payload)
     return {
-        "page": page,
+        "url": response.url,
+        "status": response.status,
+        "code": payload.get("code"),
         "meta": scalar_meta(result),
         "count": len(rows),
         "ids": [str(x.get("id") or x.get("code") or "") for x in rows],
-        "names": [str(x.get("name") or "") for x in rows[:3]],
+        "names": [str(x.get("name") or "") for x in rows],
     }
 
 
+def chrome() -> str:
+    for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
+        path = shutil.which(name)
+        if path:
+            return path
+    raise RuntimeError("Chrome unavailable")
+
+
+def wait_page(page, nature: str, page_num: int, action):
+    def ok(response):
+        if "positions/simple" not in response.url or f"positionNatureCode={nature}" not in response.url or "workLocationCode=" in response.url:
+            return False
+        try:
+            payload = response.json()
+            result = payload.get("result") if isinstance(payload, dict) else None
+            return payload.get("code") in (0, "0", 200, "200") and isinstance(result, dict) and int(result.get("pageNum") or 0) == page_num
+        except Exception:
+            return False
+    with page.expect_response(ok, timeout=15000) as info:
+        action()
+    return summarize(info.value)
+
+
+def set_hash(page, value: str):
+    page.evaluate("value => { location.hash = value; }", value)
+
+
 def main() -> int:
-    report = {}
-    for label, project in PROJECTS.items():
-        pages = [fetch(project, page) for page in PAGES]
-        report[label] = {"project": project, "pages": pages}
-        print(json.dumps({label: report[label]}, ensure_ascii=False))
-    sys.stdout.flush()
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True, executable_path=chrome(), args=["--no-sandbox", "--disable-dev-shm-usage"])
+        page = browser.new_page(viewport={"width": 1440, "height": 1000}, locale="zh-CN")
+        try:
+            first = wait_page(
+                page, "C002", 1,
+                lambda: page.goto("https://zhaopin.kuaishou.cn/recruit/e/#/official/trainee/?pageNum=1", wait_until="domcontentloaded", timeout=30000),
+            )
+            page2 = wait_page(page, "C002", 2, lambda: set_hash(page, "/official/trainee/?pageNum=2"))
+            last = wait_page(page, "C002", 111, lambda: set_hash(page, "/official/trainee/?pageNum=111"))
+
+            # Validate the detail-route convention against a concrete public row,
+            # rather than assuming the social-recruiting route also applies here.
+            position_id = first["ids"][1] if len(first["ids"]) > 1 else first["ids"][0]
+            role = first["names"][1] if len(first["names"]) > 1 else first["names"][0]
+            candidate = f"https://zhaopin.kuaishou.cn/recruit/e/#/official/trainee/job-info/{position_id}"
+            page.goto(candidate, wait_until="domcontentloaded", timeout=30000)
+            time.sleep(4)
+            body = " ".join(page.locator("body").inner_text(timeout=5000).split())
+            detail = {
+                "candidate": candidate,
+                "final_url": page.url,
+                "title": page.title(),
+                "position_id": position_id,
+                "role": role,
+                "role_present": role in body,
+                "body": body[:1200],
+            }
+            print(json.dumps({
+                "trainee_unfiltered": {"page1": first, "page2": page2, "page111": last},
+                "detail_route": detail,
+            }, ensure_ascii=False))
+        finally:
+            browser.close()
     return 0
 
 
