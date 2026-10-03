@@ -1,7 +1,1359 @@
 {
-  "generated_at": "2026-10-03T22:11:07Z",
+  "generated_at": "2026-10-03T23:21:40Z",
   "catalog_count": 60000,
   "sources": [
+    {
+      "name": "official-source-graph",
+      "label": "企业招聘官网图谱 · 轮转自主抓取",
+      "url": "",
+      "ok": true,
+      "count": 0,
+      "error": "",
+      "diagnostics": {
+        "catalog_sources": 1190,
+        "sampled": 30,
+        "reachable": 22,
+        "concrete_jobs": 0,
+        "sites": [
+          {
+            "key": "招商银行|career.cmbchina.com|",
+            "company": "招商银行",
+            "url": "https://career.cmbchina.com/positionlist/96574F8D-C7ED-4772-AE7C-BAC896D190C1",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:14Z",
+            "errors": []
+          },
+          {
+            "key": "中国航天科技集团|spacechina.iguopin.com|",
+            "company": "中国航天科技集团",
+            "url": "https://spacechina.iguopin.com/job-campus",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:14Z",
+            "errors": []
+          },
+          {
+            "key": "中国电子科技集团|cetcjob.iguopin.com|",
+            "company": "中国电子科技集团",
+            "url": "https://cetcjob.iguopin.com/jobCampus",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:14Z",
+            "errors": []
+          },
+          {
+            "key": "滴滴|talent.didiglobal.com|",
+            "company": "滴滴",
+            "url": "https://talent.didiglobal.com/",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:14Z",
+            "errors": []
+          },
+          {
+            "key": "阿里巴巴|talent.alibaba.com|",
+            "company": "阿里巴巴",
+            "url": "https://talent.alibaba.com/campus/position-list",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:15Z",
+            "errors": []
+          },
+          {
+            "key": "字节跳动|jobs.bytedance.com|",
+            "company": "字节跳动",
+            "url": "https://jobs.bytedance.com/campus/position",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:15Z",
+            "errors": []
+          },
+          {
+            "key": "小米|xiaomi.jobs.f.mioffice.cn|",
+            "company": "小米",
+            "url": "https://xiaomi.jobs.f.mioffice.cn/campus",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:15Z",
+            "errors": []
+          },
+          {
+            "key": "中国石油|zhaopin.cnpc.com.cn|",
+            "company": "中国石油",
+            "url": "https://zhaopin.cnpc.com.cn/",
+            "ok": false,
+            "status": "request-failed",
+            "http_status": 412,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:16Z",
+            "errors": [
+              "https://zhaopin.cnpc.com.cn/: HTTPError: 412 Client Error: Precondition Failed for url: https://zhaopin.cnpc.com.cn/"
+            ]
+          },
+          {
+            "key": "中国石化|job.sinopec.com|",
+            "company": "中国石化",
+            "url": "https://job.sinopec.com/",
+            "ok": false,
+            "status": "request-failed",
+            "http_status": 0,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots unavailable: SSLError",
+            "checked_at": "2026-10-03T23:21:17Z",
+            "errors": [
+              "https://job.sinopec.com/: SSLError: HTTPSConnectionPool(host='job.sinopec.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationErr…"
+            ]
+          },
+          {
+            "key": "中国移动|job.10086.cn|",
+            "company": "中国移动",
+            "url": "https://job.10086.cn/",
+            "ok": false,
+            "status": "request-failed",
+            "http_status": 0,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots unavailable: SSLError",
+            "checked_at": "2026-10-03T23:21:17Z",
+            "errors": [
+              "https://job.10086.cn/: SSLError: HTTPSConnectionPool(host='job.10086.cn', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLError(1, '[SSL: UNSAFE…"
+            ]
+          },
+          {
+            "key": "中国电子|www.cec.com.cn|",
+            "company": "中国电子",
+            "url": "https://www.cec.com.cn/",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:17Z",
+            "errors": []
+          },
+          {
+            "key": "国家电网|zhaopin.sgcc.com.cn|",
+            "company": "国家电网",
+            "url": "https://zhaopin.sgcc.com.cn/",
+            "ok": false,
+            "status": "request-failed",
+            "http_status": 405,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots unavailable: ConnectionError",
+            "checked_at": "2026-10-03T23:21:18Z",
+            "errors": [
+              "https://zhaopin.sgcc.com.cn/: HTTPError: 405 Client Error: Not Allowed for url: https://zhaopin.sgcc.com.cn/"
+            ]
+          },
+          {
+            "key": "华为|www.huaweicloud.com|",
+            "company": "华为",
+            "url": "https://www.huaweicloud.com/lab/algorithm/campus_recruitment.html",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 5,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:18Z",
+            "errors": []
+          },
+          {
+            "key": "南方电网|zhaopin.csg.cn|",
+            "company": "南方电网",
+            "url": "https://zhaopin.csg.cn/",
+            "ok": false,
+            "status": "request-failed",
+            "http_status": 403,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots HTTP 403",
+            "checked_at": "2026-10-03T23:21:19Z",
+            "errors": [
+              "https://zhaopin.csg.cn/: HTTPError: 403 Client Error: Forbidden for url: https://zhaopin.csg.cn/"
+            ]
+          },
+          {
+            "key": "中国邮政储蓄银行|www.psbc.com|",
+            "company": "中国邮政储蓄银行",
+            "url": "https://www.psbc.com/cn/gyyc/rczp",
+            "ok": false,
+            "status": "request-failed",
+            "http_status": 400,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:20Z",
+            "errors": [
+              "https://www.psbc.com/cn/gyyc/rczp: HTTPError: 400 Client Error: Bad Request for url: http://www.psbc.com:9443/cn/gyyc/rczp/"
+            ]
+          },
+          {
+            "key": "京东|zhaopin.jd.com|",
+            "company": "京东",
+            "url": "https://zhaopin.jd.com/",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 3,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:20Z",
+            "errors": []
+          },
+          {
+            "key": "原粒半导体|www.calculet.com.cn|",
+            "company": "原粒半导体",
+            "url": "https://www.calculet.com.cn/jrwm",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:20Z",
+            "errors": []
+          },
+          {
+            "key": "华为|career.huawei.com|",
+            "company": "华为",
+            "url": "https://career.huawei.com/reccampportal/portal5/index.html",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 5,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:21Z",
+            "errors": []
+          },
+          {
+            "key": "国家能源集团|zhaopin.chnenergy.com.cn|",
+            "company": "国家能源集团",
+            "url": "https://zhaopin.chnenergy.com.cn/",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:21Z",
+            "errors": []
+          },
+          {
+            "key": "墨芯|www.moffettai.com|",
+            "company": "墨芯",
+            "url": "https://www.moffettai.com/jia-ru-wo-men",
+            "ok": false,
+            "status": "request-failed",
+            "http_status": 0,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots unavailable: SSLError",
+            "checked_at": "2026-10-03T23:21:22Z",
+            "errors": [
+              "https://www.moffettai.com/jia-ru-wo-men: SSLError: HTTPSConnectionPool(host='www.moffettai.com', port=443): Max retries exceeded with url: /jia-ru-wo-men (Caused by SSLError(SSLCert…"
+            ]
+          },
+          {
+            "key": "商汤科技|www.sensetime.com|",
+            "company": "商汤科技",
+            "url": "https://www.sensetime.com/",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 4,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:22Z",
+            "errors": []
+          },
+          {
+            "key": "大疆|we.dji.com|",
+            "company": "大疆",
+            "url": "https://we.dji.com/zh-CN/campus",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 2,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:22Z",
+            "errors": []
+          },
+          {
+            "key": "太初元碁|app.mokahr.com|campus-recruitment/tecorigin",
+            "company": "太初元碁",
+            "url": "https://app.mokahr.com/campus-recruitment/tecorigin/47402",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots parsed",
+            "checked_at": "2026-10-03T23:21:23Z",
+            "errors": []
+          },
+          {
+            "key": "小米|hr.xiaomi.com|",
+            "company": "小米",
+            "url": "https://hr.xiaomi.com/website/opportunities.html",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:23Z",
+            "errors": []
+          },
+          {
+            "key": "思朗科技|smartlogictech.jobs.feishu.cn|xiaozhao",
+            "company": "思朗科技",
+            "url": "https://smartlogictech.jobs.feishu.cn/xiaozhao/position/list",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:23Z",
+            "errors": []
+          },
+          {
+            "key": "拼多多|careers.pddglobalhr.com|",
+            "company": "拼多多",
+            "url": "https://careers.pddglobalhr.com/campus/grad",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 2,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots HTTP 403",
+            "checked_at": "2026-10-03T23:21:24Z",
+            "errors": []
+          },
+          {
+            "key": "小鹏集团|xiaopeng.jobs.feishu.cn|campus",
+            "company": "小鹏集团",
+            "url": "https://xiaopeng.jobs.feishu.cn/campus",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:24Z",
+            "errors": []
+          },
+          {
+            "key": "无问芯穹|infinigence.jobs.feishu.cn|",
+            "company": "无问芯穹",
+            "url": "https://infinigence.jobs.feishu.cn/",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:24Z",
+            "errors": []
+          },
+          {
+            "key": "中国电科|www.cetc.com.cn|",
+            "company": "中国电科",
+            "url": "https://www.cetc.com.cn/",
+            "ok": true,
+            "status": "reachable-no-concrete-job",
+            "http_status": 200,
+            "pages": 5,
+            "jobs": 0,
+            "year_signal": true,
+            "robots": "robots HTTP 404",
+            "checked_at": "2026-10-03T23:21:36Z",
+            "errors": []
+          },
+          {
+            "key": "中国航空工业集团|www.avic.com|",
+            "company": "中国航空工业集团",
+            "url": "https://www.avic.com/",
+            "ok": false,
+            "status": "request-failed",
+            "http_status": 0,
+            "pages": 1,
+            "jobs": 0,
+            "year_signal": false,
+            "robots": "robots unavailable: ConnectionError",
+            "checked_at": "2026-10-03T23:21:38Z",
+            "errors": [
+              "https://www.avic.com/: ConnectionError: HTTPSConnectionPool(host='www.avic.com', port=443): Max retries exceeded with url: / (Caused by NewConnectionError(\"HTTPSConnectio…"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ncss-current-all",
+      "label": "国家大学生就业服务平台 · 当前全国岗位",
+      "url": "https://www.ncss.cn/student/jobs/index.html",
+      "ok": true,
+      "count": 100,
+      "error": "",
+      "diagnostics": {
+        "max_rows": 12000,
+        "pages_scanned": 6,
+        "raw_rows": 100,
+        "short_page": 6,
+        "unique_rows": 100,
+        "unique_companies": 54,
+        "beijing_rows": 3,
+        "state_owned_rows": 12,
+        "explicit_2027_rows": 2,
+        "errors_sample": []
+      }
+    },
+    {
+      "name": "ncss-2027-public",
+      "label": "国家大学生就业服务平台 · 2027/当前校园岗位",
+      "url": "https://www.ncss.cn/student/jobs/index.html",
+      "ok": true,
+      "count": 616,
+      "error": "",
+      "diagnostics": {
+        "page_size": 20,
+        "explicit": {
+          "queries": [
+            {
+              "query": "2027",
+              "pages": 6,
+              "raw": 100,
+              "kept": 100
+            },
+            {
+              "query": "27届",
+              "pages": 6,
+              "raw": 100,
+              "kept": 100
+            }
+          ],
+          "explicit_unique": 200
+        },
+        "broad_current": {
+          "queries": [
+            {
+              "query": "实习",
+              "pages": 6,
+              "raw": 100,
+              "kept": 100
+            },
+            {
+              "query": "校园招聘",
+              "pages": 5,
+              "raw": 82,
+              "kept": 82
+            },
+            {
+              "query": "校招",
+              "pages": 6,
+              "raw": 100,
+              "kept": 100
+            },
+            {
+              "query": "应届",
+              "pages": 6,
+              "raw": 100,
+              "kept": 100
+            },
+            {
+              "query": "提前批",
+              "pages": 1,
+              "raw": 1,
+              "kept": 1
+            },
+            {
+              "query": "大模型",
+              "pages": 2,
+              "raw": 34,
+              "kept": 23
+            },
+            {
+              "query": "人工智能",
+              "pages": 3,
+              "raw": 48,
+              "kept": 9
+            },
+            {
+              "query": "多模态",
+              "pages": 1,
+              "raw": 3,
+              "kept": 1
+            },
+            {
+              "query": "算法",
+              "pages": 6,
+              "raw": 100,
+              "kept": 29
+            },
+            {
+              "query": "软件",
+              "pages": 6,
+              "raw": 100,
+              "kept": 35
+            },
+            {
+              "query": "后端",
+              "pages": 1,
+              "raw": 17,
+              "kept": 2
+            },
+            {
+              "query": "研发",
+              "pages": 6,
+              "raw": 100,
+              "kept": 17
+            },
+            {
+              "query": "开发",
+              "pages": 6,
+              "raw": 100,
+              "kept": 32
+            },
+            {
+              "query": "计算机",
+              "pages": 1,
+              "raw": 18,
+              "kept": 2
+            },
+            {
+              "query": "信息科技",
+              "pages": 6,
+              "raw": 100,
+              "kept": 14
+            },
+            {
+              "query": "芯片",
+              "pages": 2,
+              "raw": 31,
+              "kept": 3
+            },
+            {
+              "query": "GPU",
+              "pages": 1,
+              "raw": 4,
+              "kept": 0
+            },
+            {
+              "query": "CUDA",
+              "pages": 1,
+              "raw": 0,
+              "kept": 0
+            },
+            {
+              "query": "NPU",
+              "pages": 1,
+              "raw": 2,
+              "kept": 0
+            },
+            {
+              "query": "编译器",
+              "pages": 1,
+              "raw": 5,
+              "kept": 0
+            },
+            {
+              "query": "算子",
+              "pages": 1,
+              "raw": 0,
+              "kept": 0
+            },
+            {
+              "query": "系统软件",
+              "pages": 1,
+              "raw": 0,
+              "kept": 0
+            },
+            {
+              "query": "操作系统",
+              "pages": 1,
+              "raw": 0,
+              "kept": 0
+            },
+            {
+              "query": "机器人",
+              "pages": 3,
+              "raw": 58,
+              "kept": 11
+            },
+            {
+              "query": "自动驾驶",
+              "pages": 1,
+              "raw": 13,
+              "kept": 4
+            },
+            {
+              "query": "嵌入式",
+              "pages": 3,
+              "raw": 51,
+              "kept": 7
+            },
+            {
+              "query": "推理",
+              "pages": 1,
+              "raw": 6,
+              "kept": 1
+            },
+            {
+              "query": "高性能",
+              "pages": 1,
+              "raw": 1,
+              "kept": 0
+            },
+            {
+              "query": "分布式",
+              "pages": 1,
+              "raw": 0,
+              "kept": 0
+            },
+            {
+              "query": "云计算",
+              "pages": 1,
+              "raw": 2,
+              "kept": 0
+            },
+            {
+              "query": "网络安全",
+              "pages": 1,
+              "raw": 5,
+              "kept": 1
+            },
+            {
+              "query": "数据",
+              "pages": 6,
+              "raw": 100,
+              "kept": 36
+            }
+          ],
+          "unique": 476
+        },
+        "explicit_2027_rows": 267,
+        "priority_queries": 54,
+        "priority_companies_with_rows": 4,
+        "priority_company_counts": [
+          [
+            "中国农业银行",
+            4
+          ],
+          [
+            "中国工商银行",
+            1
+          ],
+          [
+            "中国银行",
+            1
+          ],
+          [
+            "招商银行",
+            1
+          ]
+        ],
+        "beijing_technical_rows": 11,
+        "state_owned_rows": 86,
+        "priority_query_diagnostics": {
+          "中国电信": {
+            "raw": 4,
+            "kept": 0,
+            "error": ""
+          },
+          "中国海油": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国石油": {
+            "raw": 3,
+            "kept": 1,
+            "error": ""
+          },
+          "国家能源集团": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国石化": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国联通": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国移动": {
+            "raw": 1,
+            "kept": 1,
+            "error": ""
+          },
+          "航天科技集团": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "国家电网": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "南方电网": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国商飞": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国航空工业集团": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "航天科工集团": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国中车": {
+            "raw": 1,
+            "kept": 0,
+            "error": ""
+          },
+          "中国电科": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国工商银行": {
+            "raw": 3,
+            "kept": 1,
+            "error": ""
+          },
+          "中国建设银行": {
+            "raw": 1,
+            "kept": 0,
+            "error": ""
+          },
+          "中国兵器装备集团": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国兵器工业集团": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国电子": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "中国农业银行": {
+            "raw": 8,
+            "kept": 4,
+            "error": ""
+          },
+          "中国银行": {
+            "raw": 5,
+            "kept": 1,
+            "error": ""
+          },
+          "交通银行": {
+            "raw": 5,
+            "kept": 0,
+            "error": ""
+          },
+          "中国邮政储蓄银行": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "阿里巴巴": {
+            "raw": 6,
+            "kept": 1,
+            "error": ""
+          },
+          "百度": {
+            "raw": 2,
+            "kept": 1,
+            "error": ""
+          },
+          "字节跳动": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "美团": {
+            "raw": 1,
+            "kept": 0,
+            "error": ""
+          },
+          "腾讯": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "招商银行": {
+            "raw": 20,
+            "kept": 1,
+            "error": ""
+          },
+          "华为": {
+            "raw": 1,
+            "kept": 0,
+            "error": ""
+          },
+          "京东": {
+            "raw": 2,
+            "kept": 0,
+            "error": ""
+          },
+          "拼多多": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "小米": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "小鹏集团": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "银河通用": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "大疆": {
+            "raw": 1,
+            "kept": 0,
+            "error": ""
+          },
+          "辉羲智能": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "宇树科技": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "智元机器人": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "摩尔线程": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "MiniMax": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "海光信息": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "月之暗面": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "寒武纪": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "智谱AI": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "燧原科技": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "地平线": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "沐曦": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "壁仞科技": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "阶跃星辰": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "Momenta": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "商汤科技": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          },
+          "杰瑞集团": {
+            "raw": 0,
+            "kept": 0,
+            "error": ""
+          }
+        },
+        "detail_url_pattern": "https://job.ncss.cn/student/jobs/{jobId}/detail.html"
+      }
+    },
+    {
+      "name": "university-2027-discovery",
+      "label": "高校就业网·2027招聘发现网络",
+      "url": "",
+      "ok": true,
+      "count": 38,
+      "error": "",
+      "diagnostics": {
+        "sources": [
+          {
+            "name": "吉林大学就业网",
+            "url": "https://jdjyw.jlu.edu.cn/",
+            "ok": true,
+            "index_candidates": 1,
+            "details_ok": 1,
+            "rows": 1,
+            "external_apply": 0,
+            "error": ""
+          },
+          {
+            "name": "南昌大学就业信息网",
+            "url": "https://jy.ncu.edu.cn/",
+            "ok": true,
+            "index_candidates": 0,
+            "details_ok": 0,
+            "rows": 0,
+            "external_apply": 0,
+            "error": ""
+          },
+          {
+            "name": "中国石油大学（华东）智慧就业网",
+            "url": "https://career.upc.edu.cn/career/index",
+            "ok": true,
+            "index_candidates": 0,
+            "details_ok": 0,
+            "rows": 0,
+            "external_apply": 0,
+            "error": ""
+          },
+          {
+            "name": "华南师范大学就业网",
+            "url": "https://career.scnu.edu.cn/",
+            "ok": true,
+            "index_candidates": 0,
+            "details_ok": 0,
+            "rows": 0,
+            "external_apply": 0,
+            "error": ""
+          },
+          {
+            "name": "南开大学就业信息网",
+            "url": "https://career.nankai.edu.cn/",
+            "ok": true,
+            "index_candidates": 14,
+            "details_ok": 14,
+            "rows": 14,
+            "external_apply": 13,
+            "error": ""
+          },
+          {
+            "name": "中国石油大学（北京）就业创业网",
+            "url": "https://career.cup.edu.cn/",
+            "ok": true,
+            "index_candidates": 23,
+            "details_ok": 23,
+            "rows": 23,
+            "external_apply": 23,
+            "error": ""
+          }
+        ],
+        "sources_ok": 6,
+        "external_apply": 36
+      }
+    },
+    {
+      "name": "central-soe-official-directory",
+      "label": "国务院/SASAC央企名录→企业官网招聘雷达",
+      "url": "https://gjzwfw.www.gov.cn/col/col1560/",
+      "ok": false,
+      "count": 0,
+      "error": "",
+      "diagnostics": {
+        "directory_pages": 1,
+        "companies": 0,
+        "failures": [],
+        "sites_checked": 0,
+        "sites_ok": 0,
+        "sites_with_recruit_links": 0,
+        "sites_with_2027_campaigns": 0,
+        "top": []
+      }
+    },
+    {
+      "name": "official-campaign-discovery",
+      "label": "企业官网 2027 招聘活动自动发现",
+      "url": "",
+      "ok": true,
+      "count": 5,
+      "error": "",
+      "diagnostics": {
+        "portals": 54,
+        "portals_ok": 39,
+        "portals_with_2027_links": 5,
+        "top": [
+          {
+            "company": "大疆",
+            "url": "https://we.dji.com/zh-CN/campus",
+            "ok": true,
+            "links": 1,
+            "error": "",
+            "final_url": "https://careers.dji.com/zh-CN/campus",
+            "status": 200
+          },
+          {
+            "company": "中国银行",
+            "url": "https://www.boc.cn/aboutboc/bi4/",
+            "ok": true,
+            "links": 1,
+            "error": "",
+            "final_url": "https://www.boc.cn/aboutboc/bi4/",
+            "status": 200
+          },
+          {
+            "company": "华为",
+            "url": "https://career.huawei.com/reccampportal/portal5/index.html",
+            "ok": true,
+            "links": 1,
+            "error": "",
+            "final_url": "https://career.huawei.com/reccampportal/portal5/index.html",
+            "status": 200
+          },
+          {
+            "company": "智元机器人",
+            "url": "https://www.zhiyuan-robot.com/",
+            "ok": true,
+            "links": 1,
+            "error": "",
+            "final_url": "https://www.agibot.com.cn/",
+            "status": 200
+          },
+          {
+            "company": "中国电科",
+            "url": "https://www.cetc.com.cn/",
+            "ok": true,
+            "links": 1,
+            "error": "",
+            "final_url": "https://www.cetc.com.cn/",
+            "status": 200
+          },
+          {
+            "company": "中国海油",
+            "url": "https://www.cnooc.com.cn/",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://www.cnooc.com.cn/",
+            "status": 200
+          },
+          {
+            "company": "中国电信",
+            "url": "https://hr.chinatelecom.com.cn/",
+            "ok": false,
+            "links": 0,
+            "error": "ConnectionError: HTTPSConnectionPool(host='hr.chinatelecom.com.cn', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='hr.chinatelecom.com.cn', port=4"
+          },
+          {
+            "company": "中国石化",
+            "url": "https://job.sinopec.com/",
+            "ok": false,
+            "links": 0,
+            "error": "SSLError: HTTPSConnectionPool(host='job.sinopec.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificat"
+          },
+          {
+            "company": "国家电网",
+            "url": "https://zhaopin.sgcc.com.cn/",
+            "ok": false,
+            "links": 0,
+            "error": "HTTPError: 412 Client Error: Precondition Failed for url: https://zhaopin.sgcc.com.cn/"
+          },
+          {
+            "company": "中国联通",
+            "url": "https://www.chinaunicom.com.cn/",
+            "ok": false,
+            "links": 0,
+            "error": "ConnectionError: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+          },
+          {
+            "company": "中国商飞",
+            "url": "https://www.comac.cc/",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://www.comac.cc/",
+            "status": 200
+          },
+          {
+            "company": "航天科工集团",
+            "url": "https://casic.zhiye.com/Campus",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://casic.zhiye.com/404?errorpath=%2fCampus",
+            "status": 200
+          },
+          {
+            "company": "中国石油",
+            "url": "https://zhaopin.cnpc.com.cn/",
+            "ok": false,
+            "links": 0,
+            "error": "HTTPError: 412 Client Error: Precondition Failed for url: https://zhaopin.cnpc.com.cn/"
+          },
+          {
+            "company": "国家能源集团",
+            "url": "https://zhaopin.chnenergy.com.cn/",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://zhaopin.chnenergy.com.cn/",
+            "status": 200
+          },
+          {
+            "company": "中国工商银行",
+            "url": "https://job.icbc.com.cn/pc/index.html",
+            "ok": false,
+            "links": 0,
+            "error": "SSLError: HTTPSConnectionPool(host='job.icbc.com.cn', port=443): Max retries exceeded with url: /pc/index.html (Caused by SSLError(SSLError(1, '[SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] un"
+          },
+          {
+            "company": "航天科技集团",
+            "url": "https://www.spacechina.com/",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://www.spacechina.com/",
+            "status": 200
+          },
+          {
+            "company": "中国中车",
+            "url": "https://www.crrcgc.cc/",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://www.crrcgc.cc/crrcgc/",
+            "status": 200
+          },
+          {
+            "company": "中国建设银行",
+            "url": "https://job.ccb.com/cn/job/index.html",
+            "ok": false,
+            "links": 0,
+            "error": "SSLError: HTTPSConnectionPool(host='job.ccb.com', port=443): Max retries exceeded with url: /cn/job/index.html (Caused by SSLError(SSLError(1, '[SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] un"
+          },
+          {
+            "company": "中国移动",
+            "url": "https://job.10086.cn/",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://job.10086.cn/",
+            "status": 200
+          },
+          {
+            "company": "中国电子",
+            "url": "https://www.cec.com.cn/",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://www.cec.com.cn/",
+            "status": 200
+          },
+          {
+            "company": "交通银行",
+            "url": "https://job.bankcomm.com/",
+            "ok": false,
+            "links": 0,
+            "error": "SSLError: HTTPSConnectionPool(host='job.bankcomm.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLError(1, '[SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] unsafe legacy "
+          },
+          {
+            "company": "中国农业银行",
+            "url": "https://career.abchina.com/",
+            "ok": false,
+            "links": 0,
+            "error": "SSLError: HTTPSConnectionPool(host='career.abchina.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLError(1, '[SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] unsafe legac"
+          },
+          {
+            "company": "腾讯",
+            "url": "https://careers.tencent.com/search.html",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://careers.tencent.com/search.html",
+            "status": 200
+          },
+          {
+            "company": "阿里巴巴",
+            "url": "https://talent.alibaba.com/campus/position-list",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://talent.alibaba.com/campus/position-list",
+            "status": 200
+          },
+          {
+            "company": "招商银行",
+            "url": "https://career.cmbchina.com/campus/home",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://career.cmbchina.com/campus/home",
+            "status": 200
+          },
+          {
+            "company": "百度",
+            "url": "https://talent.baidu.com/jobs/list?projectType=1",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://talent.baidu.com/jobs/list?projectType=1",
+            "status": 200
+          },
+          {
+            "company": "美团",
+            "url": "https://zhaopin.meituan.com/web/campus",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://zhaopin.meituan.com/web/campus",
+            "status": 200
+          },
+          {
+            "company": "小米",
+            "url": "https://hr.xiaomi.com/website/opportunities.html",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://hr.xiaomi.com/website/opportunities.html",
+            "status": 200
+          },
+          {
+            "company": "拼多多",
+            "url": "https://careers.pddglobalhr.com/campus/grad",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://careers.pddglobalhr.com/campus/grad",
+            "status": 200
+          },
+          {
+            "company": "银河通用",
+            "url": "https://www.galbot.com/careers",
+            "ok": true,
+            "links": 0,
+            "error": "",
+            "final_url": "https://www.galbot.com/careers",
+            "status": 200
+          }
+        ]
+      }
+    },
     {
       "name": "priority-browser-official",
       "label": "重点企业招聘官网/官方 ATS · 浏览器公开请求巡检",
@@ -31,12 +1383,12 @@
               "dom_links_seen": 0,
               "pages_advanced": 5,
               "observed_endpoints": [
-                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=.Tm4tgAAAADE5XCJSWd7Qv05uKAAJgB",
-                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=10&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=.Tm4tgAAAADE5XCJSWfwlP05uKAAJgB",
-                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=20&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=.Tm4tgAAAADE5XCJSWeg6.05uKAAJgB",
-                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=30&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=.Tm4tgAAAADE5XCJSWffz.05uKAAJgB",
-                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=40&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=.Tm4tgAAAADE5XCJSWc0cf05uKAAJgB",
-                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=50&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=.Tm4tgAAAADE5XCJSWfILv05uKAAJgB"
+                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p6yrdwAAAACecGNIMQMy5aesq2AAM15",
+                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=10&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p6yrdwAAAACecGNIMQO8Wqesq2AAM15",
+                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=20&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p6yrdwAAAACecGNIMQNr0Kesq2AAM15",
+                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=30&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p6yrdwAAAACecGNIMQOqtKesq2AAM15",
+                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=40&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p6yrdwAAAACecGNIMQPrJKesq2AAM15",
+                "https://r712him1th.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=50&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p6yrdwAAAACecGNIMQOTE6esq2AAM15"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
@@ -65,11 +1417,11 @@
                 "https://app.mokahr.com/api/env",
                 "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
                 "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
+                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
                 "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
                 "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=yinhetongyong",
-                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/module"
               ],
               "errors": [
@@ -96,14 +1448,14 @@
               "dom_links_seen": 0,
               "pages_advanced": 8,
               "observed_endpoints": [
-                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8tfaWgAAAADLCxJlSkXfFfLX2kAAJgf",
-                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=40&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8tfaWgAAAADLCxJlSkWYRPLX2kAAJgf",
-                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=60&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8tfaWgAAAADLCxJlSkVTQfLX2kAAJgf",
-                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=80&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8tfaWgAAAADLCxJlSkU9ifLX2kAAJgf",
-                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=100&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8tfaWgAAAADLCxJlSkV7LfLX2kAAJgf",
-                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=120&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8tfaWgAAAADLCxJlSkVKyvLX2kAAJgf",
-                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=140&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8tfaWgAAAADLCxJlSkVcMfLX2kAAJgf",
-                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=160&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8tfaWgAAAADLCxJlSkW2v.LX2kAAJgf"
+                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p0qdGwAAAACellUkZ4.QDadKnQAAM2X",
+                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=40&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p0qdGwAAAACellUkZ4-JPKdKnQAAM2X",
+                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=60&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p0qdGwAAAACellUkZ49OuKdKnQAAM2X",
+                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=80&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p0qdGwAAAACellUkZ484H6dKnQAAM2X",
+                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=100&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p0qdGwAAAACellUkZ4.js6dKnQAAM2X",
+                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=120&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p0qdGwAAAACellUkZ4-zUKdKnQAAM2X",
+                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=140&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p0qdGwAAAACellUkZ4.Et6dKnQAAM2X",
+                "https://agirobot.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=160&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=p0qdGwAAAACellUkZ4-yNqdKnQAAM2X"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
@@ -124,23 +1476,23 @@
               "start_url": "https://wecruit.hotjob.cn/SU6409ef49bef57c635fd390a6/pb/school.html?projectCode=102101",
               "final_url": "https://wecruit.hotjob.cn/SU6409ef49bef57c635fd390a6/pb/school.html?projectCode=102101",
               "unique_jobs": 12,
-              "json_responses": 9,
+              "json_responses": 8,
               "json_candidates": 0,
               "dom_links_seen": 52,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://wecruit.hotjob.cn/wecruit/suite/post/search/condition/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791055506824&recruitType=1",
-                "https://wecruit.hotjob.cn/wecruit/webSite/browse/save/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791055506818",
-                "https://wecruit.hotjob.cn/wecruit/suite/config/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791055507425",
-                "https://wecruit.hotjob.cn/wecruit/config/get/robot/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791055507728",
-                "https://wecruit.hotjob.cn/wecruit/positionInfo/listPosition/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791055507735",
-                "https://wecruit.hotjob.cn/wecruit/config/get/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791055507724",
-                "https://wecruit.hotjob.cn/wecruit/isLogin/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791055507725",
-                "https://wecruit.hotjob.cn/wecruit/suite/post/search/condition/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791055507425&recruitType=1",
-                "https://wecruit.hotjob.cn/wecruit/positionInfo/listSearchTerm/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791055508200"
+                "https://wecruit.hotjob.cn/wecruit/suite/post/search/condition/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791069195907&recruitType=1",
+                "https://wecruit.hotjob.cn/wecruit/suite/config/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791069196551",
+                "https://wecruit.hotjob.cn/wecruit/isLogin/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791069196894",
+                "https://wecruit.hotjob.cn/wecruit/positionInfo/listPosition/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791069196905",
+                "https://wecruit.hotjob.cn/wecruit/config/get/robot/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791069196896",
+                "https://wecruit.hotjob.cn/wecruit/config/get/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791069196893",
+                "https://wecruit.hotjob.cn/wecruit/suite/post/search/condition/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791069196551&recruitType=1",
+                "https://wecruit.hotjob.cn/wecruit/positionInfo/listSearchTerm/SU6409ef49bef57c635fd390a6?iSaJAx=isAjax&request_locale=zh_CN&t=1791069197358"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response Error: Response.json: Protocol error (Network.getResponseBody): No resource with given identifier found Response body is not available for a response that was navigate",
                 "response Error: Response.json: Protocol error (Network.getResponseBody): No resource with given identifier found Response body is not available for a response that was navigate",
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
@@ -166,10 +1518,10 @@
               "observed_endpoints": [
                 "https://app.mokahr.com/api/env",
                 "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
-                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
                 "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
-                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
+                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
+                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
                 "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=cambricon",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/module"
@@ -199,8 +1551,8 @@
               "dom_links_seen": 0,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://mthreads.zhiye.com/api/Common/GetPortalAIRobot?_timestamp=8321791055525690",
-                "https://mthreads.zhiye.com/api/PortalAgent/GetPortalAgentConfig?portalId=34a02663-6691-4ea8-a700-ade1fc26f5c4"
+                "https://mthreads.zhiye.com/api/PortalAgent/GetPortalAgentConfig?portalId=34a02663-6691-4ea8-a700-ade1fc26f5c4",
+                "https://mthreads.zhiye.com/api/Common/GetPortalAIRobot?_timestamp=8051791069215258"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -226,13 +1578,13 @@
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://recruitment.metax-tech.com/api/env",
-                "https://recruitment.metax-tech.com/api/outer/ats-jc-apply/website/feature-switches",
+                "https://recruitment.metax-tech.com/api/outer/ats-apply/privacy-policy/get",
                 "https://recruitment.metax-tech.com/api/outer/ats-apply/website/jobs/departments/flat",
                 "https://recruitment.metax-tech.com/api/outer/ats-apply/website/jobs/departments/structure",
+                "https://recruitment.metax-tech.com/api/outer/ats-jc-apply/website/feature-switches",
                 "https://recruitment.metax-tech.com/api/outer/ats-apply/website/group-by-job",
-                "https://recruitment.metax-tech.com/api/outer/ats-apply/privacy-policy/get",
-                "https://recruitment.metax-tech.com/api/extension-server/extension/list-by-org?orgId=metax-tech",
                 "https://recruitment.metax-tech.com/api/outer/ats-apply/website/listCountryCallingCodes",
+                "https://recruitment.metax-tech.com/api/extension-server/extension/list-by-org?orgId=metax-tech",
                 "https://recruitment.metax-tech.com/api/outer/ats-apply/website/jobs/module"
               ],
               "errors": [
@@ -262,10 +1614,10 @@
                 "https://app.mokahr.com/api/env",
                 "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
                 "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
-                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
                 "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
+                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
                 "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=biren",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/module"
               ],
@@ -293,13 +1645,13 @@
               "dom_links_seen": 0,
               "pages_advanced": 6,
               "observed_endpoints": [
-                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8qFDbwAAAADLfYtQ.nZ.X.KhQ3AAJhp",
-                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=10&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8qFDbwAAAADLfYtQ.nY8nfKhQ3AAJhp",
-                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=20&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8qFDbwAAAADLfYtQ.nbs5fKhQ3AAJhp",
-                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=30&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8qFDbwAAAADLfYtQ.nYr2PKhQ3AAJhp",
-                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=40&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8qFDbwAAAADLfYtQ.nY4jvKhQ3AAJhp",
-                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=50&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8qFDbwAAAADLfYtQ.nYUN.KhQ3AAJhp",
-                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=60&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8qFDbwAAAADLfYtQ.nbzhvKhQ3AAJhp"
+                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pxfOEgAAAACeywYtO.KhHacXzgAAM3i",
+                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=10&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pxfOEgAAAACeywYtO.JefKcXzgAAM3i",
+                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=20&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pxfOEgAAAACeywYtO.IN8qcXzgAAM3i",
+                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=30&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pxfOEgAAAACeywYtO.JM1qcXzgAAM3i",
+                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=40&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pxfOEgAAAACeywYtO.JaTKcXzgAAM3i",
+                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=50&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pxfOEgAAAACeywYtO.I1NacXzgAAM3i",
+                "https://zhipu-ai.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=60&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pxfOEgAAAACeywYtO.IUk6cXzgAAM3i"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
@@ -326,14 +1678,14 @@
               "pages_advanced": 1,
               "observed_endpoints": [
                 "https://app.mokahr.com/api/env",
+                "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
                 "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
                 "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
                 "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
-                "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
-                "https://app.mokahr.com/api/outer/ats-apply/store/filters",
                 "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=moonshot",
+                "https://app.mokahr.com/api/outer/ats-apply/store/filters",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/recent",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/v2",
                 "https://app.mokahr.com/api/outer/ats-apply/website/applicant-limit-check",
@@ -360,13 +1712,13 @@
               "unique_jobs": 31,
               "json_responses": 4,
               "json_candidates": 31,
-              "dom_links_seen": 0,
+              "dom_links_seen": 3,
               "pages_advanced": 3,
               "observed_endpoints": [
-                "https://vrfi1sk8a0.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=7495675705720965415&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8kCgJAAAAADLnGgbZk29s.JAoDAAJiK",
-                "https://vrfi1sk8a0.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=10&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=7495675705720965415&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8kCgJAAAAADLnGgbZk0u3PJAoDAAJiK",
-                "https://vrfi1sk8a0.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=20&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=7495675705720965415&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8kCgJAAAAADLnGgbZk1zGPJAoDAAJiK",
-                "https://vrfi1sk8a0.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=30&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=7495675705720965415&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=8kCgJAAAAADLnGgbZk3.KvJAoDAAJiK"
+                "https://vrfi1sk8a0.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=7495675705720965415&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pzSCKgAAAACe6EoVnpPmlKc0gjAAM4B",
+                "https://vrfi1sk8a0.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=10&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=7495675705720965415&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pzSCKgAAAACe6EoVnpNG7qc0gjAAM4B",
+                "https://vrfi1sk8a0.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=20&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=7495675705720965415&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pzSCKgAAAACe6EoVnpOKSac0gjAAM4B",
+                "https://vrfi1sk8a0.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=30&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=7495675705720965415&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=pzSCKgAAAACe6EoVnpMXS6c0gjAAM4B"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
@@ -393,10 +1745,10 @@
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://app.mokahr.com/api/env",
-                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
                 "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
-                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
+                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
+                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
                 "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
                 "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=step",
@@ -428,14 +1780,14 @@
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://app.mokahr.com/api/env",
-                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
                 "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
-                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
-                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
+                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
-                "https://app.mokahr.com/api/outer/ats-apply/store/filters",
+                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
+                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
                 "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=enflame",
+                "https://app.mokahr.com/api/outer/ats-apply/store/filters",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/recent",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/v2"
               ],
@@ -482,7 +1834,7 @@
             "official_url": "https://kunlunxin.zhiye.com/",
             "diagnostics": {
               "start_url": "https://kunlunxin.zhiye.com/xiangqing?jobId=151190919",
-              "final_url": "about:blank",
+              "final_url": "https://kunlunxin.zhiye.com/xiangqing?jobId=151190919",
               "unique_jobs": 0,
               "json_responses": 0,
               "json_candidates": 0,
@@ -490,7 +1842,8 @@
               "pages_advanced": 0,
               "observed_endpoints": [],
               "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 2 (char 1)"
+                "response JSONDecodeError: Expecting value: line 1 column 2 (char 1)",
+                "navigation timeout: Page.goto: Timeout 26000ms exceeded. Call log: - navigating to \"https://kunlunxin.zhiye.com/xiangqing?jobId=151190919\", waiting until \"domcontentloaded\""
               ],
               "transport": "browser-public-ui-xhr-dom"
             },
@@ -838,11 +2191,12 @@
               "start_url": "https://career.cmbchina.com/",
               "final_url": "https://career.cmbchina.com/home",
               "unique_jobs": 0,
-              "json_responses": 1,
+              "json_responses": 2,
               "json_candidates": 0,
               "dom_links_seen": 0,
               "pages_advanced": 0,
               "observed_endpoints": [
+                "https://career.cmbchina.com/api/socialRecruitmentWebsite/common/getPromotionalVideoCoverUrl",
                 "https://career.cmbchina.com/api/socialRecruitmentWebsite/common/getPromotionalVideoUrl"
               ],
               "errors": [
@@ -851,1599 +2205,6 @@
               "transport": "browser-public-ui-xhr-dom"
             },
             "error": "zero concrete browser jobs"
-          }
-        ]
-      }
-    },
-    {
-      "name": "recruit-domain-sweep",
-      "label": "招聘域名图谱 · 轮转真实浏览器/审核公开 API 巡检",
-      "url": "",
-      "ok": true,
-      "count": 88,
-      "fresh_count": 88,
-      "error": "",
-      "diagnostics": {
-        "transport": "real-browser-public-ui-xhr-dom",
-        "target_count": 6,
-        "fresh_companies": 4,
-        "sources": [
-          {
-            "id": "auto-recruit-fecbf357174c",
-            "company": "G2",
-            "ok": true,
-            "count": 76,
-            "preserved_previous": false,
-            "official_url": "https://jobs.ashbyhq.com/g2",
-            "diagnostics": {
-              "start_url": "https://jobs.ashbyhq.com/g2",
-              "final_url": "https://jobs.ashbyhq.com/g2",
-              "unique_jobs": 76,
-              "json_responses": 3,
-              "json_candidates": 77,
-              "dom_links_seen": 147,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://cdn.ashbyprd.com/frontend_non_user/3645fac90535f2bbd4233a853897adbdfc2d3c26/.vite/manifest.json",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-fee4b098096b",
-            "company": "中手游",
-            "ok": false,
-            "count": 0,
-            "fresh_count": 0,
-            "preserved_previous": false,
-            "official_url": "https://app.mokahr.com/social-recruitment/ztgame/92438",
-            "diagnostics": {
-              "start_url": "https://app.mokahr.com/social-recruitment/ztgame/92438",
-              "final_url": "about:blank",
-              "unique_jobs": 0,
-              "json_responses": 0,
-              "json_candidates": 0,
-              "dom_links_seen": 0,
-              "pages_advanced": 0,
-              "observed_endpoints": [],
-              "errors": [
-                "Error: Page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at https://app.mokahr.com/social-recruitment/ztgame/92438 Call log: - navigating to \"https://app.mokahr.com/social-recruitment/ztgame/92438\", waiting until \"domcontentloaded"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": "zero concrete browser jobs"
-          },
-          {
-            "id": "auto-recruit-ff993b90744e",
-            "company": "安克创新",
-            "ok": true,
-            "count": 4,
-            "preserved_previous": false,
-            "official_url": "https://anker-in.jobs.feishu.cn/index/position/7659302712135190838/detail",
-            "diagnostics": {
-              "start_url": "https://anker-in.jobs.feishu.cn/index/position/7659302712135190838/detail",
-              "final_url": "https://anker-in.jobs.feishu.cn/index/position/7659302712135190838/detail",
-              "unique_jobs": 4,
-              "json_responses": 17,
-              "json_candidates": 6,
-              "dom_links_seen": 6,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://anker-in.jobs.feishu.cn/api/v1/user/mobile/login_status?random=648401",
-                "https://anker-in.jobs.feishu.cn/api/v1/ip/location",
-                "https://anker-in.jobs.feishu.cn/api/v1/user/mobile/login_status?random=602135",
-                "https://anker-in.jobs.feishu.cn/api/v1/common/setting",
-                "https://anker-in.jobs.feishu.cn/api/v1/user/referral/protect/config/check?random=389102",
-                "https://anker-in.jobs.feishu.cn/api/v1/job/posts/7659302712135190838?portal_type=6&with_recommend=false&_signature=1cC3RwAAAADsHH94EArvndXAt1AAL8M&portal_type=6&with_recommend=false",
-                "https://starling.zijieapi.com/check_and_get_text/aff8e570233711eb96690bb0655fe40d/test/throne-biz?lang=zh,en",
-                "https://anker-in.jobs.feishu.cn/api/v1/config/referral/statement/",
-                "https://mon.zijieapi.com/monitor_web/settings/browser-settings?bid=portal&store=1",
-                "https://vcs.snssdk.com/vc/setting",
-                "https://mcs.snssdk.com/v1/user/webid",
-                "https://mcs.snssdk.com/v1/list"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-ffb65ac0ddff",
-            "company": "RVO Health",
-            "ok": true,
-            "count": 4,
-            "preserved_previous": false,
-            "official_url": "https://job-boards.greenhouse.io/rvohealth",
-            "diagnostics": {
-              "start_url": "https://job-boards.greenhouse.io/rvohealth",
-              "final_url": "https://job-boards.greenhouse.io/rvohealth",
-              "unique_jobs": 4,
-              "json_responses": 6,
-              "json_candidates": 4,
-              "dom_links_seen": 72,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.R-lS_ubZvAb3m9-wIgKSvPllqCnqNh66DE6GbQ7GFVQ.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-ffbde1ee3b3e",
-            "company": "第四范式",
-            "ok": false,
-            "count": 0,
-            "fresh_count": 0,
-            "preserved_previous": false,
-            "official_url": "https://4paradigm.zhiye.com/campus",
-            "diagnostics": {
-              "start_url": "https://4paradigm.zhiye.com/campus",
-              "final_url": "https://4paradigm.zhiye.com/404?errorpath=%2fcampus",
-              "unique_jobs": 0,
-              "json_responses": 0,
-              "json_candidates": 0,
-              "dom_links_seen": 0,
-              "pages_advanced": 0,
-              "observed_endpoints": [],
-              "errors": [
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": "zero concrete browser jobs"
-          },
-          {
-            "id": "auto-recruit-fff378b1fd78",
-            "company": "蓝色光标",
-            "ok": true,
-            "count": 4,
-            "preserved_previous": false,
-            "official_url": "https://bluefocus.jobs.feishu.cn/index/position/7663049153745013043/detail",
-            "diagnostics": {
-              "start_url": "https://bluefocus.jobs.feishu.cn/index/position/7663049153745013043/detail",
-              "final_url": "https://bluefocus.jobs.feishu.cn/index/position/7663049153745013043/detail",
-              "unique_jobs": 4,
-              "json_responses": 16,
-              "json_candidates": 6,
-              "dom_links_seen": 3,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://bluefocus.jobs.feishu.cn/api/v1/ip/location",
-                "https://bluefocus.jobs.feishu.cn/api/v1/user/mobile/login_status?random=849792",
-                "https://bluefocus.jobs.feishu.cn/api/v1/common/setting",
-                "https://bluefocus.jobs.feishu.cn/api/v1/user/mobile/login_status?random=886525",
-                "https://bluefocus.jobs.feishu.cn/api/v1/user/referral/protect/config/check?random=212314",
-                "https://starling.zijieapi.com/check_and_get_text/aff8e570233711eb96690bb0655fe40d/test/throne-biz?lang=zh,en",
-                "https://mcs.snssdk.com/v1/user/webid",
-                "https://vcs.snssdk.com/vc/setting",
-                "https://bluefocus.jobs.feishu.cn/api/v1/job/posts/7663049153745013043?portal_type=6&with_recommend=false&_signature=1dK4SgAAAADsDnB1.fp2CNXSuFAAL8e&portal_type=6&with_recommend=false",
-                "https://bluefocus.jobs.feishu.cn/api/v1/config/referral/statement/",
-                "https://mcs.snssdk.com/v1/list",
-                "https://mon.zijieapi.com/monitor_web/settings/browser-settings?bid=portal&store=1"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response UnicodeDecodeError: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          }
-        ],
-        "catalog_sweepable": 934,
-        "max_targets": 32,
-        "shard_count": 30,
-        "shard_index": 29,
-        "shard_mode": "clock-two-hour",
-        "forced_companies": [],
-        "forced_targets": 0,
-        "selected_targets": 6,
-        "reviewed_api_sources": 0,
-        "reviewed_api_fresh_jobs": 0,
-        "detail_links_enriched": 0,
-        "selected": [
-          {
-            "id": "auto-recruit-fecbf357174c",
-            "company": "G2",
-            "start_url": "https://jobs.ashbyhq.com/g2",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-fee4b098096b",
-            "company": "中手游",
-            "start_url": "https://app.mokahr.com/social-recruitment/ztgame/92438",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-ff993b90744e",
-            "company": "安克创新",
-            "start_url": "https://anker-in.jobs.feishu.cn/index/position/7659302712135190838/detail",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-ffb65ac0ddff",
-            "company": "RVO Health",
-            "start_url": "https://job-boards.greenhouse.io/rvohealth",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-ffbde1ee3b3e",
-            "company": "第四范式",
-            "start_url": "https://4paradigm.zhiye.com/campus",
-            "origin": "registry:official_source_registry_v12.json"
-          },
-          {
-            "id": "auto-recruit-fff378b1fd78",
-            "company": "蓝色光标",
-            "start_url": "https://bluefocus.jobs.feishu.cn/index/position/7663049153745013043/detail",
-            "origin": "official-source-graph"
-          }
-        ],
-        "catalog_total": 1008
-      }
-    },
-    {
-      "name": "official-source-graph",
-      "label": "企业招聘官网图谱 · 轮转自主抓取",
-      "url": "",
-      "ok": true,
-      "count": 12,
-      "error": "",
-      "diagnostics": {
-        "catalog_sources": 1188,
-        "sampled": 30,
-        "reachable": 26,
-        "concrete_jobs": 12,
-        "sites": [
-          {
-            "key": "招商银行|career.cmbchina.com|",
-            "company": "招商银行",
-            "url": "https://career.cmbchina.com/positionlist/96574F8D-C7ED-4772-AE7C-BAC896D190C1",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": false,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:40Z",
-            "errors": []
-          },
-          {
-            "key": "中国电子科技集团|cetcjob.iguopin.com|",
-            "company": "中国电子科技集团",
-            "url": "https://cetcjob.iguopin.com/jobCampus",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": false,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:40Z",
-            "errors": []
-          },
-          {
-            "key": "中国航天科技集团|spacechina.iguopin.com|",
-            "company": "中国航天科技集团",
-            "url": "https://spacechina.iguopin.com/job-campus",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": false,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:40Z",
-            "errors": []
-          },
-          {
-            "key": "滴滴|talent.didiglobal.com|",
-            "company": "滴滴",
-            "url": "https://talent.didiglobal.com/",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": false,
-            "robots": "robots HTTP 404",
-            "checked_at": "2026-10-03T19:32:40Z",
-            "errors": []
-          },
-          {
-            "key": "波士顿咨询|careers.bcg.com|",
-            "company": "波士顿咨询",
-            "url": "https://careers.bcg.com/global/en/locations/china",
-            "ok": false,
-            "status": "request-failed",
-            "http_status": 404,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": false,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:40Z",
-            "errors": [
-              "https://careers.bcg.com/global/en/locations/china: HTTPError: 404 Client Error: Not Found for url: https://careers.bcg.com/global/en/locations/china"
-            ]
-          },
-          {
-            "key": "阿里巴巴|talent.alibaba.com|",
-            "company": "阿里巴巴",
-            "url": "https://talent.alibaba.com/campus/position-list",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots HTTP 404",
-            "checked_at": "2026-10-03T19:32:40Z",
-            "errors": []
-          },
-          {
-            "key": "一加|careers.oneplus.com|",
-            "company": "一加",
-            "url": "https://careers.oneplus.com/",
-            "ok": false,
-            "status": "request-failed",
-            "http_status": 0,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": false,
-            "robots": "robots unavailable: ConnectionError",
-            "checked_at": "2026-10-03T19:32:41Z",
-            "errors": [
-              "https://careers.oneplus.com/: ConnectionError: HTTPSConnectionPool(host='careers.oneplus.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSC…"
-            ]
-          },
-          {
-            "key": "小米|xiaomi.jobs.f.mioffice.cn|",
-            "company": "小米",
-            "url": "https://xiaomi.jobs.f.mioffice.cn/campus",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots HTTP 404",
-            "checked_at": "2026-10-03T19:32:41Z",
-            "errors": []
-          },
-          {
-            "key": "国家电网|zhaopin.sgcc.com.cn|",
-            "company": "国家电网",
-            "url": "https://zhaopin.sgcc.com.cn/",
-            "ok": false,
-            "status": "request-failed",
-            "http_status": 405,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": false,
-            "robots": "robots unavailable: ConnectionError",
-            "checked_at": "2026-10-03T19:32:41Z",
-            "errors": [
-              "https://zhaopin.sgcc.com.cn/: HTTPError: 405 Client Error: Not Allowed for url: https://zhaopin.sgcc.com.cn/"
-            ]
-          },
-          {
-            "key": "强生中国|jobs.jnj.com|",
-            "company": "强生中国",
-            "url": "https://jobs.jnj.com/en/jobs",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:41Z",
-            "errors": []
-          },
-          {
-            "key": "字节跳动|jobs.bytedance.com|",
-            "company": "字节跳动",
-            "url": "https://jobs.bytedance.com/campus/position",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:42Z",
-            "errors": []
-          },
-          {
-            "key": "贝恩中国|www.bain.com|",
-            "company": "贝恩中国",
-            "url": "https://www.bain.com/careers/find-a-role",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:42Z",
-            "errors": []
-          },
-          {
-            "key": "联合利华中国|careers.unilever.com|china",
-            "company": "联合利华中国",
-            "url": "https://careers.unilever.com/china",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:43Z",
-            "errors": []
-          },
-          {
-            "key": "罗氏中国|careers.roche.com|",
-            "company": "罗氏中国",
-            "url": "https://careers.roche.com/global/en/china",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:43Z",
-            "errors": []
-          },
-          {
-            "key": "阿斯利康中国|careers.astrazeneca.com|",
-            "company": "阿斯利康中国",
-            "url": "https://careers.astrazeneca.com/china",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 1,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:43Z",
-            "errors": []
-          },
-          {
-            "key": "6sense|weworkremotely.com|",
-            "company": "6sense",
-            "url": "https://weworkremotely.com/remote-jobs/6sense-product-lead-predictive-platform",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:44Z",
-            "errors": []
-          },
-          {
-            "key": "aweber|remoteok.com|",
-            "company": "AWeber",
-            "url": "https://remoteok.com/remote-jobs/remote-operations-engineer-ii-aweber-1136778",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 1,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:44Z",
-            "errors": []
-          },
-          {
-            "key": "ace it careers|remoteok.com|",
-            "company": "Ace IT Careers",
-            "url": "https://remoteok.com/remote-jobs/remote-qa-tester-entry-level-ace-it-careers-1136701",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 1,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:44Z",
-            "errors": []
-          },
-          {
-            "key": "诺华中国|www.novartis.com|",
-            "company": "诺华中国",
-            "url": "https://www.novartis.com/careers/career-search",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:44Z",
-            "errors": []
-          },
-          {
-            "key": "adaptive teams|remoteok.com|",
-            "company": "Adaptive Teams",
-            "url": "https://remoteok.com/remote-jobs/remote-customer-service-representative-adaptive-teams-1136566",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 1,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:45Z",
-            "errors": []
-          },
-          {
-            "key": "american bureau of shipping (abs)|remoteok.com|",
-            "company": "American Bureau of Shipping (ABS)",
-            "url": "https://remoteok.com/remote-jobs/remote-surveyor-i-american-bureau-of-shipping-abs-1136592",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 2,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:45Z",
-            "errors": []
-          },
-          {
-            "key": "宝洁中国|www.pgcareers.com|",
-            "company": "宝洁中国",
-            "url": "https://www.pgcareers.com/cn/zh",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:45Z",
-            "errors": []
-          },
-          {
-            "key": "air apps|weworkremotely.com|",
-            "company": "Air Apps",
-            "url": "https://weworkremotely.com/remote-jobs/air-apps-framer-website-designer-1",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 1,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:45Z",
-            "errors": []
-          },
-          {
-            "key": "arabian private holdings|remoteok.com|",
-            "company": "Arabian Private Holdings",
-            "url": "https://remoteok.com/remote-jobs/remote-data-analyst-assistant-arabian-private-holdings-1136217",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 1,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:46Z",
-            "errors": []
-          },
-          {
-            "key": "anthropic|weworkremotely.com|",
-            "company": "Anthropic",
-            "url": "https://weworkremotely.com/remote-jobs/anthropic-community-engagement-manager-data-centers-texas",
-            "ok": true,
-            "status": "reachable-no-concrete-job",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 0,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:46Z",
-            "errors": []
-          },
-          {
-            "key": "arango|remoteok.com|",
-            "company": "Arango",
-            "url": "https://remoteok.com/remote-jobs/remote-golang-kubernetes-engineer-arango-1137400",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 1,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:46Z",
-            "errors": []
-          },
-          {
-            "key": "ashby|remoteok.com|",
-            "company": "Ashby",
-            "url": "https://remoteok.com/remote-jobs/remote-people-operations-coordinator-ashby-1137412",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 1,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:46Z",
-            "errors": []
-          },
-          {
-            "key": "bmwl|remoteok.com|",
-            "company": "BMWL",
-            "url": "https://remoteok.com/remote-jobs/remote-freelance-creative-director-bmwl-1135901",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 1,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:46Z",
-            "errors": []
-          },
-          {
-            "key": "balco, inc.|remoteok.com|",
-            "company": "Balco, Inc.",
-            "url": "https://remoteok.com/remote-jobs/remote-regional-sales-manager-balco-inc-1136097",
-            "ok": true,
-            "status": "jobs-found",
-            "http_status": 200,
-            "pages": 5,
-            "jobs": 1,
-            "year_signal": true,
-            "robots": "robots parsed",
-            "checked_at": "2026-10-03T19:32:46Z",
-            "errors": []
-          },
-          {
-            "key": "麦肯锡中国|www.mckinsey.com|",
-            "company": "麦肯锡中国",
-            "url": "https://www.mckinsey.com/cn/careers/search-jobs",
-            "ok": false,
-            "status": "request-failed",
-            "http_status": 0,
-            "pages": 1,
-            "jobs": 0,
-            "year_signal": false,
-            "robots": "robots unavailable: ReadTimeout",
-            "checked_at": "2026-10-03T19:33:02Z",
-            "errors": [
-              "https://www.mckinsey.com/cn/careers/search-jobs: ReadTimeout: HTTPSConnectionPool(host='www.mckinsey.com', port=443): Read timed out. (read timeout=13)"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "ncss-current-all",
-      "label": "国家大学生就业服务平台 · 当前全国岗位",
-      "url": "https://www.ncss.cn/student/jobs/index.html",
-      "ok": true,
-      "count": 100,
-      "error": "",
-      "diagnostics": {
-        "max_rows": 12000,
-        "pages_scanned": 6,
-        "raw_rows": 100,
-        "short_page": 6,
-        "unique_rows": 100,
-        "unique_companies": 54,
-        "beijing_rows": 3,
-        "state_owned_rows": 12,
-        "explicit_2027_rows": 2,
-        "errors_sample": []
-      }
-    },
-    {
-      "name": "ncss-2027-public",
-      "label": "国家大学生就业服务平台 · 2027/当前校园岗位",
-      "url": "https://www.ncss.cn/student/jobs/index.html",
-      "ok": true,
-      "count": 616,
-      "error": "",
-      "diagnostics": {
-        "page_size": 20,
-        "explicit": {
-          "queries": [
-            {
-              "query": "2027",
-              "pages": 6,
-              "raw": 100,
-              "kept": 100
-            },
-            {
-              "query": "27届",
-              "pages": 6,
-              "raw": 100,
-              "kept": 100
-            }
-          ],
-          "explicit_unique": 200
-        },
-        "broad_current": {
-          "queries": [
-            {
-              "query": "实习",
-              "pages": 6,
-              "raw": 100,
-              "kept": 100
-            },
-            {
-              "query": "校园招聘",
-              "pages": 5,
-              "raw": 82,
-              "kept": 82
-            },
-            {
-              "query": "校招",
-              "pages": 6,
-              "raw": 100,
-              "kept": 100
-            },
-            {
-              "query": "应届",
-              "pages": 6,
-              "raw": 100,
-              "kept": 100
-            },
-            {
-              "query": "提前批",
-              "pages": 1,
-              "raw": 1,
-              "kept": 1
-            },
-            {
-              "query": "大模型",
-              "pages": 2,
-              "raw": 34,
-              "kept": 23
-            },
-            {
-              "query": "人工智能",
-              "pages": 3,
-              "raw": 48,
-              "kept": 9
-            },
-            {
-              "query": "多模态",
-              "pages": 1,
-              "raw": 3,
-              "kept": 1
-            },
-            {
-              "query": "算法",
-              "pages": 6,
-              "raw": 100,
-              "kept": 29
-            },
-            {
-              "query": "软件",
-              "pages": 6,
-              "raw": 100,
-              "kept": 35
-            },
-            {
-              "query": "后端",
-              "pages": 1,
-              "raw": 17,
-              "kept": 2
-            },
-            {
-              "query": "研发",
-              "pages": 6,
-              "raw": 100,
-              "kept": 17
-            },
-            {
-              "query": "开发",
-              "pages": 6,
-              "raw": 100,
-              "kept": 32
-            },
-            {
-              "query": "计算机",
-              "pages": 1,
-              "raw": 18,
-              "kept": 2
-            },
-            {
-              "query": "信息科技",
-              "pages": 6,
-              "raw": 100,
-              "kept": 14
-            },
-            {
-              "query": "芯片",
-              "pages": 2,
-              "raw": 31,
-              "kept": 3
-            },
-            {
-              "query": "GPU",
-              "pages": 1,
-              "raw": 4,
-              "kept": 0
-            },
-            {
-              "query": "CUDA",
-              "pages": 1,
-              "raw": 0,
-              "kept": 0
-            },
-            {
-              "query": "NPU",
-              "pages": 1,
-              "raw": 2,
-              "kept": 0
-            },
-            {
-              "query": "编译器",
-              "pages": 1,
-              "raw": 5,
-              "kept": 0
-            },
-            {
-              "query": "算子",
-              "pages": 1,
-              "raw": 0,
-              "kept": 0
-            },
-            {
-              "query": "系统软件",
-              "pages": 1,
-              "raw": 0,
-              "kept": 0
-            },
-            {
-              "query": "操作系统",
-              "pages": 1,
-              "raw": 0,
-              "kept": 0
-            },
-            {
-              "query": "机器人",
-              "pages": 3,
-              "raw": 58,
-              "kept": 11
-            },
-            {
-              "query": "自动驾驶",
-              "pages": 1,
-              "raw": 13,
-              "kept": 4
-            },
-            {
-              "query": "嵌入式",
-              "pages": 3,
-              "raw": 51,
-              "kept": 7
-            },
-            {
-              "query": "推理",
-              "pages": 1,
-              "raw": 6,
-              "kept": 1
-            },
-            {
-              "query": "高性能",
-              "pages": 1,
-              "raw": 1,
-              "kept": 0
-            },
-            {
-              "query": "分布式",
-              "pages": 1,
-              "raw": 0,
-              "kept": 0
-            },
-            {
-              "query": "云计算",
-              "pages": 1,
-              "raw": 2,
-              "kept": 0
-            },
-            {
-              "query": "网络安全",
-              "pages": 1,
-              "raw": 5,
-              "kept": 1
-            },
-            {
-              "query": "数据",
-              "pages": 6,
-              "raw": 100,
-              "kept": 36
-            }
-          ],
-          "unique": 476
-        },
-        "explicit_2027_rows": 267,
-        "priority_queries": 54,
-        "priority_companies_with_rows": 4,
-        "priority_company_counts": [
-          [
-            "中国农业银行",
-            4
-          ],
-          [
-            "中国工商银行",
-            1
-          ],
-          [
-            "中国银行",
-            1
-          ],
-          [
-            "招商银行",
-            1
-          ]
-        ],
-        "beijing_technical_rows": 11,
-        "state_owned_rows": 86,
-        "priority_query_diagnostics": {
-          "中国移动": {
-            "raw": 1,
-            "kept": 1,
-            "error": ""
-          },
-          "国家能源集团": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "航天科技集团": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国电信": {
-            "raw": 4,
-            "kept": 0,
-            "error": ""
-          },
-          "中国海油": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "南方电网": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国石化": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "国家电网": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国联通": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国石油": {
-            "raw": 3,
-            "kept": 1,
-            "error": ""
-          },
-          "航天科工集团": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国航空工业集团": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国商飞": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国兵器工业集团": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国中车": {
-            "raw": 1,
-            "kept": 0,
-            "error": ""
-          },
-          "中国电科": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国建设银行": {
-            "raw": 1,
-            "kept": 0,
-            "error": ""
-          },
-          "中国兵器装备集团": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国电子": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国工商银行": {
-            "raw": 3,
-            "kept": 1,
-            "error": ""
-          },
-          "交通银行": {
-            "raw": 5,
-            "kept": 0,
-            "error": ""
-          },
-          "中国农业银行": {
-            "raw": 8,
-            "kept": 4,
-            "error": ""
-          },
-          "中国银行": {
-            "raw": 5,
-            "kept": 1,
-            "error": ""
-          },
-          "阿里巴巴": {
-            "raw": 6,
-            "kept": 1,
-            "error": ""
-          },
-          "腾讯": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "中国邮政储蓄银行": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "字节跳动": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "百度": {
-            "raw": 2,
-            "kept": 1,
-            "error": ""
-          },
-          "美团": {
-            "raw": 1,
-            "kept": 0,
-            "error": ""
-          },
-          "招商银行": {
-            "raw": 20,
-            "kept": 1,
-            "error": ""
-          },
-          "拼多多": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "京东": {
-            "raw": 2,
-            "kept": 0,
-            "error": ""
-          },
-          "小米": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "小鹏集团": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "华为": {
-            "raw": 1,
-            "kept": 0,
-            "error": ""
-          },
-          "辉羲智能": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "宇树科技": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "大疆": {
-            "raw": 1,
-            "kept": 0,
-            "error": ""
-          },
-          "银河通用": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "智元机器人": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "寒武纪": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "地平线": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "摩尔线程": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "燧原科技": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "沐曦": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "壁仞科技": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "智谱AI": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "海光信息": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "MiniMax": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "月之暗面": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "阶跃星辰": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "商汤科技": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "Momenta": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          },
-          "杰瑞集团": {
-            "raw": 0,
-            "kept": 0,
-            "error": ""
-          }
-        },
-        "detail_url_pattern": "https://job.ncss.cn/student/jobs/{jobId}/detail.html"
-      }
-    },
-    {
-      "name": "university-2027-discovery",
-      "label": "高校就业网·2027招聘发现网络",
-      "url": "",
-      "ok": true,
-      "count": 38,
-      "error": "",
-      "diagnostics": {
-        "sources": [
-          {
-            "name": "吉林大学就业网",
-            "url": "https://jdjyw.jlu.edu.cn/",
-            "ok": true,
-            "index_candidates": 1,
-            "details_ok": 1,
-            "rows": 1,
-            "external_apply": 0,
-            "error": ""
-          },
-          {
-            "name": "中国石油大学（华东）智慧就业网",
-            "url": "https://career.upc.edu.cn/career/index",
-            "ok": false,
-            "index_candidates": 0,
-            "details_ok": 0,
-            "rows": 0,
-            "external_apply": 0,
-            "error": "ConnectionError: HTTPSConnectionPool(host='career.upc.edu.cn', port=443): Max retries exceeded with url: /career/index (Caused by NewConnectionError(\"HTTPSConnection(host='career.upc.edu.cn', port="
-          },
-          {
-            "name": "华南师范大学就业网",
-            "url": "https://career.scnu.edu.cn/",
-            "ok": true,
-            "index_candidates": 0,
-            "details_ok": 0,
-            "rows": 0,
-            "external_apply": 0,
-            "error": ""
-          },
-          {
-            "name": "南昌大学就业信息网",
-            "url": "https://jy.ncu.edu.cn/",
-            "ok": true,
-            "index_candidates": 0,
-            "details_ok": 0,
-            "rows": 0,
-            "external_apply": 0,
-            "error": ""
-          },
-          {
-            "name": "南开大学就业信息网",
-            "url": "https://career.nankai.edu.cn/",
-            "ok": true,
-            "index_candidates": 14,
-            "details_ok": 14,
-            "rows": 14,
-            "external_apply": 13,
-            "error": ""
-          },
-          {
-            "name": "中国石油大学（北京）就业创业网",
-            "url": "https://career.cup.edu.cn/",
-            "ok": true,
-            "index_candidates": 23,
-            "details_ok": 23,
-            "rows": 23,
-            "external_apply": 23,
-            "error": ""
-          }
-        ],
-        "sources_ok": 5,
-        "external_apply": 36
-      }
-    },
-    {
-      "name": "central-soe-official-directory",
-      "label": "国务院/SASAC央企名录→企业官网招聘雷达",
-      "url": "https://gjzwfw.www.gov.cn/col/col1560/",
-      "ok": false,
-      "count": 0,
-      "error": "",
-      "diagnostics": {
-        "directory_pages": 1,
-        "companies": 0,
-        "failures": [],
-        "sites_checked": 0,
-        "sites_ok": 0,
-        "sites_with_recruit_links": 0,
-        "sites_with_2027_campaigns": 0,
-        "top": []
-      }
-    },
-    {
-      "name": "official-campaign-discovery",
-      "label": "企业官网 2027 招聘活动自动发现",
-      "url": "",
-      "ok": true,
-      "count": 5,
-      "error": "",
-      "diagnostics": {
-        "portals": 54,
-        "portals_ok": 42,
-        "portals_with_2027_links": 5,
-        "top": [
-          {
-            "company": "中国银行",
-            "url": "https://www.boc.cn/aboutboc/bi4/",
-            "ok": true,
-            "links": 1,
-            "error": "",
-            "final_url": "https://www.boc.cn/aboutboc/bi4/",
-            "status": 200
-          },
-          {
-            "company": "大疆",
-            "url": "https://we.dji.com/zh-CN/campus",
-            "ok": true,
-            "links": 1,
-            "error": "",
-            "final_url": "https://careers.dji.com/zh-CN/campus",
-            "status": 200
-          },
-          {
-            "company": "华为",
-            "url": "https://career.huawei.com/reccampportal/portal5/index.html",
-            "ok": true,
-            "links": 1,
-            "error": "",
-            "final_url": "https://career.huawei.com/reccampportal/portal5/index.html",
-            "status": 200
-          },
-          {
-            "company": "智元机器人",
-            "url": "https://www.zhiyuan-robot.com/",
-            "ok": true,
-            "links": 1,
-            "error": "",
-            "final_url": "https://www.agibot.com.cn/",
-            "status": 200
-          },
-          {
-            "company": "中国电科",
-            "url": "https://www.cetc.com.cn/",
-            "ok": true,
-            "links": 1,
-            "error": "",
-            "final_url": "https://www.cetc.com.cn/",
-            "status": 200
-          },
-          {
-            "company": "中国电信",
-            "url": "https://hr.chinatelecom.com.cn/",
-            "ok": false,
-            "links": 0,
-            "error": "ConnectionError: HTTPSConnectionPool(host='hr.chinatelecom.com.cn', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPSConnection(host='hr.chinatelecom.com.cn', port=4"
-          },
-          {
-            "company": "中国海油",
-            "url": "https://www.cnooc.com.cn/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://www.cnooc.com.cn/",
-            "status": 200
-          },
-          {
-            "company": "南方电网",
-            "url": "https://zhaopin.csg.cn/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://zhaopin.csg.cn/",
-            "status": 200
-          },
-          {
-            "company": "国家电网",
-            "url": "https://zhaopin.sgcc.com.cn/",
-            "ok": false,
-            "links": 0,
-            "error": "HTTPError: 412 Client Error: Precondition Failed for url: https://zhaopin.sgcc.com.cn/"
-          },
-          {
-            "company": "中国商飞",
-            "url": "https://www.comac.cc/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://www.comac.cc/",
-            "status": 200
-          },
-          {
-            "company": "航天科工集团",
-            "url": "https://casic.zhiye.com/Campus",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://casic.zhiye.com/404?errorpath=%2fCampus",
-            "status": 200
-          },
-          {
-            "company": "中国移动",
-            "url": "https://job.10086.cn/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://job.10086.cn/",
-            "status": 200
-          },
-          {
-            "company": "中国工商银行",
-            "url": "https://job.icbc.com.cn/pc/index.html",
-            "ok": false,
-            "links": 0,
-            "error": "SSLError: HTTPSConnectionPool(host='job.icbc.com.cn', port=443): Max retries exceeded with url: /pc/index.html (Caused by SSLError(SSLError(1, '[SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] un"
-          },
-          {
-            "company": "中国石油",
-            "url": "https://zhaopin.cnpc.com.cn/",
-            "ok": false,
-            "links": 0,
-            "error": "HTTPError: 412 Client Error: Precondition Failed for url: https://zhaopin.cnpc.com.cn/"
-          },
-          {
-            "company": "中国石化",
-            "url": "https://job.sinopec.com/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://job.sinopec.com/",
-            "status": 200
-          },
-          {
-            "company": "中国建设银行",
-            "url": "https://job.ccb.com/cn/job/index.html",
-            "ok": false,
-            "links": 0,
-            "error": "SSLError: HTTPSConnectionPool(host='job.ccb.com', port=443): Max retries exceeded with url: /cn/job/index.html (Caused by SSLError(SSLError(1, '[SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] un"
-          },
-          {
-            "company": "中国电子",
-            "url": "https://www.cec.com.cn/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://www.cec.com.cn/",
-            "status": 200
-          },
-          {
-            "company": "航天科技集团",
-            "url": "https://www.spacechina.com/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://www.spacechina.com/",
-            "status": 200
-          },
-          {
-            "company": "国家能源集团",
-            "url": "https://zhaopin.chnenergy.com.cn/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://zhaopin.chnenergy.com.cn/",
-            "status": 200
-          },
-          {
-            "company": "中国农业银行",
-            "url": "https://career.abchina.com/",
-            "ok": false,
-            "links": 0,
-            "error": "SSLError: HTTPSConnectionPool(host='career.abchina.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLError(1, '[SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] unsafe legac"
-          },
-          {
-            "company": "交通银行",
-            "url": "https://job.bankcomm.com/",
-            "ok": false,
-            "links": 0,
-            "error": "SSLError: HTTPSConnectionPool(host='job.bankcomm.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLError(1, '[SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] unsafe legacy "
-          },
-          {
-            "company": "中国联通",
-            "url": "https://www.chinaunicom.com.cn/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://www.chinaunicom.com.cn/",
-            "status": 200
-          },
-          {
-            "company": "腾讯",
-            "url": "https://careers.tencent.com/search.html",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://careers.tencent.com/search.html",
-            "status": 200
-          },
-          {
-            "company": "中国中车",
-            "url": "https://www.crrcgc.cc/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://www.crrcgc.cc/crrcgc/",
-            "status": 200
-          },
-          {
-            "company": "招商银行",
-            "url": "https://career.cmbchina.com/campus/home",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://career.cmbchina.com/campus/home",
-            "status": 200
-          },
-          {
-            "company": "百度",
-            "url": "https://talent.baidu.com/jobs/list?projectType=1",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://talent.baidu.com/jobs/list?projectType=1",
-            "status": 200
-          },
-          {
-            "company": "中国邮政储蓄银行",
-            "url": "https://www.psbc.com/cn/gyyc/rczp/",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://www.psbc.com/cn/gyyc/rczp/",
-            "status": 200
-          },
-          {
-            "company": "小鹏集团",
-            "url": "https://xiaopeng.jobs.feishu.cn/campus",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://xiaopeng.jobs.feishu.cn/campus",
-            "status": 200
-          },
-          {
-            "company": "拼多多",
-            "url": "https://careers.pddglobalhr.com/campus/grad",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://careers.pddglobalhr.com/campus/grad",
-            "status": 200
-          },
-          {
-            "company": "小米",
-            "url": "https://hr.xiaomi.com/website/opportunities.html",
-            "ok": true,
-            "links": 0,
-            "error": "",
-            "final_url": "https://hr.xiaomi.com/website/opportunities.html",
-            "status": 200
           }
         ]
       }
@@ -2494,7 +2255,7 @@
       "diagnostics": {
         "registry": "sources/priority_official_sources.json",
         "watch_total": 54,
-        "watch_ok": 41,
+        "watch_ok": 39,
         "watch_2027": 6,
         "watch": [
           {
@@ -2603,7 +2364,7 @@
             "year_2027": false,
             "status": 200,
             "error": "",
-            "final_url": "https://zhaopin.jd.com/home;jsessionid=5B885DB829888B9534C58920AACAFBE8.s1"
+            "final_url": "https://zhaopin.jd.com/home;jsessionid=6D4C96EFB89F89FDC1F7C44713110166.s1"
           },
           {
             "company": "字节跳动",
@@ -2848,12 +2609,11 @@
             "company": "中国石化",
             "category": "央企/能源",
             "url": "https://job.sinopec.com/",
-            "ok": true,
+            "ok": false,
             "campus_signal": false,
             "year_2027": false,
-            "status": 200,
-            "error": "",
-            "final_url": "https://job.sinopec.com/"
+            "status": 0,
+            "error": "SSLError: HTTPSConnectionPool(host='job.sinopec.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificat"
           },
           {
             "company": "中国石油",
@@ -2933,12 +2693,11 @@
             "company": "中国移动",
             "category": "央企/通信",
             "url": "https://job.10086.cn/",
-            "ok": true,
+            "ok": false,
             "campus_signal": false,
             "year_2027": false,
-            "status": 200,
-            "error": "",
-            "final_url": "https://job.10086.cn/"
+            "status": 0,
+            "error": "SSLError: HTTPSConnectionPool(host='job.10086.cn', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLError(1, '[SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED] unsafe legacy rene"
           },
           {
             "company": "中国联通",
@@ -5633,6 +5392,251 @@
       }
     },
     {
+      "name": "recruit-domain-sweep",
+      "label": "招聘域名图谱 · 轮转真实浏览器/审核公开 API 巡检",
+      "url": "",
+      "ok": true,
+      "count": 88,
+      "fresh_count": 88,
+      "error": "",
+      "diagnostics": {
+        "transport": "real-browser-public-ui-xhr-dom",
+        "target_count": 6,
+        "fresh_companies": 4,
+        "sources": [
+          {
+            "id": "auto-recruit-fecbf357174c",
+            "company": "G2",
+            "ok": true,
+            "count": 76,
+            "preserved_previous": false,
+            "official_url": "https://jobs.ashbyhq.com/g2",
+            "diagnostics": {
+              "start_url": "https://jobs.ashbyhq.com/g2",
+              "final_url": "https://jobs.ashbyhq.com/g2",
+              "unique_jobs": 76,
+              "json_responses": 3,
+              "json_candidates": 77,
+              "dom_links_seen": 147,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://cdn.ashbyprd.com/frontend_non_user/3645fac90535f2bbd4233a853897adbdfc2d3c26/.vite/manifest.json",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-fee4b098096b",
+            "company": "中手游",
+            "ok": false,
+            "count": 0,
+            "fresh_count": 0,
+            "preserved_previous": false,
+            "official_url": "https://app.mokahr.com/social-recruitment/ztgame/92438",
+            "diagnostics": {
+              "start_url": "https://app.mokahr.com/social-recruitment/ztgame/92438",
+              "final_url": "about:blank",
+              "unique_jobs": 0,
+              "json_responses": 0,
+              "json_candidates": 0,
+              "dom_links_seen": 0,
+              "pages_advanced": 0,
+              "observed_endpoints": [],
+              "errors": [
+                "Error: Page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at https://app.mokahr.com/social-recruitment/ztgame/92438 Call log: - navigating to \"https://app.mokahr.com/social-recruitment/ztgame/92438\", waiting until \"domcontentloaded"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": "zero concrete browser jobs"
+          },
+          {
+            "id": "auto-recruit-ff993b90744e",
+            "company": "安克创新",
+            "ok": true,
+            "count": 4,
+            "preserved_previous": false,
+            "official_url": "https://anker-in.jobs.feishu.cn/index/position/7659302712135190838/detail",
+            "diagnostics": {
+              "start_url": "https://anker-in.jobs.feishu.cn/index/position/7659302712135190838/detail",
+              "final_url": "https://anker-in.jobs.feishu.cn/index/position/7659302712135190838/detail",
+              "unique_jobs": 4,
+              "json_responses": 17,
+              "json_candidates": 6,
+              "dom_links_seen": 6,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://anker-in.jobs.feishu.cn/api/v1/user/mobile/login_status?random=648401",
+                "https://anker-in.jobs.feishu.cn/api/v1/ip/location",
+                "https://anker-in.jobs.feishu.cn/api/v1/user/mobile/login_status?random=602135",
+                "https://anker-in.jobs.feishu.cn/api/v1/common/setting",
+                "https://anker-in.jobs.feishu.cn/api/v1/user/referral/protect/config/check?random=389102",
+                "https://anker-in.jobs.feishu.cn/api/v1/job/posts/7659302712135190838?portal_type=6&with_recommend=false&_signature=1cC3RwAAAADsHH94EArvndXAt1AAL8M&portal_type=6&with_recommend=false",
+                "https://starling.zijieapi.com/check_and_get_text/aff8e570233711eb96690bb0655fe40d/test/throne-biz?lang=zh,en",
+                "https://anker-in.jobs.feishu.cn/api/v1/config/referral/statement/",
+                "https://mon.zijieapi.com/monitor_web/settings/browser-settings?bid=portal&store=1",
+                "https://vcs.snssdk.com/vc/setting",
+                "https://mcs.snssdk.com/v1/user/webid",
+                "https://mcs.snssdk.com/v1/list"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-ffb65ac0ddff",
+            "company": "RVO Health",
+            "ok": true,
+            "count": 4,
+            "preserved_previous": false,
+            "official_url": "https://job-boards.greenhouse.io/rvohealth",
+            "diagnostics": {
+              "start_url": "https://job-boards.greenhouse.io/rvohealth",
+              "final_url": "https://job-boards.greenhouse.io/rvohealth",
+              "unique_jobs": 4,
+              "json_responses": 6,
+              "json_candidates": 4,
+              "dom_links_seen": 72,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.R-lS_ubZvAb3m9-wIgKSvPllqCnqNh66DE6GbQ7GFVQ.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-ffbde1ee3b3e",
+            "company": "第四范式",
+            "ok": false,
+            "count": 0,
+            "fresh_count": 0,
+            "preserved_previous": false,
+            "official_url": "https://4paradigm.zhiye.com/campus",
+            "diagnostics": {
+              "start_url": "https://4paradigm.zhiye.com/campus",
+              "final_url": "https://4paradigm.zhiye.com/404?errorpath=%2fcampus",
+              "unique_jobs": 0,
+              "json_responses": 0,
+              "json_candidates": 0,
+              "dom_links_seen": 0,
+              "pages_advanced": 0,
+              "observed_endpoints": [],
+              "errors": [
+                "response Error: Response.json: Response body is unavailable for redirect responses",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": "zero concrete browser jobs"
+          },
+          {
+            "id": "auto-recruit-fff378b1fd78",
+            "company": "蓝色光标",
+            "ok": true,
+            "count": 4,
+            "preserved_previous": false,
+            "official_url": "https://bluefocus.jobs.feishu.cn/index/position/7663049153745013043/detail",
+            "diagnostics": {
+              "start_url": "https://bluefocus.jobs.feishu.cn/index/position/7663049153745013043/detail",
+              "final_url": "https://bluefocus.jobs.feishu.cn/index/position/7663049153745013043/detail",
+              "unique_jobs": 4,
+              "json_responses": 16,
+              "json_candidates": 6,
+              "dom_links_seen": 3,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://bluefocus.jobs.feishu.cn/api/v1/ip/location",
+                "https://bluefocus.jobs.feishu.cn/api/v1/user/mobile/login_status?random=849792",
+                "https://bluefocus.jobs.feishu.cn/api/v1/common/setting",
+                "https://bluefocus.jobs.feishu.cn/api/v1/user/mobile/login_status?random=886525",
+                "https://bluefocus.jobs.feishu.cn/api/v1/user/referral/protect/config/check?random=212314",
+                "https://starling.zijieapi.com/check_and_get_text/aff8e570233711eb96690bb0655fe40d/test/throne-biz?lang=zh,en",
+                "https://mcs.snssdk.com/v1/user/webid",
+                "https://vcs.snssdk.com/vc/setting",
+                "https://bluefocus.jobs.feishu.cn/api/v1/job/posts/7663049153745013043?portal_type=6&with_recommend=false&_signature=1dK4SgAAAADsDnB1.fp2CNXSuFAAL8e&portal_type=6&with_recommend=false",
+                "https://bluefocus.jobs.feishu.cn/api/v1/config/referral/statement/",
+                "https://mcs.snssdk.com/v1/list",
+                "https://mon.zijieapi.com/monitor_web/settings/browser-settings?bid=portal&store=1"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response UnicodeDecodeError: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          }
+        ],
+        "catalog_sweepable": 934,
+        "max_targets": 32,
+        "shard_count": 30,
+        "shard_index": 29,
+        "shard_mode": "clock-two-hour",
+        "forced_companies": [],
+        "forced_targets": 0,
+        "selected_targets": 6,
+        "reviewed_api_sources": 0,
+        "reviewed_api_fresh_jobs": 0,
+        "detail_links_enriched": 0,
+        "selected": [
+          {
+            "id": "auto-recruit-fecbf357174c",
+            "company": "G2",
+            "start_url": "https://jobs.ashbyhq.com/g2",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-fee4b098096b",
+            "company": "中手游",
+            "start_url": "https://app.mokahr.com/social-recruitment/ztgame/92438",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-ff993b90744e",
+            "company": "安克创新",
+            "start_url": "https://anker-in.jobs.feishu.cn/index/position/7659302712135190838/detail",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-ffb65ac0ddff",
+            "company": "RVO Health",
+            "start_url": "https://job-boards.greenhouse.io/rvohealth",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-ffbde1ee3b3e",
+            "company": "第四范式",
+            "start_url": "https://4paradigm.zhiye.com/campus",
+            "origin": "registry:official_source_registry_v12.json"
+          },
+          {
+            "id": "auto-recruit-fff378b1fd78",
+            "company": "蓝色光标",
+            "start_url": "https://bluefocus.jobs.feishu.cn/index/position/7663049153745013043/detail",
+            "origin": "official-source-graph"
+          }
+        ],
+        "catalog_total": 1008
+      }
+    },
+    {
       "name": "pdd-direct-official",
       "label": "拼多多校园招聘官网 · 全量自主直连",
       "url": "https://careers.pddglobalhr.com/campus/grad",
@@ -5826,7 +5830,7 @@
       "label": "全球官方 ATS 联邦",
       "url": "https://github.com/speedyapply/2027-SWE-College-Jobs",
       "ok": true,
-      "count": 58602,
+      "count": 58564,
       "error": "",
       "diagnostics": {
         "boards_discovered": 549,
@@ -5842,11 +5846,11 @@
           ],
           [
             "smartrecruiters:VeoliaEnvironnementSA",
-            2856
+            2854
           ],
           [
             "greenhouse:spacex",
-            2644
+            2643
           ],
           [
             "greenhouse:andurilindustries",
@@ -5858,7 +5862,7 @@
           ],
           [
             "smartrecruiters:ALTEN",
-            1152
+            1117
           ],
           [
             "ashby:openai",
@@ -5874,7 +5878,7 @@
           ],
           [
             "greenhouse:anthropic",
-            640
+            639
           ],
           [
             "lever:cscgeneration-2",
@@ -5974,11 +5978,11 @@
     "gank-public-search",
     "offerjack"
   ],
-  "cn_catalog_count": 10481,
+  "cn_catalog_count": 20600,
   "feed_schema": 4,
   "browser_jd_chars": 220,
-  "feed_bytes": 38240220,
-  "cn_feed_bytes": 9226756,
+  "feed_bytes": 38308517,
+  "cn_feed_bytes": 16393971,
   "catalog_cap": 60000,
   "cn_catalog_cap": 30000,
   "default_product_feed": "data/jobs_cn.json",
