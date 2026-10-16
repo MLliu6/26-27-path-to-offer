@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T18:55:06Z",
+  "generated_at": "2026-10-16T22:11:13Z",
   "catalog_count": 60000,
   "sources": [
     {
@@ -861,36 +861,42 @@
       "label": "招聘域名图谱 · 轮转真实浏览器/审核公开 API 巡检",
       "url": "",
       "ok": true,
-      "count": 1772,
-      "fresh_count": 1772,
+      "count": 573,
+      "fresh_count": 573,
       "error": "",
       "diagnostics": {
         "transport": "real-browser-public-ui-xhr-dom",
         "target_count": 32,
-        "fresh_companies": 20,
+        "fresh_companies": 18,
         "sources": [
           {
-            "id": "auto-recruit-86e71cf1f95b",
-            "company": "360集团",
+            "id": "auto-recruit-9c1c03ce3d75",
+            "company": "Deloitte",
             "ok": false,
             "count": 0,
             "fresh_count": 0,
             "preserved_previous": false,
-            "official_url": "https://campus.360.cn/",
+            "official_url": "https://jobs.smartrecruiters.com/DeloitteNZ",
             "diagnostics": {
-              "start_url": "https://campus.360.cn/",
-              "final_url": "https://360campus.zhiye.com/",
+              "start_url": "https://jobs.smartrecruiters.com/DeloitteNZ",
+              "final_url": "https://careers.smartrecruiters.com/DeloitteNZ",
               "unique_jobs": 0,
-              "json_responses": 2,
+              "json_responses": 1,
               "json_candidates": 0,
-              "dom_links_seen": 0,
+              "dom_links_seen": 258,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://360campus.zhiye.com/api/Common/GetPortalAIRobot?_timestamp=631792176637691",
-                "https://360campus.zhiye.com/api/PortalAgent/GetPortalAgentConfig?portalId=5b8c86d8-430d-4e3e-a429-18ecda10a55c"
+                "https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location"
               ],
               "errors": [
                 "response Error: Response.json: Response body is unavailable for redirect responses",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
               "transport": "browser-public-ui-xhr-dom"
@@ -898,19 +904,50 @@
             "error": "zero concrete browser jobs"
           },
           {
-            "id": "auto-recruit-8721a738906c",
-            "company": "Insurify",
+            "id": "auto-recruit-9c67d38f9bd8",
+            "company": "Yext",
             "ok": true,
             "count": 4,
             "preserved_previous": false,
-            "official_url": "https://job-boards.greenhouse.io/insurify",
+            "official_url": "https://job-boards.greenhouse.io/yext",
             "diagnostics": {
-              "start_url": "https://job-boards.greenhouse.io/insurify",
-              "final_url": "https://job-boards.greenhouse.io/insurify",
+              "start_url": "https://job-boards.greenhouse.io/yext",
+              "final_url": "https://job-boards.greenhouse.io/yext",
               "unique_jobs": 4,
               "json_responses": 6,
               "json_candidates": 4,
-              "dom_links_seen": 45,
+              "dom_links_seen": 78,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-9ca7d00f63ca",
+            "company": "VGW",
+            "ok": true,
+            "count": 4,
+            "preserved_previous": false,
+            "official_url": "https://job-boards.greenhouse.io/vgw",
+            "diagnostics": {
+              "start_url": "https://job-boards.greenhouse.io/vgw",
+              "final_url": "https://job-boards.greenhouse.io/vgw",
+              "unique_jobs": 4,
+              "json_responses": 6,
+              "json_candidates": 4,
+              "dom_links_seen": 9,
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
@@ -928,56 +965,20 @@
             "error": ""
           },
           {
-            "id": "auto-recruit-87e3d6e97eb1",
-            "company": "Wabtec Corporation",
+            "id": "auto-recruit-9ce780307001",
+            "company": "Fullscript",
             "ok": false,
             "count": 0,
             "fresh_count": 0,
             "preserved_previous": false,
-            "official_url": "https://jobs.smartrecruiters.com/Wabtec",
+            "official_url": "https://jobs.lever.co/fullscript",
             "diagnostics": {
-              "start_url": "https://jobs.smartrecruiters.com/Wabtec",
-              "final_url": "https://careers.smartrecruiters.com/Wabtec",
-              "unique_jobs": 0,
-              "json_responses": 1,
-              "json_candidates": 0,
-              "dom_links_seen": 324,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location"
-              ],
-              "errors": [
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": "zero concrete browser jobs"
-          },
-          {
-            "id": "auto-recruit-8803ca8c53c7",
-            "company": "Artera",
-            "ok": false,
-            "count": 0,
-            "fresh_count": 0,
-            "preserved_previous": false,
-            "official_url": "https://jobs.lever.co/artera",
-            "diagnostics": {
-              "start_url": "https://jobs.lever.co/artera",
-              "final_url": "https://jobs.lever.co/artera",
+              "start_url": "https://jobs.lever.co/fullscript",
+              "final_url": "https://jobs.lever.co/fullscript",
               "unique_jobs": 0,
               "json_responses": 0,
               "json_candidates": 0,
-              "dom_links_seen": 87,
+              "dom_links_seen": 201,
               "pages_advanced": 0,
               "observed_endpoints": [],
               "errors": [
@@ -989,20 +990,44 @@
             "error": "zero concrete browser jobs"
           },
           {
-            "id": "auto-recruit-883f11db81b8",
-            "company": "Arch Capital",
+            "id": "auto-recruit-9cfd93c20ebf",
+            "company": "Ketch",
             "ok": false,
             "count": 0,
             "fresh_count": 0,
             "preserved_previous": false,
-            "official_url": "https://jobs.smartrecruiters.com/ArchGlobalServicesPhilippinesInc",
+            "official_url": "https://jobs.lever.co/Ketch",
             "diagnostics": {
-              "start_url": "https://jobs.smartrecruiters.com/ArchGlobalServicesPhilippinesInc",
-              "final_url": "https://careers.smartrecruiters.com/ArchGlobalServicesPhilippinesInc",
+              "start_url": "https://jobs.lever.co/Ketch",
+              "final_url": "https://jobs.lever.co/Ketch",
+              "unique_jobs": 0,
+              "json_responses": 0,
+              "json_candidates": 0,
+              "dom_links_seen": 102,
+              "pages_advanced": 0,
+              "observed_endpoints": [],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": "zero concrete browser jobs"
+          },
+          {
+            "id": "auto-recruit-9d3abcaecc3d",
+            "company": "Boston Engineering",
+            "ok": false,
+            "count": 0,
+            "fresh_count": 0,
+            "preserved_previous": false,
+            "official_url": "https://jobs.smartrecruiters.com/BostonEngineeringCorporation",
+            "diagnostics": {
+              "start_url": "https://jobs.smartrecruiters.com/BostonEngineeringCorporation",
+              "final_url": "https://careers.smartrecruiters.com/BostonEngineeringCorporation",
               "unique_jobs": 0,
               "json_responses": 1,
               "json_candidates": 0,
-              "dom_links_seen": 90,
+              "dom_links_seen": 69,
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location"
@@ -1019,19 +1044,156 @@
             "error": "zero concrete browser jobs"
           },
           {
-            "id": "auto-recruit-884f0f233731",
-            "company": "HeyGen",
+            "id": "auto-recruit-9dc1a4923071",
+            "company": "Cambridge Consultants",
             "ok": true,
-            "count": 7,
+            "count": 58,
             "preserved_previous": false,
-            "official_url": "https://job-boards.greenhouse.io/heygen",
+            "official_url": "https://job-boards.eu.greenhouse.io/cambridgeconsultantslimited",
             "diagnostics": {
-              "start_url": "https://job-boards.greenhouse.io/heygen",
-              "final_url": "https://job-boards.greenhouse.io/heygen",
-              "unique_jobs": 7,
+              "start_url": "https://job-boards.eu.greenhouse.io/cambridgeconsultantslimited",
+              "final_url": "https://job-boards.eu.greenhouse.io/cambridgeconsultantslimited?page=2",
+              "unique_jobs": 58,
+              "json_responses": 8,
+              "json_candidates": 80,
+              "dom_links_seen": 172,
+              "pages_advanced": 1,
+              "observed_endpoints": [
+                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
+                "https://job-boards.eu.greenhouse.io/cambridgeconsultantslimited?page=2&_data=root",
+                "https://job-boards.eu.greenhouse.io/cambridgeconsultantslimited?page=2&_data=routes%2F%24url_token"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-9e06e3588008",
+            "company": "ExtraHop",
+            "ok": true,
+            "count": 2,
+            "preserved_previous": false,
+            "official_url": "https://remoteok.com/remote-jobs/remote-sr-solutions-architect-extrahop-1137394",
+            "diagnostics": {
+              "start_url": "https://remoteok.com/remote-jobs/remote-sr-solutions-architect-extrahop-1137394",
+              "final_url": "https://remoteok.com/remote-jobs/remote-sr-solutions-architect-extrahop-1137394",
+              "unique_jobs": 2,
+              "json_responses": 2,
+              "json_candidates": 0,
+              "dom_links_seen": 11172,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://remoteok.com/assets/all-tags.json?1792108801",
+                "https://www.chatbase.co/api/get-chatbot-styles/ZQo7GEuQc49D-cLTpoB5T"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 6 (char 5)",
+                "response UnicodeDecodeError: 'utf-8' codec can't decode bytes in position 619925-619926: invalid continuation byte",
+                "response UnicodeDecodeError: 'utf-8' codec can't decode bytes in position 52958-52959: invalid continuation byte",
+                "response JSONDecodeError: Expecting value: line 1 column 6 (char 5)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-9e74cc035b6c",
+            "company": "Twilio",
+            "ok": true,
+            "count": 99,
+            "preserved_previous": false,
+            "official_url": "https://job-boards.greenhouse.io/twilio",
+            "diagnostics": {
+              "start_url": "https://job-boards.greenhouse.io/twilio",
+              "final_url": "https://job-boards.greenhouse.io/twilio?page=3",
+              "unique_jobs": 99,
+              "json_responses": 10,
+              "json_candidates": 170,
+              "dom_links_seen": 204,
+              "pages_advanced": 2,
+              "observed_endpoints": [
+                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
+                "https://job-boards.greenhouse.io/twilio?page=2&_data=root",
+                "https://job-boards.greenhouse.io/twilio?page=2&_data=routes%2F%24url_token",
+                "https://job-boards.greenhouse.io/twilio?page=3&_data=root",
+                "https://job-boards.greenhouse.io/twilio?page=3&_data=routes%2F%24url_token"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-9e7b0a9727ce",
+            "company": "拓竹",
+            "ok": true,
+            "count": 133,
+            "preserved_previous": false,
+            "official_url": "https://bambulab.jobs.feishu.cn/global",
+            "diagnostics": {
+              "start_url": "https://bambulab.jobs.feishu.cn/global",
+              "final_url": "https://bambulab.jobs.feishu.cn/global/?keywords=&category=&location=&project=&type=&job_hot_flag=&current=9&limit=10&functionCategory=&tag=",
+              "unique_jobs": 133,
+              "json_responses": 37,
+              "json_candidates": 329,
+              "dom_links_seen": 60,
+              "pages_advanced": 4,
+              "observed_endpoints": [
+                "https://bambulab.jobs.feishu.cn/api/v1/user/mobile/login_status?random=219830",
+                "https://bambulab.jobs.feishu.cn/api/v1/ip/location",
+                "https://bambulab.jobs.feishu.cn/api/v1/user/mobile/login_status?random=429521",
+                "https://bambulab.jobs.feishu.cn/api/v1/common/setting",
+                "https://mon.zijieapi.com/monitor_web/settings/browser-settings?bid=portal&store=1",
+                "https://vcs.snssdk.com/vc/setting",
+                "https://bambulab.jobs.feishu.cn/api/v1/csrf/token",
+                "https://bambulab.jobs.feishu.cn/api/v1/config/job/filters/6?_signature=idmMwwAAAACwBUT82SwBLYnZjNAAOMY",
+                "https://starling.zijieapi.com/check_and_get_text/aff8e570233711eb96690bb0655fe40d/test/throne-biz?lang=en,en",
+                "https://bambulab.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=idmMwwAAAACwBUT82SzZrYnZjNAAOMY",
+                "https://mcs.snssdk.com/v1/list",
+                "https://mcs.snssdk.com/v1/user/webid",
+                "https://bambulab.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=40&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=idmMwwAAAACwBUT82SyS3InZjNAAOMY",
+                "https://bambulab.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=60&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=idmMwwAAAACwBUT82SzskonZjNAAOMY",
+                "https://bambulab.jobs.feishu.cn/api/v1/search/job/posts?keyword=&limit=10&offset=80&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=6&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=idmMwwAAAACwBUT82SzV-YnZjNAAOMY"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-9e9c7f8524f4",
+            "company": "MediaAlpha",
+            "ok": true,
+            "count": 4,
+            "preserved_previous": false,
+            "official_url": "https://job-boards.greenhouse.io/mediaalpha",
+            "diagnostics": {
+              "start_url": "https://job-boards.greenhouse.io/mediaalpha",
+              "final_url": "https://job-boards.greenhouse.io/mediaalpha",
+              "unique_jobs": 4,
               "json_responses": 6,
               "json_candidates": 4,
-              "dom_links_seen": 96,
+              "dom_links_seen": 27,
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
@@ -1049,32 +1211,23 @@
             "error": ""
           },
           {
-            "id": "auto-recruit-88610d1eef7b",
-            "company": "DPD",
+            "id": "auto-recruit-9ec3e8c0555a",
+            "company": "PolicyMe",
             "ok": false,
             "count": 0,
             "fresh_count": 0,
             "preserved_previous": false,
-            "official_url": "https://jobs.smartrecruiters.com/DPDGroupUK1",
+            "official_url": "https://jobs.lever.co/policyme",
             "diagnostics": {
-              "start_url": "https://jobs.smartrecruiters.com/DPDGroupUK1",
-              "final_url": "https://careers.smartrecruiters.com/DPDGroupUK1",
+              "start_url": "https://jobs.lever.co/policyme",
+              "final_url": "https://jobs.lever.co/policyme",
               "unique_jobs": 0,
-              "json_responses": 1,
+              "json_responses": 0,
               "json_candidates": 0,
-              "dom_links_seen": 363,
+              "dom_links_seen": 117,
               "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location"
-              ],
+              "observed_endpoints": [],
               "errors": [
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
               "transport": "browser-public-ui-xhr-dom"
@@ -1082,15 +1235,15 @@
             "error": "zero concrete browser jobs"
           },
           {
-            "id": "auto-recruit-88bab92ed9cd",
-            "company": "一加",
+            "id": "auto-recruit-9f6ee732b4b7",
+            "company": "三只松鼠",
             "ok": false,
             "count": 0,
             "fresh_count": 0,
             "preserved_previous": false,
-            "official_url": "https://careers.oneplus.com/",
+            "official_url": "https://app.mokahr.com/social-recruitment/3songshu/457",
             "diagnostics": {
-              "start_url": "https://careers.oneplus.com/",
+              "start_url": "https://app.mokahr.com/social-recruitment/3songshu/457",
               "final_url": "about:blank",
               "unique_jobs": 0,
               "json_responses": 0,
@@ -1099,34 +1252,132 @@
               "pages_advanced": 0,
               "observed_endpoints": [],
               "errors": [
-                "Error: Page.goto: net::ERR_NAME_NOT_RESOLVED at https://careers.oneplus.com/ Call log: - navigating to \"https://careers.oneplus.com/\", waiting until \"domcontentloaded\""
+                "Error: Page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at https://app.mokahr.com/social-recruitment/3songshu/457 Call log: - navigating to \"https://app.mokahr.com/social-recruitment/3songshu/457\", waiting until \"domcontentloaded"
               ],
               "transport": "browser-public-ui-xhr-dom"
             },
             "error": "zero concrete browser jobs"
           },
           {
-            "id": "auto-recruit-890cbcb8acab",
-            "company": "National Information Solutions Cooperative",
-            "ok": true,
-            "count": 4,
+            "id": "auto-recruit-9f93ad89e98c",
+            "company": "华泰证券",
+            "ok": false,
+            "count": 0,
+            "fresh_count": 0,
             "preserved_previous": false,
-            "official_url": "https://job-boards.greenhouse.io/nisc",
+            "official_url": "https://htsc.zhiye.com/campus",
             "diagnostics": {
-              "start_url": "https://job-boards.greenhouse.io/nisc",
-              "final_url": "https://job-boards.greenhouse.io/nisc",
-              "unique_jobs": 4,
-              "json_responses": 6,
-              "json_candidates": 4,
-              "dom_links_seen": 90,
+              "start_url": "https://htsc.zhiye.com/campus",
+              "final_url": "https://htsc.zhiye.com/404?errorpath=%2fcampus",
+              "unique_jobs": 0,
+              "json_responses": 0,
+              "json_candidates": 0,
+              "dom_links_seen": 0,
               "pages_advanced": 0,
+              "observed_endpoints": [],
+              "errors": [
+                "response Error: Response.json: Response body is unavailable for redirect responses",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": "zero concrete browser jobs"
+          },
+          {
+            "id": "auto-recruit-a03020369a0d",
+            "company": "微步在线",
+            "ok": false,
+            "count": 0,
+            "fresh_count": 0,
+            "preserved_previous": false,
+            "official_url": "https://app.mokahr.com/social-recruitment/threatbook/39679",
+            "diagnostics": {
+              "start_url": "https://app.mokahr.com/social-recruitment/threatbook/39679",
+              "final_url": "about:blank",
+              "unique_jobs": 0,
+              "json_responses": 0,
+              "json_candidates": 0,
+              "dom_links_seen": 0,
+              "pages_advanced": 0,
+              "observed_endpoints": [],
+              "errors": [
+                "Error: Page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at https://app.mokahr.com/social-recruitment/threatbook/39679 Call log: - navigating to \"https://app.mokahr.com/social-recruitment/threatbook/39679\", waiting until \"domconte"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": "zero concrete browser jobs"
+          },
+          {
+            "id": "auto-recruit-a0503be0ecb0",
+            "company": "电魂网络",
+            "ok": true,
+            "count": 15,
+            "preserved_previous": false,
+            "official_url": "https://app.mokahr.com/social-recruitment/dianhun/55952",
+            "diagnostics": {
+              "start_url": "https://app.mokahr.com/social-recruitment/dianhun/55952",
+              "final_url": "https://app.mokahr.com/social-recruitment/dianhun/55952#/",
+              "unique_jobs": 15,
+              "json_responses": 26,
+              "json_candidates": 16,
+              "dom_links_seen": 40,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://app.mokahr.com/api/env",
+                "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
+                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
+                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
+                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
+                "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=dianhun",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/module",
+                "https://api.bilibili.com/bapis/bilibili.api.ticket.v1.Ticket/GenWebTicket?key_id=ec02&hexsign=fdee35c05dbf69bf222babc202c9f634c0af0ba248bd51137446a8f29298c8ea&context[ts]=1792188559&csrf=",
+                "https://api.bilibili.com/x/web-interface/wbi/view/detail?bvid=BV1Ud4y1G7j5&need_view=1&isGaiaAvoided=true&web_location=1315873&w_rid=c4122d930b1cfd448a0195ac26d3360f&wts=1792188560",
+                "https://api.bilibili.com/x/player/wbi/playurl?avid=345163569&bvid=BV1Ud4y1G7j5&cid=824250721&qn=0&fnver=0&fnval=4048&fourk=1&gaia_source=external-link&from_client=BROWSER&is_main_page=false&need_fragment=false&isGaiaAvoided=true&session=f3a41c380ee1d36f42de00d0c88ed30f&web_location=1315873&w_rid=60ede3a780ec9f948f828f4195e59d26&wts=1792188560",
+                "https://api.bilibili.com/x/player/wbi/v2?aid=345163569&cid=824250721&isGaiaAvoided=true&web_location=1315873&w_rid=ff2ab70544a37747bc97e0508f1f48d2&wts=1792188560",
+                "https://api.bilibili.com/bapis/bilibili.api.ticket.v1.Ticket/GenWebTicket?key_id=ec02&hexsign=9bd89c2bd56b30f99083ff679fe385659db7a123c76fecc1106665eab30f17d5&context[ts]=1792188560&csrf=",
+                "https://api.bilibili.com/x/web-interface/wbi/view/detail?aid=345163569&bvid=BV1Ud4y1G7j5&p=1&isGaiaAvoided=true&platform=web&web_location=1315873&w_rid=9be29f12a35ffbadb25e1db6b748fdd5&wts=1792188560",
+                "https://api.bilibili.com/x/internal/gaia-gateway/ExClimbWuzhi",
+                "https://api.bilibili.com/x/click-interface/click/now",
+                "https://api.bilibili.com/x/kv-frontend/namespace/data?appKey=457.19&nscode=1",
+                "https://api.bilibili.com/x/click-interface/web/heartbeat?w_start_ts=1792188561&w_aid=345163569&w_dt=2&w_realtime=0&w_played_time=0&w_real_played_time=0&w_video_duration=268&w_last_play_progress_time=0&web_location=1315873&w_rid=e5c1c49e3a09e9648438fe7bf2998025&wts=1792188561",
+                "https://i0.hdslb.com/bfs/polaris_web_conf/polaris/webcnf/event.cnf"
+              ],
+              "errors": [
+                "response Error: Response.json: Response body is unavailable for redirect responses",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-a05f8cba9814",
+            "company": "Hasbro",
+            "ok": true,
+            "count": 77,
+            "preserved_previous": false,
+            "official_url": "https://job-boards.greenhouse.io/hasbro",
+            "diagnostics": {
+              "start_url": "https://job-boards.greenhouse.io/hasbro",
+              "final_url": "https://job-boards.greenhouse.io/hasbro?page=3",
+              "unique_jobs": 77,
+              "json_responses": 10,
+              "json_candidates": 120,
+              "dom_links_seen": 129,
+              "pages_advanced": 2,
               "observed_endpoints": [
                 "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
                 "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
                 "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json"
+                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
+                "https://job-boards.greenhouse.io/hasbro?page=2&_data=root",
+                "https://job-boards.greenhouse.io/hasbro?page=2&_data=routes%2F%24url_token",
+                "https://job-boards.greenhouse.io/hasbro?page=3&_data=root",
+                "https://job-boards.greenhouse.io/hasbro?page=3&_data=routes%2F%24url_token"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -1136,8 +1387,36 @@
             "error": ""
           },
           {
-            "id": "auto-recruit-895bae1a64e9",
-            "company": "东莞康源电子有限公司",
+            "id": "auto-recruit-a094de5c4c1c",
+            "company": "Coinhako",
+            "ok": true,
+            "count": 16,
+            "preserved_previous": false,
+            "official_url": "https://jobs.ashbyhq.com/coinhako",
+            "diagnostics": {
+              "start_url": "https://jobs.ashbyhq.com/coinhako",
+              "final_url": "https://jobs.ashbyhq.com/coinhako",
+              "unique_jobs": 16,
+              "json_responses": 4,
+              "json_candidates": 17,
+              "dom_links_seen": 27,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://cdn.ashbyprd.com/frontend_non_user/c2a7197c175f484890751b5bbf8e105e2cd08e16/.vite/manifest.json",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
+                "https://browser-intake-datadoghq.com/api/v2/rum?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=71948231-1543-4560-9667-09951f59baa8&batch_time=1792188584069&_dd.api=fetch"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-a111a86dbc97",
+            "company": "中电科半导体材料有限公司",
             "ok": false,
             "count": 0,
             "fresh_count": 0,
@@ -1162,326 +1441,27 @@
             "error": "zero concrete browser jobs"
           },
           {
-            "id": "auto-recruit-89c04e97db25",
-            "company": "Cloudflare",
+            "id": "auto-recruit-a1685677a47b",
+            "company": "OppFi",
             "ok": true,
-            "count": 451,
+            "count": 4,
             "preserved_previous": false,
-            "official_url": "https://boards.greenhouse.io/cloudflare",
+            "official_url": "https://job-boards.greenhouse.io/opploans",
             "diagnostics": {
-              "start_url": "https://boards.greenhouse.io/cloudflare",
-              "final_url": "https://www.cloudflare.com/careers/jobs/",
-              "unique_jobs": 451,
-              "json_responses": 12,
-              "json_candidates": 2190,
-              "dom_links_seen": 108,
+              "start_url": "https://job-boards.greenhouse.io/opploans",
+              "final_url": "https://job-boards.greenhouse.io/opploans",
+              "unique_jobs": 4,
+              "json_responses": 6,
+              "json_candidates": 4,
+              "dom_links_seen": 12,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://ot.www.cloudflare.com/ot/consent/b1e05d49-f072-4bae-9116-bdb78af15448/b1e05d49-f072-4bae-9116-bdb78af15448.json",
-                "https://ot.www.cloudflare.com/ot/consent/b1e05d49-f072-4bae-9116-bdb78af15448/018debfb-4917-76f1-8862-8a2f83812baa/en.json",
-                "https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs",
-                "https://www.cloudflare.com/static/z/t",
-                "https://api.company-target.com/api/v3/ip.json?referrer=https%3A%2F%2Fwww.cloudflare.com%2Fcareers%2F&page=https%3A%2F%2Fwww.cloudflare.com%2Fcareers%2Fjobs%2F&page_title=Careers%20at%20Cloudflare%20%E2%80%94%20Open%20Positions%20%7C%20Cloudflare",
-                "https://insight.adsrvr.org/track/realtimeconversion"
-              ],
-              "errors": [
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was",
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response Error: Response.json: Response body is unavailable for redirect responses"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-89e55c9780d5",
-            "company": "中国船舶第七一六研究所",
-            "ok": true,
-            "count": 212,
-            "preserved_previous": false,
-            "official_url": "https://job.iguopin.com/job/detail",
-            "diagnostics": {
-              "start_url": "https://job.iguopin.com/job/detail",
-              "final_url": "https://www.iguopin.com/",
-              "unique_jobs": 212,
-              "json_responses": 24,
-              "json_candidates": 188,
-              "dom_links_seen": 333,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://gp-api.iguopin.com/api/activity/exclusive/v1/info?domain=job",
-                "https://gp-api.iguopin.com/api/base/site/v1/info?alias=iguopin",
-                "https://gp-api.iguopin.com/api/base/category/v1/by-alias",
-                "https://gp-api.iguopin.com/api/base/channelarticle/v1/list",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=2&alias=GP_navigation_QRcode",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=100&alias=GP_index_function",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=100&alias=GP_index_main_banner",
-                "https://gp-api.iguopin.com/api/proxy/community/stream_viewer/v1/streaming_detail_cache",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=4&alias=GP_index_sub_banner",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=1&alias=GP_index_sub_banner_live",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=999&alias=GP_index_product_matrix",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=100&alias=GP_bottom_nav_service",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=12&alias=GP_index_hot_activity",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=100&alias=GP_bottom_nav_channel",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=100&alias=GP_index_long_banner_fix",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=100&alias=GP_index_long_banner_rolling",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=100&alias=GP_bottom_nav_guide",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=100&alias=GP_bottom_nav_links",
-                "https://gp-api.iguopin.com/api/base/ads/v1/list?page=1&page_size=999&alias=GP_index_famous_company",
-                "https://gp-api.iguopin.com/api/company/companyfriendly/v1/list"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8a33da086092",
-            "company": "智己汽车",
-            "ok": false,
-            "count": 0,
-            "fresh_count": 0,
-            "preserved_previous": false,
-            "official_url": "https://im-motors.zhiye.com/campus",
-            "diagnostics": {
-              "start_url": "https://im-motors.zhiye.com/campus",
-              "final_url": "https://im-motors.zhiye.com/404?errorpath=%2fcampus",
-              "unique_jobs": 0,
-              "json_responses": 0,
-              "json_candidates": 0,
-              "dom_links_seen": 0,
-              "pages_advanced": 0,
-              "observed_endpoints": [],
-              "errors": [
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": "zero concrete browser jobs"
-          },
-          {
-            "id": "auto-recruit-8a5fc509a964",
-            "company": "DomainTools",
-            "ok": true,
-            "count": 2,
-            "preserved_previous": false,
-            "official_url": "https://remoteok.com/remote-jobs/remote-principal-product-manager-domaintools-1137396",
-            "diagnostics": {
-              "start_url": "https://remoteok.com/remote-jobs/remote-principal-product-manager-domaintools-1137396",
-              "final_url": "https://remoteok.com/remote-jobs/remote-principal-product-manager-domaintools-1137396",
-              "unique_jobs": 2,
-              "json_responses": 2,
-              "json_candidates": 0,
-              "dom_links_seen": 11276,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://remoteok.com/assets/all-tags.json?1792108801",
-                "https://www.chatbase.co/api/get-chatbot-styles/ZQo7GEuQc49D-cLTpoB5T"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 6 (char 5)",
-                "response UnicodeDecodeError: 'utf-8' codec can't decode bytes in position 68611-68612: invalid continuation byte",
-                "response UnicodeDecodeError: 'utf-8' codec can't decode bytes in position 23894-23895: invalid continuation byte",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8a9a6c79919a",
-            "company": "WHOOP",
-            "ok": true,
-            "count": 206,
-            "preserved_previous": false,
-            "official_url": "https://jobs.ashbyhq.com/whoop",
-            "diagnostics": {
-              "start_url": "https://jobs.ashbyhq.com/whoop",
-              "final_url": "https://jobs.ashbyhq.com/whoop",
-              "unique_jobs": 206,
-              "json_responses": 3,
-              "json_candidates": 207,
-              "dom_links_seen": 684,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://cdn.ashbyprd.com/frontend_non_user/629c053699017babb6b5d72775dcd0339ee2364e/.vite/manifest.json",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8abfc58bcbf6",
-            "company": "OpenGov",
-            "ok": true,
-            "count": 100,
-            "preserved_previous": false,
-            "official_url": "https://jobs.ashbyhq.com/opengov",
-            "diagnostics": {
-              "start_url": "https://jobs.ashbyhq.com/opengov",
-              "final_url": "https://jobs.ashbyhq.com/opengov",
-              "unique_jobs": 100,
-              "json_responses": 3,
-              "json_candidates": 101,
-              "dom_links_seen": 255,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://cdn.ashbyprd.com/frontend_non_user/629c053699017babb6b5d72775dcd0339ee2364e/.vite/manifest.json",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8ae5ced4fc76",
-            "company": "Headout",
-            "ok": true,
-            "count": 26,
-            "preserved_previous": false,
-            "official_url": "https://boards.greenhouse.io/headoutcareers",
-            "diagnostics": {
-              "start_url": "https://boards.greenhouse.io/headoutcareers",
-              "final_url": "https://www.headout.com/careers/",
-              "unique_jobs": 26,
-              "json_responses": 4,
-              "json_candidates": 126,
-              "dom_links_seen": 51,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://boards-api.greenhouse.io/v1/boards/headoutreferrals/departments?render_as=list",
-                "https://boards-api.greenhouse.io/v1/boards/headoutcareers/departments?render_as=list",
-                "https://bzrcdn.openai.com/pixel-config/v1/NtxX7j8w6SFD5peHjqmC7r.json",
-                "https://api-eu.mixpanel.com/track/?verbose=1&ip=1&_=1792176746475"
-              ],
-              "errors": [
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8bd6473d6ca5",
-            "company": "Kitware",
-            "ok": false,
-            "count": 0,
-            "fresh_count": 0,
-            "preserved_previous": false,
-            "official_url": "https://jobs.lever.co/kitware",
-            "diagnostics": {
-              "start_url": "https://jobs.lever.co/kitware",
-              "final_url": "https://jobs.lever.co/kitware",
-              "unique_jobs": 0,
-              "json_responses": 0,
-              "json_candidates": 0,
-              "dom_links_seen": 183,
-              "pages_advanced": 0,
-              "observed_endpoints": [],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": "zero concrete browser jobs"
-          },
-          {
-            "id": "recruit-kuaishou-social",
-            "company": "快手",
-            "ok": true,
-            "count": 40,
-            "preserved_previous": false,
-            "official_url": "https://zhaopin.kuaishou.cn/",
-            "diagnostics": {
-              "start_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/",
-              "final_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/?workLocationCode=domestic&pageNum=13",
-              "unique_jobs": 40,
-              "json_responses": 30,
-              "json_candidates": 174,
-              "dom_links_seen": 78,
-              "pages_advanced": 12,
-              "observed_endpoints": [
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/user/user/info",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/dictionary/batch?types=workLocation,positionCategory,positionExperience",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/label?channelCode=G002&positionNatureCode=C001",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=1&pageSize=10&positionNatureCode=C001&recruitProject=socialr",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=1&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=2&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=3&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=4&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=5&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=6&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=7&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=8&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=9&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=10&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=11&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=12&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic",
-                "https://zhaopin.kuaishou.cn/recruit/e/api/v1/open/positions/simple?pageNum=13&pageSize=10&positionNatureCode=C001&recruitProject=socialr&workLocationCode=domestic"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8c2dd47814f2",
-            "company": "Tripadvisor",
-            "ok": true,
-            "count": 57,
-            "preserved_previous": false,
-            "official_url": "https://job-boards.greenhouse.io/tripadvisor",
-            "diagnostics": {
-              "start_url": "https://job-boards.greenhouse.io/tripadvisor",
-              "final_url": "https://job-boards.greenhouse.io/tripadvisor?page=2",
-              "unique_jobs": 57,
-              "json_responses": 8,
-              "json_candidates": 96,
-              "dom_links_seen": 196,
-              "pages_advanced": 1,
-              "observed_endpoints": [
-                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
                 "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
                 "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
-                "https://job-boards.greenhouse.io/tripadvisor?page=2&_data=root",
-                "https://job-boards.greenhouse.io/tripadvisor?page=2&_data=routes%2F%24url_token"
+                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -1491,74 +1471,225 @@
             "error": ""
           },
           {
-            "id": "auto-recruit-8c6a3e9a142e",
-            "company": "中国石油化工集团有限公司",
+            "id": "auto-recruit-a17f01e01663",
+            "company": "PDT Partners",
+            "ok": true,
+            "count": 4,
+            "preserved_previous": false,
+            "official_url": "https://job-boards.greenhouse.io/pdtpartners",
+            "diagnostics": {
+              "start_url": "https://job-boards.greenhouse.io/pdtpartners",
+              "final_url": "https://job-boards.greenhouse.io/pdtpartners",
+              "unique_jobs": 4,
+              "json_responses": 6,
+              "json_candidates": 4,
+              "dom_links_seen": 36,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-a1c762d36020",
+            "company": "Sportradar",
             "ok": false,
             "count": 0,
             "fresh_count": 0,
             "preserved_previous": false,
-            "official_url": "http://zhaopin.cnpc.com.cn/",
+            "official_url": "https://jobs.smartrecruiters.com/Sportradar",
             "diagnostics": {
-              "start_url": "http://zhaopin.cnpc.com.cn/",
-              "final_url": "https://zhaopin.cnpc.com.cn/",
+              "start_url": "https://jobs.smartrecruiters.com/Sportradar",
+              "final_url": "https://careers.smartrecruiters.com/Sportradar",
               "unique_jobs": 0,
-              "json_responses": 0,
+              "json_responses": 1,
               "json_candidates": 0,
-              "dom_links_seen": 0,
+              "dom_links_seen": 237,
               "pages_advanced": 0,
-              "observed_endpoints": [],
-              "errors": [],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": "zero concrete browser jobs"
-          },
-          {
-            "id": "recruit-jd",
-            "company": "京东",
-            "ok": true,
-            "count": 137,
-            "preserved_previous": false,
-            "official_url": "https://zhaopin.jd.com/home",
-            "diagnostics": {
-              "start_url": "https://zhaopin.jd.com/home",
-              "final_url": "https://campus.jd.com/#/jobs?selProjects=45",
-              "unique_jobs": 137,
-              "json_responses": 22,
-              "json_candidates": 184,
-              "dom_links_seen": 48,
-              "pages_advanced": 8,
               "observed_endpoints": [
-                "https://sgm-m.jd.com/h5/init",
-                "https://zhaopin.jd.com/web/job/job_allparams",
-                "https://stream-outside.jd.com/checkWhiteList?code=JA2018_1131048",
-                "https://stream-outside.jd.com/checkWhiteList?code=JA2024_135045",
-                "https://campus.jd.com/api/wx/page/isInterviewer",
-                "https://campus.jd.com/api/wx/requiresNewSubmission",
-                "https://campus.jd.com/api/wx/position/getProjectList",
-                "https://campus.jd.com/api/wx/resume/checkResumeAndDelivery",
-                "https://campus.jd.com/api/wx/position/page?type=present",
-                "https://campus.jd.com/api/wx/position/dict?type=present",
-                "https://campus.jd.com/web/delivery/queryInternshipAnnouncement",
-                "https://sgm-w.jd.com/h5"
+                "https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location"
               ],
               "errors": [
+                "response Error: Response.json: Response body is unavailable for redirect responses",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
               "transport": "browser-public-ui-xhr-dom"
             },
-            "error": ""
+            "error": "zero concrete browser jobs"
           },
           {
-            "id": "auto-recruit-8d198348ce85",
-            "company": "知乎",
+            "id": "auto-recruit-a1d3d3b7451b",
+            "company": "Belvedere Trading",
             "ok": false,
             "count": 0,
             "fresh_count": 0,
             "preserved_previous": false,
-            "official_url": "https://app.mokahr.com/social-recruitment/zhihu/68321",
+            "official_url": "https://jobs.lever.co/belvederetrading",
             "diagnostics": {
-              "start_url": "https://app.mokahr.com/social-recruitment/zhihu/68321",
+              "start_url": "https://jobs.lever.co/belvederetrading",
+              "final_url": "https://jobs.lever.co/belvederetrading",
+              "unique_jobs": 0,
+              "json_responses": 0,
+              "json_candidates": 0,
+              "dom_links_seen": 216,
+              "pages_advanced": 0,
+              "observed_endpoints": [],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": "zero concrete browser jobs"
+          },
+          {
+            "id": "auto-recruit-a201be63567c",
+            "company": "SEON",
+            "ok": true,
+            "count": 21,
+            "preserved_previous": false,
+            "official_url": "https://jobs.ashbyhq.com/seon",
+            "diagnostics": {
+              "start_url": "https://jobs.ashbyhq.com/seon",
+              "final_url": "https://jobs.ashbyhq.com/seon",
+              "unique_jobs": 21,
+              "json_responses": 4,
+              "json_candidates": 22,
+              "dom_links_seen": 24,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://cdn.ashbyprd.com/frontend_non_user/c2a7197c175f484890751b5bbf8e105e2cd08e16/.vite/manifest.json",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams",
+                "https://browser-intake-datadoghq.com/api/v2/rum?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=050944ba-1ac8-4cc1-89bb-07ea42ca28b0&batch_time=1792188615989&_dd.api=fetch"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-a212e1738e2d",
+            "company": "万豪",
+            "ok": true,
+            "count": 7,
+            "preserved_previous": false,
+            "official_url": "https://app.mokahr.com/social-recruitment/marriott/141002",
+            "diagnostics": {
+              "start_url": "https://app.mokahr.com/social-recruitment/marriott/141002",
+              "final_url": "https://app.mokahr.com/social-recruitment/marriott/141002#/",
+              "unique_jobs": 7,
+              "json_responses": 10,
+              "json_candidates": 0,
+              "dom_links_seen": 80,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://app.mokahr.com/api/env",
+                "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
+                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
+                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
+                "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=marriott",
+                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/module"
+              ],
+              "errors": [
+                "response Error: Response.json: Response body is unavailable for redirect responses",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-a234a5422abc",
+            "company": "Bobyard",
+            "ok": true,
+            "count": 49,
+            "preserved_previous": false,
+            "official_url": "https://jobs.ashbyhq.com/bobyard",
+            "diagnostics": {
+              "start_url": "https://jobs.ashbyhq.com/bobyard",
+              "final_url": "https://jobs.ashbyhq.com/bobyard",
+              "unique_jobs": 49,
+              "json_responses": 4,
+              "json_candidates": 50,
+              "dom_links_seen": 123,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://cdn.ashbyprd.com/frontend_non_user/c2a7197c175f484890751b5bbf8e105e2cd08e16/.vite/manifest.json",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams",
+                "https://browser-intake-datadoghq.com/api/v2/rum?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=5ba99837-7881-4314-9c0a-3a7773159af8&batch_time=1792188635294&_dd.api=fetch"
+              ],
+              "errors": [
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-a2afd094bfeb",
+            "company": "均胜集团",
+            "ok": true,
+            "count": 1,
+            "preserved_previous": false,
+            "official_url": "https://app.mokahr.com/social-recruitment/joyson/94310",
+            "diagnostics": {
+              "start_url": "https://app.mokahr.com/social-recruitment/joyson/94310",
+              "final_url": "https://app.mokahr.com/social-recruitment/joyson/94310#/",
+              "unique_jobs": 1,
+              "json_responses": 9,
+              "json_candidates": 0,
+              "dom_links_seen": 52,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://app.mokahr.com/api/env",
+                "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
+                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
+                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
+                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
+                "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=joyson"
+              ],
+              "errors": [
+                "response Error: Response.json: Response body is unavailable for redirect responses",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-a3108539f30e",
+            "company": "商汤科技",
+            "ok": false,
+            "count": 0,
+            "fresh_count": 0,
+            "preserved_previous": false,
+            "official_url": "https://joinus.sensetime.com/campus",
+            "diagnostics": {
+              "start_url": "https://joinus.sensetime.com/campus",
               "final_url": "about:blank",
               "unique_jobs": 0,
               "json_responses": 0,
@@ -1567,150 +1698,67 @@
               "pages_advanced": 0,
               "observed_endpoints": [],
               "errors": [
-                "Error: Page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at https://app.mokahr.com/social-recruitment/zhihu/68321 Call log: - navigating to \"https://app.mokahr.com/social-recruitment/zhihu/68321\", waiting until \"domcontentloaded\""
+                "Error: Page.goto: net::ERR_NAME_NOT_RESOLVED at https://joinus.sensetime.com/campus Call log: - navigating to \"https://joinus.sensetime.com/campus\", waiting until \"domcontentloaded\""
               ],
               "transport": "browser-public-ui-xhr-dom"
             },
             "error": "zero concrete browser jobs"
           },
           {
-            "id": "auto-recruit-8d664cc67e98",
-            "company": "拓竹",
-            "ok": true,
-            "count": 9,
-            "preserved_previous": false,
-            "official_url": "https://bambulab.jobs.feishu.cn/experienced/position/7685729042142120218/detail",
-            "diagnostics": {
-              "start_url": "https://bambulab.jobs.feishu.cn/experienced/position/7685729042142120218/detail",
-              "final_url": "https://bambulab.jobs.feishu.cn/experienced/position/7685729042142120218/detail",
-              "unique_jobs": 9,
-              "json_responses": 17,
-              "json_candidates": 5,
-              "dom_links_seen": 20,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://bambulab.jobs.feishu.cn/api/v1/ip/location",
-                "https://bambulab.jobs.feishu.cn/api/v1/user/mobile/login_status?random=635488",
-                "https://bambulab.jobs.feishu.cn/api/v1/common/setting",
-                "https://bambulab.jobs.feishu.cn/api/v1/user/mobile/login_status?random=203132",
-                "https://vcs.snssdk.com/vc/setting",
-                "https://bambulab.jobs.feishu.cn/api/v1/config/referral/statement/",
-                "https://bambulab.jobs.feishu.cn/api/v1/user/referral/protect/config/check?random=354546",
-                "https://bambulab.jobs.feishu.cn/api/v1/job/posts/7685729042142120218?portal_type=6&with_recommend=false&_signature=37WKrwAAAADmaUKQmwd4-d-1irAALVy&portal_type=6&with_recommend=false",
-                "https://mcs.snssdk.com/v1/user/webid",
-                "https://mon.zijieapi.com/monitor_web/settings/browser-settings?bid=portal&store=1",
-                "https://starling.zijieapi.com/check_and_get_text/aff8e570233711eb96690bb0655fe40d/test/throne-biz?lang=zh,en",
-                "https://mcs.snssdk.com/v1/list"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8de74f80d142",
-            "company": "Enpal",
-            "ok": true,
-            "count": 192,
-            "preserved_previous": false,
-            "official_url": "https://jobs.ashbyhq.com/enpal",
-            "diagnostics": {
-              "start_url": "https://jobs.ashbyhq.com/enpal",
-              "final_url": "https://jobs.ashbyhq.com/enpal",
-              "unique_jobs": 192,
-              "json_responses": 3,
-              "json_candidates": 193,
-              "dom_links_seen": 468,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://cdn.ashbyprd.com/frontend_non_user/629c053699017babb6b5d72775dcd0339ee2364e/.vite/manifest.json",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8de7d4a6d6dc",
-            "company": "Profluent",
-            "ok": true,
-            "count": 4,
-            "preserved_previous": false,
-            "official_url": "https://job-boards.greenhouse.io/profluent",
-            "diagnostics": {
-              "start_url": "https://job-boards.greenhouse.io/profluent",
-              "final_url": "https://job-boards.greenhouse.io/profluent",
-              "unique_jobs": 4,
-              "json_responses": 6,
-              "json_candidates": 4,
-              "dom_links_seen": 48,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8e111bb1b80a",
-            "company": "GoTo",
+            "id": "auto-recruit-a323f3018d6d",
+            "company": "ServiceNow",
             "ok": false,
             "count": 0,
             "fresh_count": 0,
             "preserved_previous": false,
-            "official_url": "https://jobs.lever.co/GoToGroup",
+            "official_url": "https://jobs.smartrecruiters.com/ServiceNow",
             "diagnostics": {
-              "start_url": "https://jobs.lever.co/GoToGroup",
-              "final_url": "https://jobs.lever.co/GoToGroup",
+              "start_url": "https://jobs.smartrecruiters.com/ServiceNow",
+              "final_url": "https://careers.smartrecruiters.com/ServiceNow",
               "unique_jobs": 0,
-              "json_responses": 0,
+              "json_responses": 1,
               "json_candidates": 0,
-              "dom_links_seen": 390,
+              "dom_links_seen": 357,
               "pages_advanced": 0,
-              "observed_endpoints": [],
+              "observed_endpoints": [
+                "https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location"
+              ],
               "errors": [
+                "response Error: Response.json: Response body is unavailable for redirect responses",
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
-                "response JSONDecodeError: Extra data: line 1 column 2 (char 1)",
-                "response Error: Response.json: Protocol error (Network.getResponseBody): No data found for resource with given identifier Response body is not available for a response that was"
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
               "transport": "browser-public-ui-xhr-dom"
             },
             "error": "zero concrete browser jobs"
           },
           {
-            "id": "auto-recruit-8f289e9848f5",
-            "company": "Kastle",
+            "id": "auto-recruit-a327f3aa7ee4",
+            "company": "Light",
             "ok": true,
-            "count": 20,
+            "count": 22,
             "preserved_previous": false,
-            "official_url": "https://jobs.ashbyhq.com/kastle",
+            "official_url": "https://jobs.ashbyhq.com/light-inc",
             "diagnostics": {
-              "start_url": "https://jobs.ashbyhq.com/kastle",
-              "final_url": "https://jobs.ashbyhq.com/kastle",
-              "unique_jobs": 20,
-              "json_responses": 3,
-              "json_candidates": 21,
-              "dom_links_seen": 45,
+              "start_url": "https://jobs.ashbyhq.com/light-inc",
+              "final_url": "https://jobs.ashbyhq.com/light-inc",
+              "unique_jobs": 22,
+              "json_responses": 4,
+              "json_candidates": 23,
+              "dom_links_seen": 48,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://cdn.ashbyprd.com/frontend_non_user/629c053699017babb6b5d72775dcd0339ee2364e/.vite/manifest.json",
+                "https://cdn.ashbyprd.com/frontend_non_user/c2a7197c175f484890751b5bbf8e105e2cd08e16/.vite/manifest.json",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams",
                 "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
+                "https://browser-intake-datadoghq.com/api/v2/rum?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=ff338c3a-5d8a-4d4b-b977-f99ba1930650&batch_time=1792188657333&_dd.api=fetch"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -1720,122 +1768,53 @@
             "error": ""
           },
           {
-            "id": "auto-recruit-8f2cb3192e25",
-            "company": "Workshop",
-            "ok": true,
-            "count": 4,
+            "id": "auto-recruit-a3359b4e703d",
+            "company": "太极计算机股份有限公司",
+            "ok": false,
+            "count": 0,
+            "fresh_count": 0,
             "preserved_previous": false,
-            "official_url": "https://job-boards.greenhouse.io/workshop",
+            "official_url": "https://job.iguopin.com/job/detail",
             "diagnostics": {
-              "start_url": "https://job-boards.greenhouse.io/workshop",
-              "final_url": "https://job-boards.greenhouse.io/workshop",
-              "unique_jobs": 4,
-              "json_responses": 6,
-              "json_candidates": 4,
-              "dom_links_seen": 21,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8f4606b26776",
-            "company": "Encord",
-            "ok": true,
-            "count": 59,
-            "preserved_previous": false,
-            "official_url": "https://jobs.ashbyhq.com/encord",
-            "diagnostics": {
-              "start_url": "https://jobs.ashbyhq.com/encord",
-              "final_url": "https://jobs.ashbyhq.com/encord",
-              "unique_jobs": 59,
-              "json_responses": 3,
-              "json_candidates": 60,
-              "dom_links_seen": 117,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://cdn.ashbyprd.com/frontend_non_user/629c053699017babb6b5d72775dcd0339ee2364e/.vite/manifest.json",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-8f8037649af8",
-            "company": "Pure Storage",
-            "ok": true,
-            "count": 214,
-            "preserved_previous": false,
-            "official_url": "https://job-boards.greenhouse.io/purestorage",
-            "diagnostics": {
-              "start_url": "https://job-boards.greenhouse.io/purestorage",
-              "final_url": "https://job-boards.greenhouse.io/purestorage?page=5",
-              "unique_jobs": 214,
-              "json_responses": 14,
-              "json_candidates": 404,
-              "dom_links_seen": 260,
-              "pages_advanced": 4,
-              "observed_endpoints": [
-                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
-                "https://job-boards.greenhouse.io/purestorage?page=2&_data=root",
-                "https://job-boards.greenhouse.io/purestorage?page=2&_data=routes%2F%24url_token",
-                "https://job-boards.greenhouse.io/purestorage?page=3&_data=root",
-                "https://job-boards.greenhouse.io/purestorage?page=3&_data=routes%2F%24url_token",
-                "https://job-boards.greenhouse.io/purestorage?page=4&_data=root",
-                "https://job-boards.greenhouse.io/purestorage?page=4&_data=routes%2F%24url_token",
-                "https://job-boards.greenhouse.io/purestorage?page=5&_data=root",
-                "https://job-boards.greenhouse.io/purestorage?page=5&_data=routes%2F%24url_token"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
-          },
-          {
-            "id": "auto-recruit-90499c17bb26",
-            "company": "乐府互娱",
-            "ok": true,
-            "count": 24,
-            "preserved_previous": false,
-            "official_url": "https://app.mokahr.com/social-recruitment/lovegames/21946",
-            "diagnostics": {
-              "start_url": "https://app.mokahr.com/social-recruitment/lovegames/21946",
-              "final_url": "https://app.mokahr.com/social-recruitment/lovegames/21946#/",
-              "unique_jobs": 24,
-              "json_responses": 3,
+              "start_url": "https://job.iguopin.com/job/detail",
+              "final_url": "https://www.iguopin.com/",
+              "unique_jobs": 0,
+              "json_responses": 1,
               "json_candidates": 0,
-              "dom_links_seen": 96,
+              "dom_links_seen": 0,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://app.mokahr.com/api/env",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs",
-                "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=lovegames"
+                "https://gp-api.iguopin.com/api/activity/exclusive/v1/info?domain=job"
               ],
               "errors": [
-                "response Error: Response.json: Response body is unavailable for redirect responses",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": "zero concrete browser jobs"
+          },
+          {
+            "id": "auto-recruit-a358067c57fe",
+            "company": "Swarm Aero",
+            "ok": true,
+            "count": 53,
+            "preserved_previous": false,
+            "official_url": "https://jobs.ashbyhq.com/swarmaero",
+            "diagnostics": {
+              "start_url": "https://jobs.ashbyhq.com/swarmaero",
+              "final_url": "https://jobs.ashbyhq.com/swarmaero",
+              "unique_jobs": 53,
+              "json_responses": 4,
+              "json_candidates": 54,
+              "dom_links_seen": 132,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://cdn.ashbyprd.com/frontend_non_user/c2a7197c175f484890751b5bbf8e105e2cd08e16/.vite/manifest.json",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams",
+                "https://browser-intake-datadoghq.com/api/v2/rum?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=cf4fafe3-de48-4193-a53b-4089500526cd&batch_time=1792188667981&_dd.api=fetch"
+              ],
+              "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
               "transport": "browser-public-ui-xhr-dom"
@@ -1843,212 +1822,212 @@
             "error": ""
           }
         ],
-        "catalog_sweepable": 996,
+        "catalog_sweepable": 999,
         "max_targets": 32,
         "shard_count": 32,
-        "shard_index": 17,
+        "shard_index": 19,
         "shard_mode": "clock-two-hour",
         "forced_companies": [],
         "forced_targets": 0,
         "selected_targets": 32,
         "reviewed_api_sources": 0,
         "reviewed_api_fresh_jobs": 0,
-        "detail_links_enriched": 34,
+        "detail_links_enriched": 0,
         "selected": [
           {
-            "id": "auto-recruit-86e71cf1f95b",
-            "company": "360集团",
-            "start_url": "https://campus.360.cn/",
-            "origin": "registry:official_source_registry_v12.json"
-          },
-          {
-            "id": "auto-recruit-8721a738906c",
-            "company": "Insurify",
-            "start_url": "https://job-boards.greenhouse.io/insurify",
+            "id": "auto-recruit-9c1c03ce3d75",
+            "company": "Deloitte",
+            "start_url": "https://jobs.smartrecruiters.com/DeloitteNZ",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-87e3d6e97eb1",
-            "company": "Wabtec Corporation",
-            "start_url": "https://jobs.smartrecruiters.com/Wabtec",
+            "id": "auto-recruit-9c67d38f9bd8",
+            "company": "Yext",
+            "start_url": "https://job-boards.greenhouse.io/yext",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-8803ca8c53c7",
-            "company": "Artera",
-            "start_url": "https://jobs.lever.co/artera",
+            "id": "auto-recruit-9ca7d00f63ca",
+            "company": "VGW",
+            "start_url": "https://job-boards.greenhouse.io/vgw",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-883f11db81b8",
-            "company": "Arch Capital",
-            "start_url": "https://jobs.smartrecruiters.com/ArchGlobalServicesPhilippinesInc",
+            "id": "auto-recruit-9ce780307001",
+            "company": "Fullscript",
+            "start_url": "https://jobs.lever.co/fullscript",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-884f0f233731",
-            "company": "HeyGen",
-            "start_url": "https://job-boards.greenhouse.io/heygen",
+            "id": "auto-recruit-9cfd93c20ebf",
+            "company": "Ketch",
+            "start_url": "https://jobs.lever.co/Ketch",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-88610d1eef7b",
-            "company": "DPD",
-            "start_url": "https://jobs.smartrecruiters.com/DPDGroupUK1",
+            "id": "auto-recruit-9d3abcaecc3d",
+            "company": "Boston Engineering",
+            "start_url": "https://jobs.smartrecruiters.com/BostonEngineeringCorporation",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-88bab92ed9cd",
-            "company": "一加",
-            "start_url": "https://careers.oneplus.com/",
-            "origin": "registry:official_source_registry_v12.json"
-          },
-          {
-            "id": "auto-recruit-890cbcb8acab",
-            "company": "National Information Solutions Cooperative",
-            "start_url": "https://job-boards.greenhouse.io/nisc",
+            "id": "auto-recruit-9dc1a4923071",
+            "company": "Cambridge Consultants",
+            "start_url": "https://job-boards.eu.greenhouse.io/cambridgeconsultantslimited",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-895bae1a64e9",
-            "company": "东莞康源电子有限公司",
-            "start_url": "https://job.iguopin.com/job/detail",
+            "id": "auto-recruit-9e06e3588008",
+            "company": "ExtraHop",
+            "start_url": "https://remoteok.com/remote-jobs/remote-sr-solutions-architect-extrahop-1137394",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-89c04e97db25",
-            "company": "Cloudflare",
-            "start_url": "https://boards.greenhouse.io/cloudflare",
+            "id": "auto-recruit-9e74cc035b6c",
+            "company": "Twilio",
+            "start_url": "https://job-boards.greenhouse.io/twilio",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-89e55c9780d5",
-            "company": "中国船舶第七一六研究所",
-            "start_url": "https://job.iguopin.com/job/detail",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-8a33da086092",
-            "company": "智己汽车",
-            "start_url": "https://im-motors.zhiye.com/campus",
-            "origin": "registry:official_source_registry_v12.json"
-          },
-          {
-            "id": "auto-recruit-8a5fc509a964",
-            "company": "DomainTools",
-            "start_url": "https://remoteok.com/remote-jobs/remote-principal-product-manager-domaintools-1137396",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-8a9a6c79919a",
-            "company": "WHOOP",
-            "start_url": "https://jobs.ashbyhq.com/whoop",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-8abfc58bcbf6",
-            "company": "OpenGov",
-            "start_url": "https://jobs.ashbyhq.com/opengov",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-8ae5ced4fc76",
-            "company": "Headout",
-            "start_url": "https://boards.greenhouse.io/headoutcareers",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-8bd6473d6ca5",
-            "company": "Kitware",
-            "start_url": "https://jobs.lever.co/kitware",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "recruit-kuaishou-social",
-            "company": "快手",
-            "start_url": "https://zhaopin.kuaishou.cn/recruit/e/#/official/social/",
-            "origin": "reviewed-override"
-          },
-          {
-            "id": "auto-recruit-8c2dd47814f2",
-            "company": "Tripadvisor",
-            "start_url": "https://job-boards.greenhouse.io/tripadvisor",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-8c6a3e9a142e",
-            "company": "中国石油化工集团有限公司",
-            "start_url": "http://zhaopin.cnpc.com.cn/",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "recruit-jd",
-            "company": "京东",
-            "start_url": "https://zhaopin.jd.com/home",
-            "origin": "reviewed-override"
-          },
-          {
-            "id": "auto-recruit-8d198348ce85",
-            "company": "知乎",
-            "start_url": "https://app.mokahr.com/social-recruitment/zhihu/68321",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-8d664cc67e98",
+            "id": "auto-recruit-9e7b0a9727ce",
             "company": "拓竹",
-            "start_url": "https://bambulab.jobs.feishu.cn/experienced/position/7685729042142120218/detail",
+            "start_url": "https://bambulab.jobs.feishu.cn/global",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-8de74f80d142",
-            "company": "Enpal",
-            "start_url": "https://jobs.ashbyhq.com/enpal",
+            "id": "auto-recruit-9e9c7f8524f4",
+            "company": "MediaAlpha",
+            "start_url": "https://job-boards.greenhouse.io/mediaalpha",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-8de7d4a6d6dc",
-            "company": "Profluent",
-            "start_url": "https://job-boards.greenhouse.io/profluent",
+            "id": "auto-recruit-9ec3e8c0555a",
+            "company": "PolicyMe",
+            "start_url": "https://jobs.lever.co/policyme",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-8e111bb1b80a",
-            "company": "GoTo",
-            "start_url": "https://jobs.lever.co/GoToGroup",
+            "id": "auto-recruit-9f6ee732b4b7",
+            "company": "三只松鼠",
+            "start_url": "https://app.mokahr.com/social-recruitment/3songshu/457",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-8f289e9848f5",
-            "company": "Kastle",
-            "start_url": "https://jobs.ashbyhq.com/kastle",
+            "id": "auto-recruit-9f93ad89e98c",
+            "company": "华泰证券",
+            "start_url": "https://htsc.zhiye.com/campus",
+            "origin": "registry:official_source_registry_v12.json"
+          },
+          {
+            "id": "auto-recruit-a03020369a0d",
+            "company": "微步在线",
+            "start_url": "https://app.mokahr.com/social-recruitment/threatbook/39679",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-8f2cb3192e25",
-            "company": "Workshop",
-            "start_url": "https://job-boards.greenhouse.io/workshop",
+            "id": "auto-recruit-a0503be0ecb0",
+            "company": "电魂网络",
+            "start_url": "https://app.mokahr.com/social-recruitment/dianhun/55952",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-8f4606b26776",
-            "company": "Encord",
-            "start_url": "https://jobs.ashbyhq.com/encord",
+            "id": "auto-recruit-a05f8cba9814",
+            "company": "Hasbro",
+            "start_url": "https://job-boards.greenhouse.io/hasbro",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-8f8037649af8",
-            "company": "Pure Storage",
-            "start_url": "https://job-boards.greenhouse.io/purestorage",
+            "id": "auto-recruit-a094de5c4c1c",
+            "company": "Coinhako",
+            "start_url": "https://jobs.ashbyhq.com/coinhako",
             "origin": "official-source-graph"
           },
           {
-            "id": "auto-recruit-90499c17bb26",
-            "company": "乐府互娱",
-            "start_url": "https://app.mokahr.com/social-recruitment/lovegames/21946",
+            "id": "auto-recruit-a111a86dbc97",
+            "company": "中电科半导体材料有限公司",
+            "start_url": "https://job.iguopin.com/job/detail",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a1685677a47b",
+            "company": "OppFi",
+            "start_url": "https://job-boards.greenhouse.io/opploans",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a17f01e01663",
+            "company": "PDT Partners",
+            "start_url": "https://job-boards.greenhouse.io/pdtpartners",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a1c762d36020",
+            "company": "Sportradar",
+            "start_url": "https://jobs.smartrecruiters.com/Sportradar",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a1d3d3b7451b",
+            "company": "Belvedere Trading",
+            "start_url": "https://jobs.lever.co/belvederetrading",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a201be63567c",
+            "company": "SEON",
+            "start_url": "https://jobs.ashbyhq.com/seon",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a212e1738e2d",
+            "company": "万豪",
+            "start_url": "https://app.mokahr.com/social-recruitment/marriott/141002",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a234a5422abc",
+            "company": "Bobyard",
+            "start_url": "https://jobs.ashbyhq.com/bobyard",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a2afd094bfeb",
+            "company": "均胜集团",
+            "start_url": "https://app.mokahr.com/social-recruitment/joyson/94310",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a3108539f30e",
+            "company": "商汤科技",
+            "start_url": "https://joinus.sensetime.com/campus",
+            "origin": "registry:official_source_registry_v12.json"
+          },
+          {
+            "id": "auto-recruit-a323f3018d6d",
+            "company": "ServiceNow",
+            "start_url": "https://jobs.smartrecruiters.com/ServiceNow",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a327f3aa7ee4",
+            "company": "Light",
+            "start_url": "https://jobs.ashbyhq.com/light-inc",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a3359b4e703d",
+            "company": "太极计算机股份有限公司",
+            "start_url": "https://job.iguopin.com/job/detail",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-a358067c57fe",
+            "company": "Swarm Aero",
+            "start_url": "https://jobs.ashbyhq.com/swarmaero",
             "origin": "official-source-graph"
           }
         ],
-        "catalog_total": 1071
+        "catalog_total": 1074
       }
     },
     {
@@ -6917,11 +6896,11 @@
     "gank-public-search",
     "offerjack"
   ],
-  "cn_catalog_count": 9659,
+  "cn_catalog_count": 8525,
   "feed_schema": 4,
   "browser_jd_chars": 220,
-  "feed_bytes": 36188189,
-  "cn_feed_bytes": 7608963,
+  "feed_bytes": 36139499,
+  "cn_feed_bytes": 7223616,
   "catalog_cap": 60000,
   "cn_catalog_cap": 30000,
   "default_product_feed": "data/jobs_cn.json",
