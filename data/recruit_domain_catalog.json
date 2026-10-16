@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "generated_at": "2026-10-16T08:22:14Z",
-  "source_count": 1062,
-  "sweepable_count": 992,
+  "generated_at": "2026-10-16T14:04:26Z",
+  "source_count": 1016,
+  "sweepable_count": 942,
   "dedicated_count": 74,
-  "host_count": 227,
+  "host_count": 225,
   "top_hosts": [
     [
       "job-boards.greenhouse.io",
-      217
+      218
     ],
     [
       "jobs.ashbyhq.com",
@@ -16,7 +16,7 @@
     ],
     [
       "jobs.smartrecruiters.com",
-      110
+      109
     ],
     [
       "jobs.lever.co",
@@ -40,14 +40,10 @@
     ],
     [
       "remoteok.com",
-      4
+      7
     ],
     [
       "career.cmbchina.com",
-      3
-    ],
-    [
-      "chinastock.zhiye.com",
       3
     ],
     [
@@ -85,12 +81,16 @@
     [
       "nwd4iy9rd2s.jobs.feishu.cn",
       2
+    ],
+    [
+      "momenta.jobs.feishu.cn",
+      2
     ]
   ],
   "families": [
     [
       "greenhouse.io",
-      248
+      249
     ],
     [
       "ashbyhq.com",
@@ -98,7 +98,7 @@
     ],
     [
       "smartrecruiters.com",
-      112
+      110
     ],
     [
       "lever.co",
@@ -106,7 +106,7 @@
     ],
     [
       "employer-owned",
-      106
+      107
     ],
     [
       "mokahr.com",
@@ -114,15 +114,15 @@
     ],
     [
       "jobs.feishu.cn",
-      79
+      76
     ],
     [
       "zhiye.com",
-      51
+      50
     ],
     [
       "iguopin.com",
-      36
+      35
     ],
     [
       "hotjob.cn",
@@ -145,6 +145,29 @@
   "employer_direct_only": true,
   "promoted_new_graph_nodes": 988,
   "sources": [
+    {
+      "id": "auto-recruit-41af45602f30",
+      "company": "字节跳动",
+      "category": "互联网/AI",
+      "company_type": "",
+      "start_url": "https://jobs.bytedance.com/campus/position",
+      "url": "https://jobs.bytedance.com/campus/position",
+      "official_url": "https://jobs.bytedance.com/campus/position",
+      "priority": 100,
+      "modes": [
+        "browser-public-ui"
+      ],
+      "max_pages": 4,
+      "origin": "registry:official_source_registry_v12.json",
+      "host": "jobs.bytedance.com",
+      "click_labels": [],
+      "api_hosts": [
+        "jobs.bytedance.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
     {
       "id": "recruit-kuaishou-intern-2027",
       "company": "快手",
@@ -190,6 +213,32 @@
       "extra_hosts": [],
       "evidence": "Verified 2026-08-25 against Kuaishou's anonymous public positions/simple API: project 20271779425607 reports 271 released positions across 28 pages at pageSize=10. The generic SPA resets project/page hash state, so this reviewed source uses the same public API directly and checks collected count against reported total.",
       "sweep_enabled": true
+    },
+    {
+      "id": "auto-recruit-31d7176bada6",
+      "company": "滴滴",
+      "category": "互联网/出行",
+      "company_type": "",
+      "start_url": "https://talent.didiglobal.com/",
+      "url": "https://talent.didiglobal.com/",
+      "official_url": "https://talent.didiglobal.com/",
+      "priority": 100,
+      "modes": [
+        "social",
+        "campus",
+        "intern"
+      ],
+      "max_pages": 4,
+      "origin": "registry:official_source_registry_v12.json",
+      "host": "talent.didiglobal.com",
+      "click_labels": [],
+      "api_hosts": [
+        "talent.didiglobal.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": false,
+      "handled_by": "dedicated-or-priority-adapter"
     },
     {
       "id": "auto-recruit-26bc14d60ffe",
@@ -891,6 +940,54 @@
       "handled_by": "dedicated-or-priority-adapter"
     },
     {
+      "id": "cambricon",
+      "company": "寒武纪",
+      "category": "AI芯片",
+      "company_type": "民营/AI芯片",
+      "start_url": "https://app.mokahr.com/campus-recruitment/cambricon/44201",
+      "url": "https://app.mokahr.com/campus-recruitment/cambricon/44201",
+      "official_url": "https://www.cambricon.com/",
+      "priority": 97,
+      "modes": [
+        "browser-public-ui"
+      ],
+      "max_pages": 12,
+      "origin": "registry:priority_browser_sources.json",
+      "host": "app.mokahr.com",
+      "click_labels": [],
+      "api_hosts": [
+        "app.mokahr.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": false,
+      "handled_by": "dedicated-or-priority-adapter"
+    },
+    {
+      "id": "mthreads",
+      "company": "摩尔线程",
+      "category": "GPU/AI芯片",
+      "company_type": "民营/GPU/AI芯片",
+      "start_url": "https://mthreads.zhiye.com/campus/jobs",
+      "url": "https://mthreads.zhiye.com/campus/jobs",
+      "official_url": "https://www.mthreads.com/jobs",
+      "priority": 97,
+      "modes": [
+        "browser-public-ui"
+      ],
+      "max_pages": 10,
+      "origin": "registry:priority_browser_sources.json",
+      "host": "mthreads.zhiye.com",
+      "click_labels": [],
+      "api_hosts": [
+        "mthreads.zhiye.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": false,
+      "handled_by": "dedicated-or-priority-adapter"
+    },
+    {
       "id": "kunlunxin",
       "company": "昆仑芯",
       "category": "AI芯片/大模型基础设施",
@@ -1059,48 +1156,28 @@
       "handled_by": "dedicated-or-priority-adapter"
     },
     {
-      "id": "target-1656df4e25e6",
-      "company": "Amazon",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.amazon.jobs/",
-      "url": "https://www.amazon.jobs/",
-      "official_url": "https://www.amazon.jobs/",
-      "priority": 96,
+      "id": "galbot",
+      "company": "银河通用",
+      "category": "具身智能/机器人",
+      "company_type": "民营/具身智能初创",
+      "start_url": "https://app.mokahr.com/campus-recruitment/yinhetongyong/165930",
+      "url": "https://app.mokahr.com/campus-recruitment/yinhetongyong/165930",
+      "official_url": "https://www.galbot.com/careers",
+      "priority": 97,
       "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
+        "browser-public-ui"
       ],
       "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.amazon.jobs",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-1d1fce492a6e",
-      "company": "DeepSeek",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://talent.deepseek.com/",
-      "url": "https://talent.deepseek.com/",
-      "official_url": "https://talent.deepseek.com/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "talent.deepseek.com",
+      "origin": "registry:priority_browser_sources.json",
+      "host": "app.mokahr.com",
       "click_labels": [],
       "api_hosts": [
-        "talent.deepseek.com"
+        "app.mokahr.com"
       ],
       "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true,
-      "handled_by": "workspace-source-refresh"
+      "evidence": "",
+      "sweep_enabled": false,
+      "handled_by": "dedicated-or-priority-adapter"
     },
     {
       "id": "minimax",
@@ -1127,146 +1204,6 @@
       "handled_by": "dedicated-or-priority-adapter"
     },
     {
-      "id": "target-41c22966a229",
-      "company": "MiniMax",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.minimaxi.com/careers",
-      "url": "https://www.minimaxi.com/careers",
-      "official_url": "https://www.minimaxi.com/careers",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.minimaxi.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-c659e63b087f",
-      "company": "Momenta",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://momenta.jobs.feishu.cn/campus/",
-      "url": "https://momenta.jobs.feishu.cn/campus/",
-      "official_url": "https://momenta.jobs.feishu.cn/campus/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "momenta.jobs.feishu.cn",
-      "click_labels": [],
-      "api_hosts": [
-        "momenta.jobs.feishu.cn"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true,
-      "handled_by": "workspace-source-refresh"
-    },
-    {
-      "id": "target-b04c329ae129",
-      "company": "NVIDIA",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://jobs.nvidia.com/",
-      "url": "https://jobs.nvidia.com/",
-      "official_url": "https://jobs.nvidia.com/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "jobs.nvidia.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-7049ba2c6ed0",
-      "company": "Shopee",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://careers.shopee.cn/",
-      "url": "https://careers.shopee.cn/",
-      "official_url": "https://careers.shopee.cn/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "careers.shopee.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": false,
-      "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-2ca20edd6aa3",
-      "company": "中信证券",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://wecruit.hotjob.cn/SU6138665dbef57c3b63841399/pb/school.html",
-      "url": "https://wecruit.hotjob.cn/SU6138665dbef57c3b63841399/pb/school.html",
-      "official_url": "https://wecruit.hotjob.cn/SU6138665dbef57c3b63841399/pb/school.html",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "wecruit.hotjob.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-789a67d34fd7",
-      "company": "中国移动九天人工智能",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://job.10086.cn/",
-      "url": "https://job.10086.cn/",
-      "official_url": "https://job.10086.cn/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "job.10086.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-9a2d2485e585",
-      "company": "中国联通",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://zglt.iguopin.com/job1",
-      "url": "https://zglt.iguopin.com/job1",
-      "official_url": "https://zglt.iguopin.com/job1",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "zglt.iguopin.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
       "id": "chinalco-iguopin",
       "company": "中国铝业集团",
       "category": "有色金属/材料/冶金/制造",
@@ -1289,44 +1226,6 @@
       "evidence": "",
       "sweep_enabled": false,
       "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-03016d5ef71f",
-      "company": "中电信人工智能科技",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://job.chinatelecom.com.cn/",
-      "url": "https://job.chinatelecom.com.cn/",
-      "official_url": "https://job.chinatelecom.com.cn/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "job.chinatelecom.com.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-e922f552fb0c",
-      "company": "中科类脑",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.cas-brain.com/",
-      "url": "https://www.cas-brain.com/",
-      "official_url": "https://www.cas-brain.com/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.cas-brain.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
     },
     {
       "id": "bankcomm",
@@ -1354,63 +1253,6 @@
       "handled_by": "dedicated-or-priority-adapter"
     },
     {
-      "id": "target-d81af9703368",
-      "company": "京东",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://campus.jd.com/",
-      "url": "https://campus.jd.com/",
-      "official_url": "https://campus.jd.com/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "campus.jd.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-2818c00d954a",
-      "company": "北京君正",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.ingenic.com.cn/join",
-      "url": "https://www.ingenic.com.cn/join",
-      "official_url": "https://www.ingenic.com.cn/join",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.ingenic.com.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-37c4ac11d73e",
-      "company": "北方华创",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.naura.com/",
-      "url": "https://www.naura.com/",
-      "official_url": "https://www.naura.com/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.naura.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
       "id": "auto-recruit-e9e701bf5eab",
       "company": "千寻智能",
       "category": "具身智能/机器人",
@@ -1434,328 +1276,6 @@
       "sweep_enabled": true
     },
     {
-      "id": "target-59ad8081f616",
-      "company": "千寻智能 Spirit AI",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://nwd4iy9rd2s.jobs.feishu.cn/campusofSpiritAI",
-      "url": "https://nwd4iy9rd2s.jobs.feishu.cn/campusofSpiritAI",
-      "official_url": "https://nwd4iy9rd2s.jobs.feishu.cn/campusofSpiritAI",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "nwd4iy9rd2s.jobs.feishu.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-bd928b7ed20a",
-      "company": "华为",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://career.huawei.com/cn/campus-recruitment-job-list?recruitmentType=FRESH_GRADUATE",
-      "url": "https://career.huawei.com/cn/campus-recruitment-job-list?recruitmentType=FRESH_GRADUATE",
-      "official_url": "https://career.huawei.com/cn/campus-recruitment-job-list?recruitmentType=FRESH_GRADUATE",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "career.huawei.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": false,
-      "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-392bc828159e",
-      "company": "华钧广汇",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.genwealth.com.cn/",
-      "url": "https://www.genwealth.com.cn/",
-      "official_url": "https://www.genwealth.com.cn/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.genwealth.com.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-6a15333d92c8",
-      "company": "地平线",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://horizon-campus.hotjob.cn/",
-      "url": "https://horizon-campus.hotjob.cn/",
-      "official_url": "https://horizon-campus.hotjob.cn/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "horizon-campus.hotjob.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-a9395674915d",
-      "company": "墨芯",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.moffettai.com/jia-ru-wo-men/",
-      "url": "https://www.moffettai.com/jia-ru-wo-men/",
-      "official_url": "https://www.moffettai.com/jia-ru-wo-men/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.moffettai.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-75b3f130b101",
-      "company": "壁仞科技",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://app.mokahr.com/campus-recruitment/biren/44727#/",
-      "url": "https://app.mokahr.com/campus-recruitment/biren/44727#/",
-      "official_url": "https://app.mokahr.com/campus-recruitment/biren/44727#/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "app.mokahr.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-41af45602f30",
-      "company": "字节跳动",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://jobs.bytedance.com/campus/position",
-      "url": "https://jobs.bytedance.com/campus/position",
-      "official_url": "https://jobs.bytedance.com/campus/position",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "jobs.bytedance.com",
-      "click_labels": [],
-      "api_hosts": [
-        "jobs.bytedance.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-76b60715a282",
-      "company": "宽德投资",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.wizardquant.com/career",
-      "url": "https://www.wizardquant.com/career",
-      "official_url": "https://www.wizardquant.com/career",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.wizardquant.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-16d947d148c6",
-      "company": "寒武纪",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://app.mokahr.com/campus-recruitment/cambricon/44201",
-      "url": "https://app.mokahr.com/campus-recruitment/cambricon/44201",
-      "official_url": "https://app.mokahr.com/campus-recruitment/cambricon/44201",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "app.mokahr.com",
-      "click_labels": [],
-      "api_hosts": [
-        "app.mokahr.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true,
-      "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-b95566a7c7b0",
-      "company": "小米",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://hr.xiaomi.com/website/top-talent.html",
-      "url": "https://hr.xiaomi.com/website/top-talent.html",
-      "official_url": "https://hr.xiaomi.com/website/top-talent.html",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "hr.xiaomi.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-3533fffd7618",
-      "company": "小马智行",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.pony.ai/careers",
-      "url": "https://www.pony.ai/careers",
-      "official_url": "https://www.pony.ai/careers",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.pony.ai",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-3b7a47e73459",
-      "company": "小鹏集团",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://xiaopeng.jobs.feishu.cn/campus",
-      "url": "https://xiaopeng.jobs.feishu.cn/campus",
-      "official_url": "https://xiaopeng.jobs.feishu.cn/campus",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "xiaopeng.jobs.feishu.cn",
-      "click_labels": [],
-      "api_hosts": [
-        "xiaopeng.jobs.feishu.cn"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-76f0e9e1ab3a",
-      "company": "快手",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs",
-      "url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs",
-      "official_url": "https://campus.kuaishou.cn/recruit/campus/e/#/campus/jobs",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "campus.kuaishou.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": false,
-      "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-72b5ef1487b4",
-      "company": "思勰投资",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.sixiecapital.com/",
-      "url": "https://www.sixiecapital.com/",
-      "official_url": "https://www.sixiecapital.com/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.sixiecapital.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-81f83d79c3da",
-      "company": "思朗科技",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://smartlogictech.jobs.feishu.cn/xiaozhao/position/list?spread=82A5QW5",
-      "url": "https://smartlogictech.jobs.feishu.cn/xiaozhao/position/list?spread=82A5QW5",
-      "official_url": "https://smartlogictech.jobs.feishu.cn/xiaozhao/position/list?spread=82A5QW5",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "smartlogictech.jobs.feishu.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-c8f359efc8c3",
-      "company": "拓竹",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://bambulab.com/zh/career",
-      "url": "https://bambulab.com/zh/career",
-      "official_url": "https://bambulab.com/zh/career",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "bambulab.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
       "id": "cmb",
       "company": "招商银行",
       "category": "银行/金融/科技/职能",
@@ -1776,283 +1296,6 @@
       ],
       "extra_hosts": [],
       "evidence": "",
-      "sweep_enabled": false,
-      "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-f034454bac59",
-      "company": "拼多多",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://careers.pddglobalhr.com/campus/grad",
-      "url": "https://careers.pddglobalhr.com/campus/grad",
-      "official_url": "https://careers.pddglobalhr.com/campus/grad",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "careers.pddglobalhr.com",
-      "click_labels": [],
-      "api_hosts": [
-        "careers.pddglobalhr.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": false,
-      "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-db14d24be1c7",
-      "company": "摩尔线程",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://mthreads.zhiye.com/campus/jobs",
-      "url": "https://mthreads.zhiye.com/campus/jobs",
-      "official_url": "https://mthreads.zhiye.com/campus/jobs",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "mthreads.zhiye.com",
-      "click_labels": [],
-      "api_hosts": [
-        "mthreads.zhiye.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true,
-      "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-e7549fabf93a",
-      "company": "文远知行",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.weride.ai/zh/careers",
-      "url": "https://www.weride.ai/zh/careers",
-      "official_url": "https://www.weride.ai/zh/careers",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.weride.ai",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-a5fa714d8fdd",
-      "company": "新浪微博",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://app.mokahr.com/campus-recruitment/sina/43536#/",
-      "url": "https://app.mokahr.com/campus-recruitment/sina/43536#/",
-      "official_url": "https://app.mokahr.com/campus-recruitment/sina/43536#/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "app.mokahr.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-cdade53fb62c",
-      "company": "昆仑芯",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://kunlunxin.zhiye.com/",
-      "url": "https://kunlunxin.zhiye.com/",
-      "official_url": "https://kunlunxin.zhiye.com/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "kunlunxin.zhiye.com",
-      "click_labels": [],
-      "api_hosts": [
-        "kunlunxin.zhiye.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true,
-      "handled_by": "workspace-source-refresh"
-    },
-    {
-      "id": "target-f8f675bde75a",
-      "company": "景嘉微",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.jingjiamicro.com/znxs.html",
-      "url": "https://www.jingjiamicro.com/znxs.html",
-      "official_url": "https://www.jingjiamicro.com/znxs.html",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.jingjiamicro.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-bdfc39cd0081",
-      "company": "智元机器人",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://agirobot.jobs.feishu.cn/",
-      "url": "https://agirobot.jobs.feishu.cn/",
-      "official_url": "https://agirobot.jobs.feishu.cn/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "agirobot.jobs.feishu.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-8d78b266b048",
-      "company": "智谱AI",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.zhipuai.cn/zh/joinus",
-      "url": "https://www.zhipuai.cn/zh/joinus",
-      "official_url": "https://www.zhipuai.cn/zh/joinus",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.zhipuai.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-e0f5bbaaad53",
-      "company": "月之暗面",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://careers.kimi.com/campus",
-      "url": "https://careers.kimi.com/campus",
-      "official_url": "https://careers.kimi.com/campus",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "careers.kimi.com",
-      "click_labels": [],
-      "api_hosts": [
-        "careers.kimi.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true,
-      "handled_by": "workspace-source-refresh"
-    },
-    {
-      "id": "target-23f9c2ffc2ae",
-      "company": "极智嘉 Geek+",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.geekplus.com/zh-cn/company/career",
-      "url": "https://www.geekplus.com/zh-cn/company/career",
-      "official_url": "https://www.geekplus.com/zh-cn/company/career",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.geekplus.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-3b6da25ca5ff",
-      "company": "沐曦",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.metax-tech.com/join.html",
-      "url": "https://www.metax-tech.com/join.html",
-      "official_url": "https://www.metax-tech.com/join.html",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.metax-tech.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-f6749a247234",
-      "company": "海康威视",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://campushr.hikvision.com/school?schoolType=nozxf",
-      "url": "https://campushr.hikvision.com/school?schoolType=nozxf",
-      "official_url": "https://campushr.hikvision.com/school?schoolType=nozxf",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "campushr.hikvision.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-31d7176bada6",
-      "company": "滴滴",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://talent.didiglobal.com/",
-      "url": "https://talent.didiglobal.com/",
-      "official_url": "https://talent.didiglobal.com/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "talent.didiglobal.com",
-      "click_labels": [],
-      "api_hosts": [
-        "talent.didiglobal.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
       "sweep_enabled": false,
       "handled_by": "dedicated-or-priority-adapter"
     },
@@ -2129,190 +1372,6 @@
       "handled_by": "dedicated-or-priority-adapter"
     },
     {
-      "id": "target-58e4ecfb2943",
-      "company": "燧原科技",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.enflame-tech.com/",
-      "url": "https://www.enflame-tech.com/",
-      "official_url": "https://www.enflame-tech.com/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.enflame-tech.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-abcbf9283499",
-      "company": "理想汽车",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.lixiang.com/employ/campus.html",
-      "url": "https://www.lixiang.com/employ/campus.html",
-      "official_url": "https://www.lixiang.com/employ/campus.html",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.lixiang.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-fbdc9cbe734d",
-      "company": "百度",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://talent.baidu.com/jobs/list?projectType=1",
-      "url": "https://talent.baidu.com/jobs/list?projectType=1",
-      "official_url": "https://talent.baidu.com/jobs/list?projectType=1",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "talent.baidu.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-5a729d63d98e",
-      "company": "美团",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://zhaopin.meituan.com/web/campus",
-      "url": "https://zhaopin.meituan.com/web/campus",
-      "official_url": "https://zhaopin.meituan.com/web/campus",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "zhaopin.meituan.com",
-      "click_labels": [],
-      "api_hosts": [
-        "zhaopin.meituan.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": false,
-      "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-0f0962320d0d",
-      "company": "联想研究院",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://talent.lenovo.com.cn/campus",
-      "url": "https://talent.lenovo.com.cn/campus",
-      "official_url": "https://talent.lenovo.com.cn/campus",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "talent.lenovo.com.cn",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-802cd80309f8",
-      "company": "腾讯",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://join.qq.com/index.html",
-      "url": "https://join.qq.com/index.html",
-      "official_url": "https://join.qq.com/index.html",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "join.qq.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": false,
-      "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-c57c15ad7165",
-      "company": "轻舟智航",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://www.qcraft.ai/careers",
-      "url": "https://www.qcraft.ai/careers",
-      "official_url": "https://www.qcraft.ai/careers",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "www.qcraft.ai",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
-      "id": "target-6e2dd2dd9795",
-      "company": "银河通用",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://app.mokahr.com/campus-recruitment/yinhetongyong/165930",
-      "url": "https://app.mokahr.com/campus-recruitment/yinhetongyong/165930",
-      "official_url": "https://app.mokahr.com/campus-recruitment/yinhetongyong/165930",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "app.mokahr.com",
-      "click_labels": [],
-      "api_hosts": [
-        "app.mokahr.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true,
-      "handled_by": "dedicated-or-priority-adapter"
-    },
-    {
-      "id": "target-dc0a3b7dd2bd",
-      "company": "长鑫存储",
-      "category": "2027目标岗位来源",
-      "company_type": "",
-      "start_url": "https://jobs.cxmt.com/",
-      "url": "https://jobs.cxmt.com/",
-      "official_url": "https://jobs.cxmt.com/",
-      "priority": 96,
-      "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
-      ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "jobs.cxmt.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
-    },
-    {
       "id": "auto-recruit-8ac95fcb9eb3",
       "company": "阶跃星辰",
       "category": "大模型/AI",
@@ -2361,48 +1420,52 @@
       "handled_by": "dedicated-or-priority-adapter"
     },
     {
-      "id": "target-6336d07e6aaf",
-      "company": "阿里巴巴",
-      "category": "2027目标岗位来源",
+      "id": "supplemental-deepseek",
+      "company": "DeepSeek",
+      "category": "",
       "company_type": "",
-      "start_url": "https://campus-talent.alibaba.com/campus/position-list",
-      "url": "https://campus-talent.alibaba.com/campus/position-list",
-      "official_url": "https://campus-talent.alibaba.com/campus/position-list",
-      "priority": 96,
+      "start_url": "https://talent.deepseek.com/",
+      "url": "https://talent.deepseek.com/",
+      "official_url": "https://talent.deepseek.com/",
+      "priority": 95,
       "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
+        "browser-public-ui"
       ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "campus-talent.alibaba.com",
+      "max_pages": 4,
+      "origin": "registry:workspace_sources_v15.json",
+      "host": "talent.deepseek.com",
       "click_labels": [],
       "api_hosts": [
-        "campus-talent.alibaba.com"
+        "talent.deepseek.com"
       ],
       "extra_hosts": [],
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true,
+      "evidence": "",
+      "sweep_enabled": false,
       "handled_by": "workspace-source-refresh"
     },
     {
-      "id": "target-1b092302ba6a",
-      "company": "麒麟软件",
-      "category": "2027目标岗位来源",
+      "id": "supplemental-momenta-campus",
+      "company": "Momenta",
+      "category": "",
       "company_type": "",
-      "start_url": "https://kylinos.zhiye.com/campus",
-      "url": "https://kylinos.zhiye.com/campus",
-      "official_url": "https://kylinos.zhiye.com/campus",
-      "priority": 96,
+      "start_url": "https://momenta.jobs.feishu.cn/campus/",
+      "url": "https://momenta.jobs.feishu.cn/campus/",
+      "official_url": "https://www.momenta.ai/join.html",
+      "priority": 95,
       "modes": [
-        "browser-public-ui",
-        "target-coverage-audit"
+        "browser-public-ui"
       ],
-      "max_pages": 8,
-      "origin": "user-target-20260903",
-      "host": "kylinos.zhiye.com",
-      "evidence": "User-curated employer-owned recruiting entry from the 2026-09-03 target list; role availability is separately audited.",
-      "sweep_enabled": true
+      "max_pages": 4,
+      "origin": "registry:workspace_sources_v15.json",
+      "host": "momenta.jobs.feishu.cn",
+      "click_labels": [],
+      "api_hosts": [
+        "momenta.jobs.feishu.cn"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": false,
+      "handled_by": "workspace-source-refresh"
     },
     {
       "id": "supplemental-dfsx",
@@ -2691,6 +1754,27 @@
       "handled_by": "workspace-source-refresh"
     },
     {
+      "id": "auto-recruit-3b7a47e73459",
+      "company": "小鹏集团",
+      "category": "物理AI/汽车/机器人",
+      "company_type": "",
+      "start_url": "https://xiaopeng.jobs.feishu.cn/campus",
+      "url": "https://xiaopeng.jobs.feishu.cn/campus",
+      "official_url": "https://xiaopeng.jobs.feishu.cn/campus",
+      "priority": 95,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "xiaopeng.jobs.feishu.cn",
+      "click_labels": [],
+      "api_hosts": [
+        "xiaopeng.jobs.feishu.cn"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
       "id": "supplemental-smartlogic",
       "company": "思朗科技",
       "category": "",
@@ -2713,6 +1797,28 @@
       "evidence": "",
       "sweep_enabled": false,
       "handled_by": "workspace-source-refresh"
+    },
+    {
+      "id": "auto-recruit-f034454bac59",
+      "company": "拼多多",
+      "category": "互联网/AI",
+      "company_type": "",
+      "start_url": "https://careers.pddglobalhr.com/campus/grad",
+      "url": "https://careers.pddglobalhr.com/campus/grad",
+      "official_url": "https://careers.pddglobalhr.com/campus/grad",
+      "priority": 95,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "careers.pddglobalhr.com",
+      "click_labels": [],
+      "api_hosts": [
+        "careers.pddglobalhr.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": false,
+      "handled_by": "dedicated-or-priority-adapter"
     },
     {
       "id": "supplemental-infinigence",
@@ -2739,6 +1845,30 @@
       "handled_by": "workspace-source-refresh"
     },
     {
+      "id": "supplemental-kunlunxin",
+      "company": "昆仑芯",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://kunlunxin.zhiye.com/",
+      "url": "https://kunlunxin.zhiye.com/",
+      "official_url": "https://www.kunlunxin.com/",
+      "priority": 95,
+      "modes": [
+        "browser-public-ui"
+      ],
+      "max_pages": 4,
+      "origin": "registry:workspace_sources_v15.json",
+      "host": "kunlunxin.zhiye.com",
+      "click_labels": [],
+      "api_hosts": [
+        "kunlunxin.zhiye.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": false,
+      "handled_by": "workspace-source-refresh"
+    },
+    {
       "id": "supplemental-sunrise",
       "company": "曦望Sunrise",
       "category": "",
@@ -2756,6 +1886,30 @@
       "click_labels": [],
       "api_hosts": [
         "jobs.sunrise-ai.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": false,
+      "handled_by": "workspace-source-refresh"
+    },
+    {
+      "id": "supplemental-kimi",
+      "company": "月之暗面",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://careers.kimi.com/campus",
+      "url": "https://careers.kimi.com/campus",
+      "official_url": "https://careers.kimi.com/campus",
+      "priority": 95,
+      "modes": [
+        "browser-public-ui"
+      ],
+      "max_pages": 4,
+      "origin": "registry:workspace_sources_v15.json",
+      "host": "careers.kimi.com",
+      "click_labels": [],
+      "api_hosts": [
+        "careers.kimi.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -2830,6 +1984,28 @@
       "evidence": "",
       "sweep_enabled": false,
       "handled_by": "workspace-source-refresh"
+    },
+    {
+      "id": "auto-recruit-5a729d63d98e",
+      "company": "美团",
+      "category": "互联网/AI",
+      "company_type": "",
+      "start_url": "https://zhaopin.meituan.com/web/campus",
+      "url": "https://zhaopin.meituan.com/web/campus",
+      "official_url": "https://zhaopin.meituan.com/web/campus",
+      "priority": 95,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "zhaopin.meituan.com",
+      "click_labels": [],
+      "api_hosts": [
+        "zhaopin.meituan.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": false,
+      "handled_by": "dedicated-or-priority-adapter"
     },
     {
       "id": "auto-recruit-7d466ba0f4fc",
@@ -2940,6 +2116,30 @@
       "click_labels": [],
       "api_hosts": [
         "carizon.jobs.feishu.cn"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": false,
+      "handled_by": "workspace-source-refresh"
+    },
+    {
+      "id": "supplemental-alibaba-campus",
+      "company": "阿里巴巴",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://campus-talent.alibaba.com/campus/position-list",
+      "url": "https://campus-talent.alibaba.com/campus/position-list",
+      "official_url": "https://campus-talent.alibaba.com/",
+      "priority": 95,
+      "modes": [
+        "browser-public-ui"
+      ],
+      "max_pages": 4,
+      "origin": "registry:workspace_sources_v15.json",
+      "host": "campus-talent.alibaba.com",
+      "click_labels": [],
+      "api_hosts": [
+        "campus-talent.alibaba.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -4350,13 +3550,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-185ffa113f02",
+      "id": "auto-recruit-68e713396372",
       "company": "20four7VA",
       "category": "",
       "company_type": "",
-      "start_url": "https://20four7va.breezy.hr/p/51c07496adc2-cpt-11416-real-estate-lead-follow-up-crm-business-support-virtual-assistant",
-      "url": "https://20four7va.breezy.hr/p/51c07496adc2-cpt-11416-real-estate-lead-follow-up-crm-business-support-virtual-assistant",
-      "official_url": "https://20four7va.breezy.hr/p/51c07496adc2-cpt-11416-real-estate-lead-follow-up-crm-business-support-virtual-assistant",
+      "start_url": "https://20four7va.breezy.hr/p/703754055061-cpt-11546-b2b-tech-growth-lead-generation-specialist-virtual-assistant",
+      "url": "https://20four7va.breezy.hr/p/703754055061-cpt-11546-b2b-tech-growth-lead-generation-specialist-virtual-assistant",
+      "official_url": "https://20four7va.breezy.hr/p/703754055061-cpt-11546-b2b-tech-growth-lead-generation-specialist-virtual-assistant",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -5354,27 +4554,6 @@
       "click_labels": [],
       "api_hosts": [
         "job-boards.greenhouse.io"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-883f11db81b8",
-      "company": "Arch Capital",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://jobs.smartrecruiters.com/ArchGlobalServicesPhilippinesInc",
-      "url": "https://jobs.smartrecruiters.com/ArchGlobalServicesPhilippinesInc",
-      "official_url": "https://jobs.smartrecruiters.com/ArchGlobalServicesPhilippinesInc",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "jobs.smartrecruiters.com",
-      "click_labels": [],
-      "api_hosts": [
-        "jobs.smartrecruiters.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -6809,13 +5988,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-1651185c2185",
+      "id": "auto-recruit-a43d6a731d87",
       "company": "Cardinal Technology Systems",
       "category": "",
       "company_type": "",
-      "start_url": "https://cardinal-technology-systems-corp.breezy.hr/p/2c96e73bb87d-it-requirements-manager",
-      "url": "https://cardinal-technology-systems-corp.breezy.hr/p/2c96e73bb87d-it-requirements-manager",
-      "official_url": "https://cardinal-technology-systems-corp.breezy.hr/p/2c96e73bb87d-it-requirements-manager",
+      "start_url": "https://cardinal-technology-systems-corp.breezy.hr/p/a5722ba2377a-quality-assurance-specialist-basic",
+      "url": "https://cardinal-technology-systems-corp.breezy.hr/p/a5722ba2377a-quality-assurance-specialist-basic",
+      "official_url": "https://cardinal-technology-systems-corp.breezy.hr/p/a5722ba2377a-quality-assurance-specialist-basic",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -7481,6 +6660,27 @@
       "sweep_enabled": true
     },
     {
+      "id": "auto-recruit-4f1fa039e5e6",
+      "company": "Commvault",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://job-boards.greenhouse.io/commvault",
+      "url": "https://job-boards.greenhouse.io/commvault",
+      "official_url": "https://job-boards.greenhouse.io/commvault",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "job-boards.greenhouse.io",
+      "click_labels": [],
+      "api_hosts": [
+        "job-boards.greenhouse.io"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
       "id": "auto-recruit-756c39076431",
       "company": "Composio",
       "category": "",
@@ -7628,13 +6828,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-b7ca46e004fa",
+      "id": "auto-recruit-3dc3a262776e",
       "company": "Crafted Staff",
       "category": "",
       "company_type": "",
-      "start_url": "https://crafted-staff.breezy.hr/p/83501492b303-0521-project-manager-commercial-construction",
-      "url": "https://crafted-staff.breezy.hr/p/83501492b303-0521-project-manager-commercial-construction",
-      "official_url": "https://crafted-staff.breezy.hr/p/83501492b303-0521-project-manager-commercial-construction",
+      "start_url": "https://crafted-staff.breezy.hr/p/58e933228f57-cdl-a-owner-operator-up-to-90-10-split",
+      "url": "https://crafted-staff.breezy.hr/p/58e933228f57-cdl-a-owner-operator-up-to-90-10-split",
+      "official_url": "https://crafted-staff.breezy.hr/p/58e933228f57-cdl-a-owner-operator-up-to-90-10-split",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -9098,13 +8298,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-8f1f99eed61c",
+      "id": "auto-recruit-63fce7375013",
       "company": "Forge Nano",
       "category": "",
       "company_type": "",
-      "start_url": "https://forge-nano.breezy.hr/p/d2042495816a-director-of-business-development-apac-excluding-china",
-      "url": "https://forge-nano.breezy.hr/p/d2042495816a-director-of-business-development-apac-excluding-china",
-      "official_url": "https://forge-nano.breezy.hr/p/d2042495816a-director-of-business-development-apac-excluding-china",
+      "start_url": "https://forge-nano.breezy.hr/p/74da06fd3ad1-controls-engineer-ii",
+      "url": "https://forge-nano.breezy.hr/p/74da06fd3ad1-controls-engineer-ii",
+      "official_url": "https://forge-nano.breezy.hr/p/74da06fd3ad1-controls-engineer-ii",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -9134,6 +8334,27 @@
       "click_labels": [],
       "api_hosts": [
         "job-boards.greenhouse.io"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
+      "id": "auto-recruit-abff4bb2ec3e",
+      "company": "Fortanix",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://remoteok.com/remote-jobs/remote-federal-business-development-director-fortanix-1137463",
+      "url": "https://remoteok.com/remote-jobs/remote-federal-business-development-director-fortanix-1137463",
+      "official_url": "https://remoteok.com/remote-jobs/remote-federal-business-development-director-fortanix-1137463",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "remoteok.com",
+      "click_labels": [],
+      "api_hosts": [
+        "remoteok.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -9197,6 +8418,27 @@
       "click_labels": [],
       "api_hosts": [
         "job-boards.greenhouse.io"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
+      "id": "auto-recruit-d2d12d72ac6b",
+      "company": "Fuel50",
+      "category": "Startups",
+      "company_type": "",
+      "start_url": "https://remoteok.com/remote-jobs/remote-product-design-lead-fuel50-1137474",
+      "url": "https://remoteok.com/remote-jobs/remote-product-design-lead-fuel50-1137474",
+      "official_url": "https://remoteok.com/remote-jobs/remote-product-design-lead-fuel50-1137474",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "remoteok.com",
+      "click_labels": [],
+      "api_hosts": [
+        "remoteok.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -9329,13 +8571,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-427cea244ed0",
+      "id": "auto-recruit-604db8fc807c",
       "company": "Gamebreaking Studios",
       "category": "",
       "company_type": "",
-      "start_url": "https://gamebreaking-studios-inc.breezy.hr/p/2acb81097cb5-latin-america-software-engineering-intern",
-      "url": "https://gamebreaking-studios-inc.breezy.hr/p/2acb81097cb5-latin-america-software-engineering-intern",
-      "official_url": "https://gamebreaking-studios-inc.breezy.hr/p/2acb81097cb5-latin-america-software-engineering-intern",
+      "start_url": "https://gamebreaking-studios-inc.breezy.hr/p/6931e45e9429-business-development-manager",
+      "url": "https://gamebreaking-studios-inc.breezy.hr/p/6931e45e9429-business-development-manager",
+      "official_url": "https://gamebreaking-studios-inc.breezy.hr/p/6931e45e9429-business-development-manager",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -9455,13 +8697,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-11cfa09a0a04",
+      "id": "auto-recruit-9783d6943ec4",
       "company": "Gastronomous Technologies",
       "category": "",
       "company_type": "",
-      "start_url": "https://gastronomous-technologies-inc.breezy.hr/p/b23861873d78-senior-systems-software-engineer-robotics",
-      "url": "https://gastronomous-technologies-inc.breezy.hr/p/b23861873d78-senior-systems-software-engineer-robotics",
-      "official_url": "https://gastronomous-technologies-inc.breezy.hr/p/b23861873d78-senior-systems-software-engineer-robotics",
+      "start_url": "https://gastronomous-technologies-inc.breezy.hr/p/b9f03491b74f-repair-technician",
+      "url": "https://gastronomous-technologies-inc.breezy.hr/p/b9f03491b74f-repair-technician",
+      "official_url": "https://gastronomous-technologies-inc.breezy.hr/p/b9f03491b74f-repair-technician",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -9470,27 +8712,6 @@
       "click_labels": [],
       "api_hosts": [
         "gastronomous-technologies-inc.breezy.hr"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-c59322e073f3",
-      "company": "Gcore",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://careers.smartrecruiters.com/Gcore",
-      "url": "https://careers.smartrecruiters.com/Gcore",
-      "official_url": "https://careers.smartrecruiters.com/Gcore",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "careers.smartrecruiters.com",
-      "click_labels": [],
-      "api_hosts": [
-        "careers.smartrecruiters.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -9701,6 +8922,27 @@
       "click_labels": [],
       "api_hosts": [
         "job-boards.greenhouse.io"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
+      "id": "auto-recruit-c5b17564ab22",
+      "company": "GiveWell",
+      "category": "Startups",
+      "company_type": "",
+      "start_url": "https://remoteok.com/remote-jobs/remote-senior-communications-officer-strategic-communications-givewell-1137379",
+      "url": "https://remoteok.com/remote-jobs/remote-senior-communications-officer-strategic-communications-givewell-1137379",
+      "official_url": "https://remoteok.com/remote-jobs/remote-senior-communications-officer-strategic-communications-givewell-1137379",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "remoteok.com",
+      "click_labels": [],
+      "api_hosts": [
+        "remoteok.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -10085,27 +9327,6 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-9a1690dc4f69",
-      "company": "Hardin Design & Development",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://jobs.smartrecruiters.com/HardinDesign",
-      "url": "https://jobs.smartrecruiters.com/HardinDesign",
-      "official_url": "https://jobs.smartrecruiters.com/HardinDesign",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "jobs.smartrecruiters.com",
-      "click_labels": [],
-      "api_hosts": [
-        "jobs.smartrecruiters.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
       "id": "auto-recruit-51bc83a9f798",
       "company": "Harvey",
       "category": "",
@@ -10352,6 +9573,48 @@
       "click_labels": [],
       "api_hosts": [
         "jobs.ashbyhq.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
+      "id": "auto-recruit-6ad0601cc0f7",
+      "company": "Hunt St",
+      "category": "Startups",
+      "company_type": "",
+      "start_url": "https://remoteok.com/remote-jobs/remote-marketing-and-sales-administrator-hunt-st-1137488",
+      "url": "https://remoteok.com/remote-jobs/remote-marketing-and-sales-administrator-hunt-st-1137488",
+      "official_url": "https://remoteok.com/remote-jobs/remote-marketing-and-sales-administrator-hunt-st-1137488",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "remoteok.com",
+      "click_labels": [],
+      "api_hosts": [
+        "remoteok.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
+      "id": "auto-recruit-4505e4d1abd0",
+      "company": "Huzzle",
+      "category": "Startups",
+      "company_type": "",
+      "start_url": "https://remoteok.com/remote-jobs/remote-junior-sales-development-representative-it-industry-huzzle-1137480",
+      "url": "https://remoteok.com/remote-jobs/remote-junior-sales-development-representative-it-industry-huzzle-1137480",
+      "official_url": "https://remoteok.com/remote-jobs/remote-junior-sales-development-representative-it-industry-huzzle-1137480",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "remoteok.com",
+      "click_labels": [],
+      "api_hosts": [
+        "remoteok.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -10841,6 +10104,27 @@
       "sweep_enabled": true
     },
     {
+      "id": "auto-recruit-56bc70c8d540",
+      "company": "JumpCloud",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://remoteok.com/remote-jobs/remote-customer-success-manager-mexico-jumpcloud-1137406",
+      "url": "https://remoteok.com/remote-jobs/remote-customer-success-manager-mexico-jumpcloud-1137406",
+      "official_url": "https://remoteok.com/remote-jobs/remote-customer-success-manager-mexico-jumpcloud-1137406",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "remoteok.com",
+      "click_labels": [],
+      "api_hosts": [
+        "remoteok.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
       "id": "auto-recruit-580c123c4438",
       "company": "Justworks",
       "category": "",
@@ -10898,6 +10182,27 @@
       "click_labels": [],
       "api_hosts": [
         "jobs.smartrecruiters.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
+      "id": "auto-recruit-1beacefe8002",
+      "company": "KPI Solutions",
+      "category": "Startups",
+      "company_type": "",
+      "start_url": "https://remoteok.com/remote-jobs/remote-software-deployment-engineer-kpi-solutions-1137408",
+      "url": "https://remoteok.com/remote-jobs/remote-software-deployment-engineer-kpi-solutions-1137408",
+      "official_url": "https://remoteok.com/remote-jobs/remote-software-deployment-engineer-kpi-solutions-1137408",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "remoteok.com",
+      "click_labels": [],
+      "api_hosts": [
+        "remoteok.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -10967,13 +10272,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-2696668a39d8",
+      "id": "auto-recruit-935a238ee533",
       "company": "Kenect",
       "category": "",
       "company_type": "",
-      "start_url": "https://kenect.breezy.hr/p/627e234feff6-upsell-account-executive",
-      "url": "https://kenect.breezy.hr/p/627e234feff6-upsell-account-executive",
-      "official_url": "https://kenect.breezy.hr/p/627e234feff6-upsell-account-executive",
+      "start_url": "https://kenect.breezy.hr/p/125740462eba-large-market-customer-success-manager",
+      "url": "https://kenect.breezy.hr/p/125740462eba-large-market-customer-success-manager",
+      "official_url": "https://kenect.breezy.hr/p/125740462eba-large-market-customer-success-manager",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -11660,13 +10965,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-3a046da4d32c",
+      "id": "auto-recruit-5dba81d2cc2b",
       "company": "Matrix Design Group",
       "category": "",
       "company_type": "",
-      "start_url": "https://matrix-design-group.breezy.hr/p/7e9c060e7325-test-and-validation-intern",
-      "url": "https://matrix-design-group.breezy.hr/p/7e9c060e7325-test-and-validation-intern",
-      "official_url": "https://matrix-design-group.breezy.hr/p/7e9c060e7325-test-and-validation-intern",
+      "start_url": "https://matrix-design-group.breezy.hr/p/1f85e0fc6993-general-manager",
+      "url": "https://matrix-design-group.breezy.hr/p/1f85e0fc6993-general-manager",
+      "official_url": "https://matrix-design-group.breezy.hr/p/1f85e0fc6993-general-manager",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -12374,13 +11679,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-48125949ed53",
+      "id": "auto-recruit-9eea7e249c69",
       "company": "NationsBenefits",
       "category": "",
       "company_type": "",
-      "start_url": "https://nationsbenefits.breezy.hr/p/bd9d7b48e007-hearing-ambassador-patient-care-coordinator",
-      "url": "https://nationsbenefits.breezy.hr/p/bd9d7b48e007-hearing-ambassador-patient-care-coordinator",
-      "official_url": "https://nationsbenefits.breezy.hr/p/bd9d7b48e007-hearing-ambassador-patient-care-coordinator",
+      "start_url": "https://nationsbenefits.breezy.hr/p/94b225808238-net-full-stack-developer",
+      "url": "https://nationsbenefits.breezy.hr/p/94b225808238-net-full-stack-developer",
+      "official_url": "https://nationsbenefits.breezy.hr/p/94b225808238-net-full-stack-developer",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -12668,13 +11973,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-a453f006ba95",
+      "id": "auto-recruit-a31aa888c196",
       "company": "NinjaHoldings",
       "category": "",
       "company_type": "",
-      "start_url": "https://ninjaholdings.breezy.hr/p/23a015fea536-software-engineer-intern",
-      "url": "https://ninjaholdings.breezy.hr/p/23a015fea536-software-engineer-intern",
-      "official_url": "https://ninjaholdings.breezy.hr/p/23a015fea536-software-engineer-intern",
+      "start_url": "https://ninjaholdings.breezy.hr/p/029620748d0f-senior-manager-data-engineering",
+      "url": "https://ninjaholdings.breezy.hr/p/029620748d0f-senior-manager-data-engineering",
+      "official_url": "https://ninjaholdings.breezy.hr/p/029620748d0f-senior-manager-data-engineering",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -13718,27 +13023,6 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-e839d4049806",
-      "company": "Plexxis",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://plexxis-software.breezy.hr/p/e845df178343-jr-software-developer-vancouver-island-residents-only",
-      "url": "https://plexxis-software.breezy.hr/p/e845df178343-jr-software-developer-vancouver-island-residents-only",
-      "official_url": "https://plexxis-software.breezy.hr/p/e845df178343-jr-software-developer-vancouver-island-residents-only",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "plexxis-software.breezy.hr",
-      "click_labels": [],
-      "api_hosts": [
-        "plexxis-software.breezy.hr"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
       "id": "auto-recruit-449b5edfbb54",
       "company": "Plot Technologies",
       "category": "",
@@ -14054,13 +13338,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-e778051cf65e",
+      "id": "auto-recruit-5066046d811d",
       "company": "Q-Block Computing",
       "category": "",
       "company_type": "",
-      "start_url": "https://q-block-computing.breezy.hr/p/cc0c43a1a09e-mechanical-cad-engineering-intern",
-      "url": "https://q-block-computing.breezy.hr/p/cc0c43a1a09e-mechanical-cad-engineering-intern",
-      "official_url": "https://q-block-computing.breezy.hr/p/cc0c43a1a09e-mechanical-cad-engineering-intern",
+      "start_url": "https://q-block-computing.breezy.hr/p/55e3e3b13157-quantum-scientist",
+      "url": "https://q-block-computing.breezy.hr/p/55e3e3b13157-quantum-scientist",
+      "official_url": "https://q-block-computing.breezy.hr/p/55e3e3b13157-quantum-scientist",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -14237,6 +13521,27 @@
       "click_labels": [],
       "api_hosts": [
         "jobs.ashbyhq.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
+      "id": "auto-recruit-605d96e395db",
+      "company": "REPA Group",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://jobs.smartrecruiters.com/REPAGROUP",
+      "url": "https://jobs.smartrecruiters.com/REPAGROUP",
+      "official_url": "https://jobs.smartrecruiters.com/REPAGROUP",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "jobs.smartrecruiters.com",
+      "click_labels": [],
+      "api_hosts": [
+        "jobs.smartrecruiters.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -14468,6 +13773,27 @@
       "click_labels": [],
       "api_hosts": [
         "jobs.lever.co"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
+      "id": "auto-recruit-724f13d4313c",
+      "company": "Red Bull",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://jobs.redbull.com/us-en",
+      "url": "https://jobs.redbull.com/us-en",
+      "official_url": "https://jobs.redbull.com/us-en",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "jobs.redbull.com",
+      "click_labels": [],
+      "api_hosts": [
+        "jobs.redbull.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -17268,13 +16594,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-ada9e1a43e79",
+      "id": "auto-recruit-1e46dc6fe081",
       "company": "Vagaro",
       "category": "",
       "company_type": "",
-      "start_url": "https://vagaro.breezy.hr/p/d8c61acc6349-director-software-engineering",
-      "url": "https://vagaro.breezy.hr/p/d8c61acc6349-director-software-engineering",
-      "official_url": "https://vagaro.breezy.hr/p/d8c61acc6349-director-software-engineering",
+      "start_url": "https://vagaro.breezy.hr/p/f684644b73f5-senior-business-intelligence-manager",
+      "url": "https://vagaro.breezy.hr/p/f684644b73f5-senior-business-intelligence-manager",
+      "official_url": "https://vagaro.breezy.hr/p/f684644b73f5-senior-business-intelligence-manager",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -18843,6 +18169,27 @@
       "sweep_enabled": true
     },
     {
+      "id": "auto-recruit-eb0bae8d22e8",
+      "company": "三一集团",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://sany.zhiye.com/social/jobs",
+      "url": "https://sany.zhiye.com/social/jobs",
+      "official_url": "https://sany.zhiye.com/social/jobs",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "sany.zhiye.com",
+      "click_labels": [],
+      "api_hosts": [
+        "sany.zhiye.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
       "id": "auto-recruit-9f6ee732b4b7",
       "company": "三只松鼠",
       "category": "食品",
@@ -18950,7 +18297,7 @@
     {
       "id": "auto-recruit-d2e4a327b2a0",
       "company": "东方海外",
-      "category": "",
+      "category": "外企物流",
       "company_type": "",
       "start_url": "https://app.mokahr.com/social-recruitment/oocl/44732",
       "url": "https://app.mokahr.com/social-recruitment/oocl/44732",
@@ -19032,6 +18379,48 @@
       "sweep_enabled": true
     },
     {
+      "id": "auto-recruit-60121f8ba2ce",
+      "company": "中兴通讯",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://app.mokahr.com/campus-recruitment/zte/46903",
+      "url": "https://app.mokahr.com/campus-recruitment/zte/46903",
+      "official_url": "https://app.mokahr.com/campus-recruitment/zte/46903",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "app.mokahr.com",
+      "click_labels": [],
+      "api_hosts": [
+        "app.mokahr.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
+      "id": "auto-recruit-3112622eece9",
+      "company": "中兴通讯",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://app.mokahr.com/social-recruitment/zte/47588",
+      "url": "https://app.mokahr.com/social-recruitment/zte/47588",
+      "official_url": "https://app.mokahr.com/social-recruitment/zte/47588",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "app.mokahr.com",
+      "click_labels": [],
+      "api_hosts": [
+        "app.mokahr.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
       "id": "auto-recruit-59770e703e85",
       "company": "中国卫通集团股份有限公司",
       "category": "航天/军工/科研制造",
@@ -19089,27 +18478,6 @@
       "click_labels": [],
       "api_hosts": [
         "job.iguopin.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-bb949c9d639f",
-      "company": "中国电子科技集团公司第五十研究所",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://www.iguopin.com/job",
-      "url": "https://www.iguopin.com/job",
-      "official_url": "https://www.iguopin.com/job",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "www.iguopin.com",
-      "click_labels": [],
-      "api_hosts": [
-        "www.iguopin.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -19215,48 +18583,6 @@
       "click_labels": [],
       "api_hosts": [
         "job.iguopin.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-3f7e940d740b",
-      "company": "中国银河证券",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://chinastock.zhiye.com/campus/jobs",
-      "url": "https://chinastock.zhiye.com/campus/jobs",
-      "official_url": "https://chinastock.zhiye.com/campus/jobs",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "chinastock.zhiye.com",
-      "click_labels": [],
-      "api_hosts": [
-        "chinastock.zhiye.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-6f405ac4fd37",
-      "company": "中国银河证券",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://chinastock.zhiye.com/privacy",
-      "url": "https://chinastock.zhiye.com/privacy",
-      "official_url": "https://chinastock.zhiye.com/privacy",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "chinastock.zhiye.com",
-      "click_labels": [],
-      "api_hosts": [
-        "chinastock.zhiye.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -19410,13 +18736,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-7dba8571d63a",
+      "id": "auto-recruit-9dfbb0fc70cd",
       "company": "乐刻运动",
       "category": "",
       "company_type": "",
-      "start_url": "https://leoao-inc.jobs.feishu.cn/index/position/7678949706303588659/detail",
-      "url": "https://leoao-inc.jobs.feishu.cn/index/position/7678949706303588659/detail",
-      "official_url": "https://leoao-inc.jobs.feishu.cn/index/position/7678949706303588659/detail",
+      "start_url": "https://leoao-inc.jobs.feishu.cn/index/position/7680397150073620787/detail",
+      "url": "https://leoao-inc.jobs.feishu.cn/index/position/7680397150073620787/detail",
+      "official_url": "https://leoao-inc.jobs.feishu.cn/index/position/7680397150073620787/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -19536,13 +18862,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-a704c08b241e",
+      "id": "auto-recruit-1dddb08d3c51",
       "company": "元气森林",
       "category": "",
       "company_type": "",
-      "start_url": "https://k11pnjpvz1.jobs.feishu.cn/index/position/7678907963596507433/detail",
-      "url": "https://k11pnjpvz1.jobs.feishu.cn/index/position/7678907963596507433/detail",
-      "official_url": "https://k11pnjpvz1.jobs.feishu.cn/index/position/7678907963596507433/detail",
+      "start_url": "https://k11pnjpvz1.jobs.feishu.cn/index/position/7682674215980288282/detail",
+      "url": "https://k11pnjpvz1.jobs.feishu.cn/index/position/7682674215980288282/detail",
+      "official_url": "https://k11pnjpvz1.jobs.feishu.cn/index/position/7682674215980288282/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -19557,13 +18883,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-8fc9997534a5",
+      "id": "auto-recruit-d06dd07e0a0a",
       "company": "光明之芯",
       "category": "",
       "company_type": "",
-      "start_url": "https://brightchip.jobs.feishu.cn/index/position/7678871655385975103/detail",
-      "url": "https://brightchip.jobs.feishu.cn/index/position/7678871655385975103/detail",
-      "official_url": "https://brightchip.jobs.feishu.cn/index/position/7678871655385975103/detail",
+      "start_url": "https://brightchip.jobs.feishu.cn/index/position/7681551022548142362/detail",
+      "url": "https://brightchip.jobs.feishu.cn/index/position/7681551022548142362/detail",
+      "official_url": "https://brightchip.jobs.feishu.cn/index/position/7681551022548142362/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -19578,13 +18904,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-490254903b33",
+      "id": "auto-recruit-248863db1b29",
       "company": "北京人形机器人创新中心",
       "category": "",
       "company_type": "",
-      "start_url": "https://zitd5je6f7j.jobs.feishu.cn/index/position/7678971931144620326/detail",
-      "url": "https://zitd5je6f7j.jobs.feishu.cn/index/position/7678971931144620326/detail",
-      "official_url": "https://zitd5je6f7j.jobs.feishu.cn/index/position/7678971931144620326/detail",
+      "start_url": "https://zitd5je6f7j.jobs.feishu.cn/index/position/7690446972171798811/detail",
+      "url": "https://zitd5je6f7j.jobs.feishu.cn/index/position/7690446972171798811/detail",
+      "official_url": "https://zitd5je6f7j.jobs.feishu.cn/index/position/7690446972171798811/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -20061,13 +19387,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-2eb62367a4be",
+      "id": "auto-recruit-320b8c6dbd87",
       "company": "它石智航",
       "category": "",
       "company_type": "",
-      "start_url": "https://tarsrobot.jobs.feishu.cn/index/position/7679021162018949402/detail",
-      "url": "https://tarsrobot.jobs.feishu.cn/index/position/7679021162018949402/detail",
-      "official_url": "https://tarsrobot.jobs.feishu.cn/index/position/7679021162018949402/detail",
+      "start_url": "https://tarsrobot.jobs.feishu.cn/index/position/7680500848108259603/detail",
+      "url": "https://tarsrobot.jobs.feishu.cn/index/position/7680500848108259603/detail",
+      "official_url": "https://tarsrobot.jobs.feishu.cn/index/position/7680500848108259603/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -20210,55 +19536,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-ed6c6defed5e",
+      "id": "auto-recruit-bf896780ad33",
       "company": "小马智行",
       "category": "",
       "company_type": "",
-      "start_url": "http://campus.pony.ai/",
-      "url": "http://campus.pony.ai/",
-      "official_url": "http://campus.pony.ai/",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "campus.pony.ai",
-      "click_labels": [],
-      "api_hosts": [
-        "campus.pony.ai"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-a60eb8cc28b3",
-      "company": "小马智行",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://careers.pony.ai/",
-      "url": "https://careers.pony.ai/",
-      "official_url": "https://careers.pony.ai/",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "careers.pony.ai",
-      "click_labels": [],
-      "api_hosts": [
-        "careers.pony.ai"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-fa439303a9d6",
-      "company": "小马智行",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://ponyai.jobs.feishu.cn/ponyai/position/7681204734360045830/detail",
-      "url": "https://ponyai.jobs.feishu.cn/ponyai/position/7681204734360045830/detail",
-      "official_url": "https://ponyai.jobs.feishu.cn/ponyai/position/7681204734360045830/detail",
+      "start_url": "https://ponyai.jobs.feishu.cn/ponyai/position/7680020048504785161/detail",
+      "url": "https://ponyai.jobs.feishu.cn/ponyai/position/7680020048504785161/detail",
+      "official_url": "https://ponyai.jobs.feishu.cn/ponyai/position/7680020048504785161/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -20357,13 +19641,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-2e1868848b05",
+      "id": "auto-recruit-2124125e8f1d",
       "company": "库洛游戏",
       "category": "",
       "company_type": "",
-      "start_url": "https://kurogame.jobs.feishu.cn/campus",
-      "url": "https://kurogame.jobs.feishu.cn/campus",
-      "official_url": "https://kurogame.jobs.feishu.cn/campus",
+      "start_url": "https://kurogame.jobs.feishu.cn/index/position/7680162166321760554/detail",
+      "url": "https://kurogame.jobs.feishu.cn/index/position/7680162166321760554/detail",
+      "official_url": "https://kurogame.jobs.feishu.cn/index/position/7680162166321760554/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -20378,55 +19662,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-a316d552304d",
-      "company": "库洛游戏",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://kurogame.jobs.feishu.cn/index",
-      "url": "https://kurogame.jobs.feishu.cn/index",
-      "official_url": "https://kurogame.jobs.feishu.cn/index",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "kurogame.jobs.feishu.cn",
-      "click_labels": [],
-      "api_hosts": [
-        "kurogame.jobs.feishu.cn"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-830a17f126e7",
+      "id": "auto-recruit-9b06af7e21e7",
       "company": "库犸科技",
       "category": "",
       "company_type": "",
-      "start_url": "https://mammotion.jobs.feishu.cn/campus_recruitment",
-      "url": "https://mammotion.jobs.feishu.cn/campus_recruitment",
-      "official_url": "https://mammotion.jobs.feishu.cn/campus_recruitment",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "mammotion.jobs.feishu.cn",
-      "click_labels": [],
-      "api_hosts": [
-        "mammotion.jobs.feishu.cn"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-f3ec2491f8ba",
-      "company": "库犸科技",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://mammotion.jobs.feishu.cn/social_recruitment/position/7679000923310950662/detail",
-      "url": "https://mammotion.jobs.feishu.cn/social_recruitment/position/7679000923310950662/detail",
-      "official_url": "https://mammotion.jobs.feishu.cn/social_recruitment/position/7679000923310950662/detail",
+      "start_url": "https://mammotion.jobs.feishu.cn/social_recruitment/position/7682788379616774443/detail",
+      "url": "https://mammotion.jobs.feishu.cn/social_recruitment/position/7682788379616774443/detail",
+      "official_url": "https://mammotion.jobs.feishu.cn/social_recruitment/position/7682788379616774443/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -20800,13 +20042,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-cb57d1b09f64",
+      "id": "auto-recruit-c6011c55269c",
       "company": "掌阅科技",
       "category": "",
       "company_type": "",
-      "start_url": "https://q7w8vltyes.jobs.feishu.cn/zhangyue/position/7682689268887750975/detail",
-      "url": "https://q7w8vltyes.jobs.feishu.cn/zhangyue/position/7682689268887750975/detail",
-      "official_url": "https://q7w8vltyes.jobs.feishu.cn/zhangyue/position/7682689268887750975/detail",
+      "start_url": "https://q7w8vltyes.jobs.feishu.cn/zhangyue/position/7686330739240257842/detail",
+      "url": "https://q7w8vltyes.jobs.feishu.cn/zhangyue/position/7686330739240257842/detail",
+      "official_url": "https://q7w8vltyes.jobs.feishu.cn/zhangyue/position/7686330739240257842/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -20941,48 +20183,6 @@
       "click_labels": [],
       "api_hosts": [
         "ecartech.jobs.feishu.cn"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-09e5217e0c3f",
-      "company": "普华永道中国",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://app.mokahr.com/campus-recruitment/pwc/148260",
-      "url": "https://app.mokahr.com/campus-recruitment/pwc/148260",
-      "official_url": "https://app.mokahr.com/campus-recruitment/pwc/148260",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "app.mokahr.com",
-      "click_labels": [],
-      "api_hosts": [
-        "app.mokahr.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-4d97c6d45a4a",
-      "company": "普华永道中国",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://app.mokahr.com/m/campus_apply/pwc/148260",
-      "url": "https://app.mokahr.com/m/campus_apply/pwc/148260",
-      "official_url": "https://app.mokahr.com/m/campus_apply/pwc/148260",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "app.mokahr.com",
-      "click_labels": [],
-      "api_hosts": [
-        "app.mokahr.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -21393,13 +20593,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-4c8e23b4db1a",
+      "id": "auto-recruit-3cada2943dac",
       "company": "理想汽车",
       "category": "",
       "company_type": "",
-      "start_url": "https://li.jobs.feishu.cn/index/position/7679020198917114162/detail",
-      "url": "https://li.jobs.feishu.cn/index/position/7679020198917114162/detail",
-      "official_url": "https://li.jobs.feishu.cn/index/position/7679020198917114162/detail",
+      "start_url": "https://li.jobs.feishu.cn/index/position/7680112870458034468/detail",
+      "url": "https://li.jobs.feishu.cn/index/position/7680112870458034468/detail",
+      "official_url": "https://li.jobs.feishu.cn/index/position/7680112870458034468/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -21450,48 +20650,6 @@
       "click_labels": [],
       "api_hosts": [
         "app.mokahr.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-1aac1daaefa1",
-      "company": "百川智能",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://careers.baichuan-inc.com/",
-      "url": "https://careers.baichuan-inc.com/",
-      "official_url": "https://careers.baichuan-inc.com/",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "careers.baichuan-inc.com",
-      "click_labels": [],
-      "api_hosts": [
-        "careers.baichuan-inc.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-ab2b9504d46e",
-      "company": "百川智能",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://cq6qe6bvfr6.jobs.feishu.cn/646926",
-      "url": "https://cq6qe6bvfr6.jobs.feishu.cn/646926",
-      "official_url": "https://cq6qe6bvfr6.jobs.feishu.cn/646926",
-      "priority": 78,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "cq6qe6bvfr6.jobs.feishu.cn",
-      "click_labels": [],
-      "api_hosts": [
-        "cq6qe6bvfr6.jobs.feishu.cn"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -21561,13 +20719,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-b8c9ead782ca",
+      "id": "auto-recruit-8c5e9815e3e4",
       "company": "禾赛科技",
       "category": "",
       "company_type": "",
-      "start_url": "https://kwh0jtf778.jobs.feishu.cn/index/position/7678944167981091082/detail",
-      "url": "https://kwh0jtf778.jobs.feishu.cn/index/position/7678944167981091082/detail",
-      "official_url": "https://kwh0jtf778.jobs.feishu.cn/index/position/7678944167981091082/detail",
+      "start_url": "https://kwh0jtf778.jobs.feishu.cn/index/position/7680482797228542234/detail",
+      "url": "https://kwh0jtf778.jobs.feishu.cn/index/position/7680482797228542234/detail",
+      "official_url": "https://kwh0jtf778.jobs.feishu.cn/index/position/7680482797228542234/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -21667,13 +20825,13 @@
       "handled_by": "dedicated-or-priority-adapter"
     },
     {
-      "id": "auto-recruit-3be9615837e9",
+      "id": "auto-recruit-63c7d1a23037",
       "company": "自变量机器人",
       "category": "",
       "company_type": "",
-      "start_url": "https://x2-robot.jobs.feishu.cn/index/position/7678981402969721114/detail",
-      "url": "https://x2-robot.jobs.feishu.cn/index/position/7678981402969721114/detail",
-      "official_url": "https://x2-robot.jobs.feishu.cn/index/position/7678981402969721114/detail",
+      "start_url": "https://x2-robot.jobs.feishu.cn/index/position/7680549651082578185/detail",
+      "url": "https://x2-robot.jobs.feishu.cn/index/position/7680549651082578185/detail",
+      "official_url": "https://x2-robot.jobs.feishu.cn/index/position/7680549651082578185/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -21751,13 +20909,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-91b1fd1c0bd3",
+      "id": "auto-recruit-f5988d130dff",
       "company": "莉莉丝",
       "category": "",
       "company_type": "",
-      "start_url": "https://lilithgames.jobs.feishu.cn/career/position/7678902157295749382/detail",
-      "url": "https://lilithgames.jobs.feishu.cn/career/position/7678902157295749382/detail",
-      "official_url": "https://lilithgames.jobs.feishu.cn/career/position/7678902157295749382/detail",
+      "start_url": "https://lilithgames.jobs.feishu.cn/career/position/7681262292180846894/detail",
+      "url": "https://lilithgames.jobs.feishu.cn/career/position/7681262292180846894/detail",
+      "official_url": "https://lilithgames.jobs.feishu.cn/career/position/7681262292180846894/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -21793,13 +20951,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-d94b4939ce00",
+      "id": "auto-recruit-fca060bc20a0",
       "company": "蔚来",
       "category": "",
       "company_type": "",
-      "start_url": "https://nio.jobs.feishu.cn/index/position/7678966070636382502/detail",
-      "url": "https://nio.jobs.feishu.cn/index/position/7678966070636382502/detail",
-      "official_url": "https://nio.jobs.feishu.cn/index/position/7678966070636382502/detail",
+      "start_url": "https://nio.jobs.feishu.cn/index/position/7681211816648001802/detail",
+      "url": "https://nio.jobs.feishu.cn/index/position/7681211816648001802/detail",
+      "official_url": "https://nio.jobs.feishu.cn/index/position/7681211816648001802/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -22003,6 +21161,27 @@
       "sweep_enabled": true
     },
     {
+      "id": "auto-recruit-bc2e64f8be32",
+      "company": "阿维塔",
+      "category": "",
+      "company_type": "",
+      "start_url": "https://talent.avatr.com/index/position/7681181076459243818/detail",
+      "url": "https://talent.avatr.com/index/position/7681181076459243818/detail",
+      "official_url": "https://talent.avatr.com/index/position/7681181076459243818/detail",
+      "priority": 78,
+      "modes": [],
+      "max_pages": 4,
+      "origin": "official-source-graph",
+      "host": "talent.avatr.com",
+      "click_labels": [],
+      "api_hosts": [
+        "talent.avatr.com"
+      ],
+      "extra_hosts": [],
+      "evidence": "",
+      "sweep_enabled": true
+    },
+    {
       "id": "auto-recruit-10aeeeaec319",
       "company": "阿维塔",
       "category": "",
@@ -22150,13 +21329,13 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-2525a8e25fe6",
+      "id": "auto-recruit-f86f20d7aee1",
       "company": "面壁智能",
       "category": "",
       "company_type": "",
-      "start_url": "https://modelbest.jobs.feishu.cn/career/position/7678969829194762506/detail",
-      "url": "https://modelbest.jobs.feishu.cn/career/position/7678969829194762506/detail",
-      "official_url": "https://modelbest.jobs.feishu.cn/career/position/7678969829194762506/detail",
+      "start_url": "https://modelbest.jobs.feishu.cn/career/position/7680010300092205355/detail",
+      "url": "https://modelbest.jobs.feishu.cn/career/position/7680010300092205355/detail",
+      "official_url": "https://modelbest.jobs.feishu.cn/career/position/7680010300092205355/detail",
       "priority": 78,
       "modes": [],
       "max_pages": 4,
@@ -22604,27 +21783,6 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-6a2180937268",
-      "company": "Benzinga",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://remoteok.com/remote-jobs/remote-ai-engineer-data-apis-benzinga-1137224",
-      "url": "https://remoteok.com/remote-jobs/remote-ai-engineer-data-apis-benzinga-1137224",
-      "official_url": "https://remoteok.com/remote-jobs/remote-ai-engineer-data-apis-benzinga-1137224",
-      "priority": 42,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "remoteok.com",
-      "click_labels": [],
-      "api_hosts": [
-        "remoteok.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
       "id": "auto-recruit-81e8e7481a09",
       "company": "Clipboard Health",
       "category": "",
@@ -22646,27 +21804,6 @@
       "sweep_enabled": true
     },
     {
-      "id": "auto-recruit-b3beacb6edae",
-      "company": "Libertex Group",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://remoteok.com/remote-jobs/remote-business-development-manager-libertex-group-1137373",
-      "url": "https://remoteok.com/remote-jobs/remote-business-development-manager-libertex-group-1137373",
-      "official_url": "https://remoteok.com/remote-jobs/remote-business-development-manager-libertex-group-1137373",
-      "priority": 42,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "remoteok.com",
-      "click_labels": [],
-      "api_hosts": [
-        "remoteok.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
       "id": "auto-recruit-18f5b03e27c4",
       "company": "TELUS Digital",
       "category": "",
@@ -22682,48 +21819,6 @@
       "click_labels": [],
       "api_hosts": [
         "www.workingnomads.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-83882122ca74",
-      "company": "Thatchers Cider",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://remoteok.com/remote-jobs/remote-quality-dispense-technician-north-thatchers-cider-1137374",
-      "url": "https://remoteok.com/remote-jobs/remote-quality-dispense-technician-north-thatchers-cider-1137374",
-      "official_url": "https://remoteok.com/remote-jobs/remote-quality-dispense-technician-north-thatchers-cider-1137374",
-      "priority": 42,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "remoteok.com",
-      "click_labels": [],
-      "api_hosts": [
-        "remoteok.com"
-      ],
-      "extra_hosts": [],
-      "evidence": "",
-      "sweep_enabled": true
-    },
-    {
-      "id": "auto-recruit-2f2462949150",
-      "company": "eClinical Solutions",
-      "category": "",
-      "company_type": "",
-      "start_url": "https://remoteok.com/remote-jobs/remote-external-data-specialist-eclinical-solutions-1137375",
-      "url": "https://remoteok.com/remote-jobs/remote-external-data-specialist-eclinical-solutions-1137375",
-      "official_url": "https://remoteok.com/remote-jobs/remote-external-data-specialist-eclinical-solutions-1137375",
-      "priority": 42,
-      "modes": [],
-      "max_pages": 4,
-      "origin": "official-source-graph",
-      "host": "remoteok.com",
-      "click_labels": [],
-      "api_hosts": [
-        "remoteok.com"
       ],
       "extra_hosts": [],
       "evidence": "",
@@ -22771,7 +21866,5 @@
       "evidence": "",
       "sweep_enabled": true
     }
-  ],
-  "target_source_count": 54,
-  "target_manifest": "sources/user_target_positions_20260903.json"
+  ]
 }
