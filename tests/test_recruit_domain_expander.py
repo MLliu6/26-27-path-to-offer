@@ -45,21 +45,33 @@ class RecruitDomainExpanderTest(unittest.TestCase):
         self.assertNotIn("remotive.com", hosts)
 
         ks = [x for x in entries if x.get("company") == "快手" and x.get("sweep_enabled")]
-        self.assertGreaterEqual(len(ks), 3)
+        self.assertGreaterEqual(len(ks), 4)
         urls = [x.get("start_url", "") for x in ks]
         self.assertEqual(sum("recruitSubProjectCodes=20271779425607" in u for u in urls), 1)
         self.assertEqual(sum("recruitSubProjectCodes=20271772783534" in u for u in urls), 1)
         self.assertTrue(any("/official/social/" in u for u in urls))
+        self.assertTrue(any("/official/trainee/" in u for u in urls))
+        self.assertFalse(any("/official/intern/" in u for u in urls))
 
         reviewed = s.override_configs()
         fulltime = reviewed["recruit-kuaishou-campus-2027"]
         intern = reviewed["recruit-kuaishou-intern-2027"]
+        social = reviewed["recruit-kuaishou-social"]
+        trainee = reviewed["recruit-kuaishou-trainee"]
         self.assertEqual(fulltime["adapter"], "kuaishou-campus-api")
         self.assertEqual(fulltime["api_project_code"], "20271779425607")
         self.assertEqual(fulltime["batch"], "2027校园招聘")
         self.assertEqual(intern["adapter"], "kuaishou-campus-api")
         self.assertEqual(intern["api_project_code"], "20271772783534")
         self.assertEqual(intern["batch"], "2027留用实习招聘")
+        self.assertEqual(social["adapter"], "kuaishou-experienced-browser")
+        self.assertEqual(social["position_nature_code"], "C001")
+        self.assertEqual(social["route_fragment"], "official/social")
+        self.assertEqual(social["batch"], "社会招聘")
+        self.assertEqual(trainee["adapter"], "kuaishou-experienced-browser")
+        self.assertEqual(trainee["position_nature_code"], "C002")
+        self.assertEqual(trainee["route_fragment"], "official/trainee")
+        self.assertEqual(trainee["batch"], "日常实习")
 
     def test_dedup_and_override(self):
         item = {"company": "X", "url": "https://career.example.com/jobs", "priority": 50}
