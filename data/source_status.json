@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-25T23:24:37Z",
+  "generated_at": "2026-10-26T01:26:55Z",
   "catalog_count": 60000,
   "sources": [
     {
@@ -870,13 +870,13 @@
       "label": "招聘域名图谱 · 轮转真实浏览器/审核公开 API 巡检",
       "url": "",
       "ok": true,
-      "count": 790,
-      "fresh_count": 790,
+      "count": 799,
+      "fresh_count": 799,
       "error": "",
       "diagnostics": {
         "transport": "real-browser-public-ui-xhr-dom",
         "target_count": 32,
-        "fresh_companies": 25,
+        "fresh_companies": 26,
         "sources": [
           {
             "id": "auto-recruit-0036a76f2ad8",
@@ -935,8 +935,8 @@
                 "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
                 "https://job-boards.greenhouse.io/opentable?page=2&_data=root",
                 "https://job-boards.greenhouse.io/opentable?page=2&_data=routes%2F%24url_token",
                 "https://job-boards.greenhouse.io/opentable?page=3&_data=root",
@@ -1004,13 +1004,39 @@
                 "https://job.10086.cn/job-app/job/getHotJobs.do",
                 "https://job.10086.cn/job-app/job/getHotEventJobs.do",
                 "https://job.10086.cn/wzanew/config.json?domain=job.10086.cn&v=4.6.31",
-                "https://service.govwza.cn/api/services/Accessibility/Configuration/checkLoadData?appid=e4634471b17a7f059a81d47613d67632&timestamp=1792970423648&domain=job.10086.cn&referer=https%3A%2F%2Fjob.10086.cn%2F&mainversion=4",
-                "https://service.govwza.cn/api/services/Accessibility/Configuration/GetAll?appid=e4634471b17a7f059a81d47613d67632&timestamp=1792970424840&domain=job.10086.cn&referer=https%3A%2F%2Fjob.10086.cn%2F&mainversion=4",
-                "https://service.govwza.cn/api/services/Accessibility/Configuration/GetConf?timestamp=1792970424840&appid=e4634471b17a7f059a81d47613d67632&domain=job.10086.cn&referer=https%3A%2F%2Fjob.10086.cn%2F&mainversion=4"
+                "https://service.govwza.cn/api/services/Accessibility/Configuration/checkLoadData?appid=e4634471b17a7f059a81d47613d67632&timestamp=1792977751675&domain=job.10086.cn&referer=https%3A%2F%2Fjob.10086.cn%2F&mainversion=4",
+                "https://service.govwza.cn/api/services/Accessibility/Configuration/GetAll?appid=e4634471b17a7f059a81d47613d67632&timestamp=1792977752989&domain=job.10086.cn&referer=https%3A%2F%2Fjob.10086.cn%2F&mainversion=4",
+                "https://service.govwza.cn/api/services/Accessibility/Configuration/GetConf?timestamp=1792977752989&appid=e4634471b17a7f059a81d47613d67632&domain=job.10086.cn&referer=https%3A%2F%2Fjob.10086.cn%2F&mainversion=4"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-02b66fc7fb88",
+            "company": "网易",
+            "ok": true,
+            "count": 8,
+            "preserved_previous": false,
+            "official_url": "https://hr.163.com/policy.html",
+            "diagnostics": {
+              "start_url": "https://hr.163.com/policy.html",
+              "final_url": "https://hr.163.com/policy.html",
+              "unique_jobs": 8,
+              "json_responses": 4,
+              "json_candidates": 0,
+              "dom_links_seen": 40,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://hr.163.com/api/hr163/user/getLoginInfo",
+                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJpZSIsImN1cnJlbnRVcmwiOiAiaHR0cHM6Ly9oci4xNjMuY29tL3BvbGljeS5odG1sIiwic2RrVmVyc2lvbiI6ICIxLjYuMTQiLCJzZGtUeXBlIjogImpzIiwiZGV2aWNlT3MiOiAibGludXgiLCJkZXZpY2VPc1ZlcnNpb24iOiAibGludXggLTEiLCJkZXZpY2VQbGF0Zm9ybSI6ICJ3ZWIiLCJicm93c2VyVmVyc2lvbiI6ICIiLCJzY3JlZW5XaWR0aCI6IDE0NDAsInNjcmVlbkhlaWdodCI6IDEwMDAsImV2ZW50SWQiOiAiZGFfYWN0aXZhdGUiLCJhcHBLZXkiOiAiTUEtOEUxNi02MDVDM0FGRkUxMUYiLCJ0aW1lIjogMTc5Mjk3Nzc2MDk1NCwicGVyc2lzdGVkVGltZSI6IDE3OTI5Nzc3NjA5NTQsImRldmljZVVkaWQiOiAiMzM2OGYxZjRiZWEyZjY4ZGFmNWE3NDk4MGI3OTc3YTE1YzA3MWYxYyIsInBhZ2VUaXRsZSI6ICLpmpDnp4HmlL%2FnrZYgfCDnvZHmmJPnpL7kvJrmi5vogZgiLCJ1cmxQYXRoIjogIi9wb2xpY3kuaHRtbCIsImN1cnJlbnREb21haW4iOiAiaHIuMTYzLmNvbSIsInBhZ2VPcGVuU2NlbmUiOiAiQnJvd3NlciIsInNlY29uZExldmVsU291cmNlIjogIiJ9&appKey=1a30f487e9605a1cb7da1a187da9337c07d7b169&_=1792977760956",
+                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJwdiIsInNlc3Npb25VdWlkIjogImFiYjgxZmQwYzFkMjBhOGQ1ZjQwNzdiOTMwNjE5MjU1ZWIwNDZjMTciLCJjdXJyZW50VXJsIjogImh0dHBzOi8vaHIuMTYzLmNvbS9wb2xpY3kuaHRtbCIsInNka1ZlcnNpb24iOiAiMS42LjE0Iiwic2RrVHlwZSI6ICJqcyIsImRldmljZU9zIjogImxpbnV4IiwiZGV2aWNlT3NWZXJzaW9uIjogImxpbnV4IC0xIiwiZGV2aWNlUGxhdGZvcm0iOiAid2ViIiwiYnJvd3NlclZlcnNpb24iOiAiIiwic2NyZWVuV2lkdGgiOiAxNDQwLCJzY3JlZW5IZWlnaHQiOiAxMDAwLCJldmVudElkIjogImRhX3NjcmVlbiIsImFwcEtleSI6ICJNQS04RTE2LTYwNUMzQUZGRTExRiIsInRpbWUiOiAxNzkyOTc3NzYwOTYwLCJwZXJzaXN0ZWRUaW1lIjogMTc5Mjk3Nzc2MDk1NCwiZGV2aWNlVWRpZCI6ICIzMzY4ZjFmNGJlYTJmNjhkYWY1YTc0OTgwYjc5NzdhMTVjMDcxZjFjIiwicGFnZVRpdGxlIjogIumakOengeaUv%2BetliB8IOe9keaYk%2BekvuS8muaLm%2BiBmCIsInVybFBhdGgiOiAiL3BvbGljeS5odG1sIiwiY3VycmVudERvbWFpbiI6ICJoci4xNjMuY29tIiwicGFnZU9wZW5TY2VuZSI6ICJCcm93c2VyIiwic2Vjb25kTGV2ZWxTb3VyY2UiOiAiIn0%3D&appKey=1a30f487e9605a1cb7da1a187da9337c07d7b169&_=1792977760961",
+                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJpZSIsInNlc3Npb25VdWlkIjogImFiYjgxZmQwYzFkMjBhOGQ1ZjQwNzdiOTMwNjE5MjU1ZWIwNDZjMTciLCJjdXJyZW50VXJsIjogImh0dHBzOi8vaHIuMTYzLmNvbS9wb2xpY3kuaHRtbCIsInNka1ZlcnNpb24iOiAiMS42LjE0Iiwic2RrVHlwZSI6ICJqcyIsImRldmljZU9zIjogImxpbnV4IiwiZGV2aWNlT3NWZXJzaW9uIjogImxpbnV4IC0xIiwiZGV2aWNlUGxhdGZvcm0iOiAid2ViIiwiYnJvd3NlclZlcnNpb24iOiAiIiwic2NyZWVuV2lkdGgiOiAxNDQwLCJzY3JlZW5IZWlnaHQiOiAxMDAwLCJldmVudElkIjogImRhX3Nlc3Npb25fc3RhcnQiLCJhcHBLZXkiOiAiTUEtOEUxNi02MDVDM0FGRkUxMUYiLCJ0aW1lIjogMTc5Mjk3Nzc2MDk1OSwicGVyc2lzdGVkVGltZSI6IDE3OTI5Nzc3NjA5NTQsImRldmljZVVkaWQiOiAiMzM2OGYxZjRiZWEyZjY4ZGFmNWE3NDk4MGI3OTc3YTE1YzA3MWYxYyIsInBhZ2VUaXRsZSI6ICLpmpDnp4HmlL%2FnrZYgfCDnvZHmmJPnpL7kvJrmi5vogZgiLCJ1cmxQYXRoIjogIi9wb2xpY3kuaHRtbCIsImN1cnJlbnREb21haW4iOiAiaHIuMTYzLmNvbSIsInBhZ2VPcGVuU2NlbmUiOiAiQnJvd3NlciIsInNlY29uZExldmVsU291cmNlIjogIiJ9&appKey=1a30f487e9605a1cb7da1a187da9337c07d7b169&_=1792977760959"
+              ],
+              "errors": [],
               "transport": "browser-public-ui-xhr-dom"
             },
             "error": ""
@@ -1026,16 +1052,14 @@
               "start_url": "https://jobs.ashbyhq.com/dandy",
               "final_url": "https://jobs.ashbyhq.com/dandy",
               "unique_jobs": 114,
-              "json_responses": 5,
+              "json_responses": 3,
               "json_candidates": 115,
-              "dom_links_seen": 320,
+              "dom_links_seen": 240,
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://cdn.ashbyprd.com/frontend_non_user/00bf202c75098779d9531381e22887b9d548f4c9/.vite/manifest.json",
                 "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams",
-                "https://browser-intake-datadoghq.com/api/v2/rum?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=6dee8a06-0a62-4cec-8aec-f476e1c9ccbc&batch_time=1792970430149&_dd.api=fetch",
-                "https://browser-intake-datadoghq.com/api/v2/replay?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=e415c7a0-e4cb-46fa-8142-2bd76e1fbb5c"
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -1060,18 +1084,18 @@
               "dom_links_seen": 9,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://nio.jobs.feishu.cn/api/v1/common/setting",
-                "https://nio.jobs.feishu.cn/api/v1/user/mobile/login_status?random=316897",
-                "https://nio.jobs.feishu.cn/api/v1/user/mobile/login_status?random=329430",
+                "https://nio.jobs.feishu.cn/api/v1/user/mobile/login_status?random=514954",
+                "https://nio.jobs.feishu.cn/api/v1/user/mobile/login_status?random=462734",
                 "https://nio.jobs.feishu.cn/api/v1/ip/location",
-                "https://nio.jobs.feishu.cn/api/v1/job/posts/7683792059715799302?portal_type=6&with_recommend=false&_signature=uMtKewAAAACBF4JEK1rfZrjLSmAANIi&portal_type=6&with_recommend=false",
-                "https://starling.zijieapi.com/check_and_get_text/aff8e570233711eb96690bb0655fe40d/test/throne-biz?lang=zh,en",
-                "https://vcs.snssdk.com/vc/setting",
-                "https://nio.jobs.feishu.cn/api/v1/user/referral/protect/config/check?random=829417",
-                "https://mon.zijieapi.com/monitor_web/settings/browser-settings?bid=portal&store=1",
                 "https://nio.jobs.feishu.cn/api/v1/config/referral/statement/",
+                "https://vcs.snssdk.com/vc/setting",
+                "https://nio.jobs.feishu.cn/api/v1/common/setting",
+                "https://nio.jobs.feishu.cn/api/v1/job/posts/7683792059715799302?portal_type=6&with_recommend=false&_signature=hB9c4AAAAAC9w5TfA54eXYQfXPAAO7P&portal_type=6&with_recommend=false",
+                "https://nio.jobs.feishu.cn/api/v1/user/referral/protect/config/check?random=632631",
+                "https://mon.zijieapi.com/monitor_web/settings/browser-settings?bid=portal&store=1",
                 "https://mcs.snssdk.com/v1/list",
-                "https://mcs.snssdk.com/v1/user/webid"
+                "https://mcs.snssdk.com/v1/user/webid",
+                "https://starling.zijieapi.com/check_and_get_text/aff8e570233711eb96690bb0655fe40d/test/throne-biz?lang=zh,en"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -1101,9 +1125,9 @@
                 "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
-                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
                 "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
-                "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=solaxpower"
+                "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=solaxpower",
+                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job"
               ],
               "errors": [
                 "response Error: Response.json: Response body is unavailable for redirect responses",
@@ -1132,16 +1156,16 @@
                 "https://jobs.bytedance.com/api/v1/website/agent/config",
                 "https://starling.zijieapi.com/check_and_get_text/aff8e570233711eb96690bb0655fe40d/test/throne-biz?lang=zh,en",
                 "https://jobs.bytedance.com/api/v1/ip/location",
-                "https://jobs.bytedance.com/api/v1/user/mobile/login_status?random=272270",
-                "https://jobs.bytedance.com/api/v1/user/mobile/login_status?random=190022",
-                "https://jobs.bytedance.com/api/v1/common/setting",
-                "https://jobs.bytedance.com/api/v1/config/job/filters/3?_signature=uPl61gAAAACBJbLpo0kbv7j5esAANI0",
+                "https://jobs.bytedance.com/api/v1/user/mobile/login_status?random=153232",
                 "https://mcs-bd-my.larkoffice.com/v1/user/webid",
+                "https://jobs.bytedance.com/api/v1/user/mobile/login_status?random=738587",
+                "https://jobs.bytedance.com/api/v1/common/setting",
+                "https://jobs.bytedance.com/api/v1/config/job/filters/3?_signature=hA1KTAAAAAC90YJz7np0b4QNSlAAO7h",
+                "https://mon-va.byteoversea.com/monitor_web/settings/browser-settings?bid=portal&store=1",
                 "https://jobs.bytedance.com/api/v1/csrf/token",
                 "https://mcs-bd-my.larkoffice.com/v1/list",
-                "https://mon-va.byteoversea.com/monitor_web/settings/browser-settings?bid=portal&store=1",
+                "https://jobs.bytedance.com/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=3&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=hA1KTAAAAAC90YJz7noiQIQNSlAAO7h",
                 "https://mcs.zijieapi.com/webid?aid=383472&sdk_version=5.3.8&device_platform=web",
-                "https://jobs.bytedance.com/api/v1/search/job/posts?keyword=&limit=10&offset=0&job_category_id_list=&tag_id_list=&location_code_list=&subject_id_list=&recruitment_id_list=&portal_type=3&job_function_id_list=&storefront_id_list=&portal_entrance=1&_signature=uPl61gAAAACBJbLpo0n.C7j5esAANI0",
                 "https://mcs.zijieapi.com/list?aid=383472&sdk_version=5.3.8&device_platform=web"
               ],
               "errors": [
@@ -1167,7 +1191,7 @@
               "unique_jobs": 0,
               "json_responses": 1,
               "json_candidates": 0,
-              "dom_links_seen": 159,
+              "dom_links_seen": 171,
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location"
@@ -1220,15 +1244,15 @@
               "start_url": "https://job-boards.greenhouse.io/scopely",
               "final_url": "https://careers.scopely.com/us/en",
               "unique_jobs": 10,
-              "json_responses": 22,
+              "json_responses": 23,
               "json_candidates": 22,
               "dom_links_seen": 145,
               "pages_advanced": 4,
               "observed_endpoints": [
                 "https://careers.scopely.com/widgets",
+                "https://content-us.phenompeople.com/api/SZISMNUS/fyfConfig?locale=en_us&siteType=external&deviceType=desktop&payload=%7B%22ddoKey%22%3A%22fyfConfig%22%7D",
                 "https://content-us.phenompeople.com/api/SZISMNUS/globalSearchConfig?locale=en_us&siteType=external&deviceType=desktop&payload=%7B%22ddoKey%22%3A%22globalSearchConfig%22%7D",
-                "https://content-us.phenompeople.com/api/SZISMNUS/getPiiConsentConfig?locale=en_us&siteType=external&deviceType=desktop&payload=%7B%22ddoKey%22%3A%22getPiiConsentConfig%22%7D",
-                "https://content-us.phenompeople.com/api/SZISMNUS/fyfConfig?locale=en_us&siteType=external&deviceType=desktop&payload=%7B%22ddoKey%22%3A%22fyfConfig%22%7D"
+                "https://content-us.phenompeople.com/api/SZISMNUS/getPiiConsentConfig?locale=en_us&siteType=external&deviceType=desktop&payload=%7B%22ddoKey%22%3A%22getPiiConsentConfig%22%7D"
               ],
               "errors": [
                 "response Error: Response.json: Response body is unavailable for redirect responses",
@@ -1262,9 +1286,9 @@
               "dom_links_seen": 21,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
                 "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
                 "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json"
@@ -1323,8 +1347,8 @@
               "observed_endpoints": [
                 "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
                 "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
                 "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json"
               ],
@@ -1354,7 +1378,41 @@
                 "https://app.mokahr.com/api/env",
                 "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
                 "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
+                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
+                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
+                "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=tecorigin",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/module"
+              ],
+              "errors": [
+                "response Error: Response.json: Response body is unavailable for redirect responses",
+                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+              ],
+              "transport": "browser-public-ui-xhr-dom"
+            },
+            "error": ""
+          },
+          {
+            "id": "auto-recruit-05de2afed255",
+            "company": "太初",
+            "ok": true,
+            "count": 5,
+            "preserved_previous": false,
+            "official_url": "https://app.mokahr.com/campus-recruitment/tecorigin/47402",
+            "diagnostics": {
+              "start_url": "https://app.mokahr.com/campus-recruitment/tecorigin/47402",
+              "final_url": "https://app.mokahr.com/campus-recruitment/tecorigin/47402#/",
+              "unique_jobs": 5,
+              "json_responses": 10,
+              "json_candidates": 0,
+              "dom_links_seen": 20,
+              "pages_advanced": 0,
+              "observed_endpoints": [
+                "https://app.mokahr.com/api/env",
+                "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
+                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
                 "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
                 "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
@@ -1362,7 +1420,6 @@
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/module"
               ],
               "errors": [
-                "response Error: Response.json: Response body is unavailable for redirect responses",
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
               ],
               "transport": "browser-public-ui-xhr-dom"
@@ -1380,15 +1437,14 @@
               "start_url": "https://jobs.ashbyhq.com/aiprise",
               "final_url": "https://jobs.ashbyhq.com/aiprise",
               "unique_jobs": 24,
-              "json_responses": 4,
+              "json_responses": 3,
               "json_candidates": 25,
               "dom_links_seen": 57,
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://cdn.ashbyprd.com/frontend_non_user/00bf202c75098779d9531381e22887b9d548f4c9/.vite/manifest.json",
                 "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams",
-                "https://browser-intake-datadoghq.com/api/v2/rum?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=43de0377-cdec-4ce1-a23f-8b333e743d8d&batch_time=1792970536789&_dd.api=fetch"
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -1408,7 +1464,7 @@
               "start_url": "https://jobs.ashbyhq.com/truelogic",
               "final_url": "https://jobs.ashbyhq.com/truelogic/0b2752aa-8abe-4ef4-b9f7-eec4aa22fc1a",
               "unique_jobs": 146,
-              "json_responses": 8,
+              "json_responses": 6,
               "json_candidates": 149,
               "dom_links_seen": 145,
               "pages_advanced": 1,
@@ -1416,9 +1472,7 @@
                 "https://cdn.ashbyprd.com/frontend_non_user/00bf202c75098779d9531381e22887b9d548f4c9/.vite/manifest.json",
                 "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
                 "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams",
-                "https://browser-intake-datadoghq.com/api/v2/rum?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=4327edac-fa34-439f-81e2-881fd4186f0b&batch_time=1792970541447&_dd.api=fetch",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobPosting",
-                "https://browser-intake-datadoghq.com/api/v2/rum?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=6df22d72-f303-4ed6-b388-4144e600ab15&batch_time=1792970543822&_dd.api=fetch"
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobPosting"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)",
@@ -1475,15 +1529,14 @@
               "start_url": "https://jobs.ashbyhq.com/megazone",
               "final_url": "https://jobs.ashbyhq.com/megazone",
               "unique_jobs": 19,
-              "json_responses": 4,
+              "json_responses": 3,
               "json_candidates": 20,
               "dom_links_seen": 42,
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://cdn.ashbyprd.com/frontend_non_user/00bf202c75098779d9531381e22887b9d548f4c9/.vite/manifest.json",
                 "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiOrganizationFromHostedJobsPageName",
-                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams",
-                "https://browser-intake-datadoghq.com/api/v2/rum?ddsource=browser&dd-api-key=pub1a87c7036063ee7d4b7914b397e6324e&dd-evp-origin-version=7.15.0&dd-evp-origin=browser&dd-request-id=723e7cb3-edb6-4338-a0aa-d0cb66e5e0da&batch_time=1792970563413&_dd.api=fetch"
+                "https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -1510,11 +1563,11 @@
               "observed_endpoints": [
                 "https://app.mokahr.com/api/env",
                 "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
                 "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
                 "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
                 "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
                 "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=smoore",
                 "https://app.mokahr.com/api/outer/ats-apply/website/jobs/module"
               ],
@@ -1543,14 +1596,14 @@
               "pages_advanced": 0,
               "observed_endpoints": [
                 "https://app.mokahr.com/api/env",
-                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
                 "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
                 "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
+                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
                 "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
                 "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=bigo",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/module"
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/module",
+                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat"
               ],
               "errors": [
                 "response Error: Response.json: Response body is unavailable for redirect responses",
@@ -1576,15 +1629,15 @@
               "dom_links_seen": 24,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://careers.oppo.com/openapi/system/dictionary/queryList?code=Website_QA_PhD",
                 "https://careers.oppo.com/openapi/system/dictionary/queryList?code=RELEASE-TIPS",
-                "https://careers.oppo.com/openapi/position/project/querySpecialRecruitment",
                 "https://careers.oppo.com/openapi/position/project/list",
+                "https://careers.oppo.com/openapi/position/project/querySpecialRecruitment",
                 "https://careers.oppo.com/openapi/position/pageNew",
-                "https://careers.oppo.com/openapi/system/dictionary/queryList?code=Website_QA_Intern",
+                "https://careers.oppo.com/openapi/system/dictionary/queryList?code=Website_QA_PhD",
                 "https://careers.oppo.com/openapi/system/dictionary/queryList?code=RECRUIT-TYPE",
-                "https://careers.oppo.com/openapi/system/dictionary/queryList?code=Website_QA_Fresh",
+                "https://careers.oppo.com/openapi/system/dictionary/queryList?code=Website_QA_Intern",
                 "https://careers.oppo.com/openapi/system/dictionary/queryList?code=RECRUIT-TYPE-DESC",
+                "https://careers.oppo.com/openapi/system/dictionary/queryList?code=Website_QA_Fresh",
                 "https://careers.oppo.com/openapi/system/dictionary/queryList?code=Theme"
               ],
               "errors": [
@@ -1641,12 +1694,12 @@
               "dom_links_seen": 24,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJpZSIsImN1cnJlbnRVcmwiOiAiaHR0cHM6Ly9jYW1wdXMuMTYzLmNvbS8iLCJzZGtWZXJzaW9uIjogIjEuNi4xNCIsInNka1R5cGUiOiAianMiLCJkZXZpY2VPcyI6ICJsaW51eCIsImRldmljZU9zVmVyc2lvbiI6ICJsaW51eCAtMSIsImRldmljZVBsYXRmb3JtIjogIndlYiIsImJyb3dzZXJWZXJzaW9uIjogIiIsInNjcmVlbldpZHRoIjogMTQ0MCwic2NyZWVuSGVpZ2h0IjogMTAwMCwiZXZlbnRJZCI6ICJkYV9hY3RpdmF0ZSIsImFwcEtleSI6ICJNQS05QURBLTkxQkYxQTZDOUUwNiIsInRpbWUiOiAxNzkyOTcwNjA4MTcwLCJwZXJzaXN0ZWRUaW1lIjogMTc5Mjk3MDYwODE3MCwiZGV2aWNlVWRpZCI6ICI0NmI3NDU0NDExM2E4OTMyMTc5ZjhhMjQ2ODQ1YzIxOWM1ZTk5YWI1IiwicGFnZVRpdGxlIjogIue9keaYk%2BagoeWbreaLm%2BiBmCIsInVybFBhdGgiOiAiLyIsImN1cnJlbnREb21haW4iOiAiY2FtcHVzLjE2My5jb20iLCJwYWdlT3BlblNjZW5lIjogIkJyb3dzZXIiLCJzZWNvbmRMZXZlbFNvdXJjZSI6ICIifQ%3D%3D&appKey=b274c83cb98ad116e2d7505451baad92a0fb1334&_=1792970608171",
-                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJpZSIsInNlc3Npb25VdWlkIjogImU0MjlhN2UzYjg1YTkzNzJhMzI1ZWU1MTJkYmUyNGRkZWIxNjhiYWYiLCJjdXJyZW50VXJsIjogImh0dHBzOi8vY2FtcHVzLjE2My5jb20vIiwic2RrVmVyc2lvbiI6ICIxLjYuMTQiLCJzZGtUeXBlIjogImpzIiwiZGV2aWNlT3MiOiAibGludXgiLCJkZXZpY2VPc1ZlcnNpb24iOiAibGludXggLTEiLCJkZXZpY2VQbGF0Zm9ybSI6ICJ3ZWIiLCJicm93c2VyVmVyc2lvbiI6ICIiLCJzY3JlZW5XaWR0aCI6IDE0NDAsInNjcmVlbkhlaWdodCI6IDEwMDAsImV2ZW50SWQiOiAiZGFfc2Vzc2lvbl9zdGFydCIsImFwcEtleSI6ICJNQS05QURBLTkxQkYxQTZDOUUwNiIsInRpbWUiOiAxNzkyOTcwNjA4MTc0LCJwZXJzaXN0ZWRUaW1lIjogMTc5Mjk3MDYwODE3MCwiZGV2aWNlVWRpZCI6ICI0NmI3NDU0NDExM2E4OTMyMTc5ZjhhMjQ2ODQ1YzIxOWM1ZTk5YWI1IiwicGFnZVRpdGxlIjogIue9keaYk%2BagoeWbreaLm%2BiBmCIsInVybFBhdGgiOiAiLyIsImN1cnJlbnREb21haW4iOiAiY2FtcHVzLjE2My5jb20iLCJwYWdlT3BlblNjZW5lIjogIkJyb3dzZXIiLCJzZWNvbmRMZXZlbFNvdXJjZSI6ICIifQ%3D%3D&appKey=b274c83cb98ad116e2d7505451baad92a0fb1334&_=1792970608175",
-                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJwdiIsInNlc3Npb25VdWlkIjogImU0MjlhN2UzYjg1YTkzNzJhMzI1ZWU1MTJkYmUyNGRkZWIxNjhiYWYiLCJjdXJyZW50VXJsIjogImh0dHBzOi8vY2FtcHVzLjE2My5jb20vIiwic2RrVmVyc2lvbiI6ICIxLjYuMTQiLCJzZGtUeXBlIjogImpzIiwiZGV2aWNlT3MiOiAibGludXgiLCJkZXZpY2VPc1ZlcnNpb24iOiAibGludXggLTEiLCJkZXZpY2VQbGF0Zm9ybSI6ICJ3ZWIiLCJicm93c2VyVmVyc2lvbiI6ICIiLCJzY3JlZW5XaWR0aCI6IDE0NDAsInNjcmVlbkhlaWdodCI6IDEwMDAsImV2ZW50SWQiOiAiZGFfc2NyZWVuIiwiYXBwS2V5IjogIk1BLTlBREEtOTFCRjFBNkM5RTA2IiwidGltZSI6IDE3OTI5NzA2MDgxNzUsInBlcnNpc3RlZFRpbWUiOiAxNzkyOTcwNjA4MTcwLCJkZXZpY2VVZGlkIjogIjQ2Yjc0NTQ0MTEzYTg5MzIxNzlmOGEyNDY4NDVjMjE5YzVlOTlhYjUiLCJwYWdlVGl0bGUiOiAi572R5piT5qCh5Zut5oub6IGYIiwidXJsUGF0aCI6ICIvIiwiY3VycmVudERvbWFpbiI6ICJjYW1wdXMuMTYzLmNvbSIsInBhZ2VPcGVuU2NlbmUiOiAiQnJvd3NlciIsInNlY29uZExldmVsU291cmNlIjogIiJ9&appKey=b274c83cb98ad116e2d7505451baad92a0fb1334&_=1792970608176",
-                "https://campus.163.com/api/campuspc/project/navigation/list?timeStamp=1792970609776",
-                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJwdiIsInNlc3Npb25VdWlkIjogImU0MjlhN2UzYjg1YTkzNzJhMzI1ZWU1MTJkYmUyNGRkZWIxNjhiYWYiLCJjdXJyZW50VXJsIjogImh0dHBzOi8vY2FtcHVzLjE2My5jb20vYXBwL2luZGV4IiwicmVmZXJyZXIiOiAiaHR0cHM6Ly9jYW1wdXMuMTYzLmNvbS8iLCJyZWZlcnJlckRvbWFpbiI6ICJjYW1wdXMuMTYzLmNvbSIsInNka1ZlcnNpb24iOiAiMS42LjE0Iiwic2RrVHlwZSI6ICJqcyIsImRldmljZU9zIjogImxpbnV4IiwiZGV2aWNlT3NWZXJzaW9uIjogImxpbnV4IC0xIiwiZGV2aWNlUGxhdGZvcm0iOiAid2ViIiwiYnJvd3NlclZlcnNpb24iOiAiIiwic2NyZWVuV2lkdGgiOiAxNDQwLCJzY3JlZW5IZWlnaHQiOiAxMDAwLCJldmVudElkIjogImRhX3NjcmVlbiIsImFwcEtleSI6ICJNQS05QURBLTkxQkYxQTZDOUUwNiIsInRpbWUiOiAxNzkyOTcwNjA5NzgyLCJwZXJzaXN0ZWRUaW1lIjogMTc5Mjk3MDYwODE3MCwiZGV2aWNlVWRpZCI6ICI0NmI3NDU0NDExM2E4OTMyMTc5ZjhhMjQ2ODQ1YzIxOWM1ZTk5YWI1IiwicGFnZVRpdGxlIjogIue9keaYk%2BagoeWbreaLm%2BiBmCIsInVybFBhdGgiOiAiL2FwcC9pbmRleCIsImN1cnJlbnREb21haW4iOiAiY2FtcHVzLjE2My5jb20iLCJwYWdlT3BlblNjZW5lIjogIkJyb3dzZXIiLCJzZWNvbmRMZXZlbFNvdXJjZSI6ICIifQ%3D%3D&appKey=b274c83cb98ad116e2d7505451baad92a0fb1334&_=1792970609782",
-                "https://campus.163.com/api/campuspc/project/navigation/list?timeStamp=1792970609995"
+                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJpZSIsImN1cnJlbnRVcmwiOiAiaHR0cHM6Ly9jYW1wdXMuMTYzLmNvbS8iLCJzZGtWZXJzaW9uIjogIjEuNi4xNCIsInNka1R5cGUiOiAianMiLCJkZXZpY2VPcyI6ICJsaW51eCIsImRldmljZU9zVmVyc2lvbiI6ICJsaW51eCAtMSIsImRldmljZVBsYXRmb3JtIjogIndlYiIsImJyb3dzZXJWZXJzaW9uIjogIiIsInNjcmVlbldpZHRoIjogMTQ0MCwic2NyZWVuSGVpZ2h0IjogMTAwMCwiZXZlbnRJZCI6ICJkYV9hY3RpdmF0ZSIsImFwcEtleSI6ICJNQS05QURBLTkxQkYxQTZDOUUwNiIsInRpbWUiOiAxNzkyOTc3OTYzMDEwLCJwZXJzaXN0ZWRUaW1lIjogMTc5Mjk3Nzk2MzAxMCwiZGV2aWNlVWRpZCI6ICI1N2NiMjNlNWM5MDIxZWViYTc2MGQ5MTIxNGJiZWViN2ZjMTQ2ZDUwIiwicGFnZVRpdGxlIjogIue9keaYk%2BagoeWbreaLm%2BiBmCIsInVybFBhdGgiOiAiLyIsImN1cnJlbnREb21haW4iOiAiY2FtcHVzLjE2My5jb20iLCJwYWdlT3BlblNjZW5lIjogIkJyb3dzZXIiLCJzZWNvbmRMZXZlbFNvdXJjZSI6ICIifQ%3D%3D&appKey=b274c83cb98ad116e2d7505451baad92a0fb1334&_=1792977963012",
+                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJwdiIsInNlc3Npb25VdWlkIjogIjc3NTY1NzY0ZTdmNmI1N2VhNDkzOTA1ZjIwNTI0NGVkNWUyNTFjYzAiLCJjdXJyZW50VXJsIjogImh0dHBzOi8vY2FtcHVzLjE2My5jb20vIiwic2RrVmVyc2lvbiI6ICIxLjYuMTQiLCJzZGtUeXBlIjogImpzIiwiZGV2aWNlT3MiOiAibGludXgiLCJkZXZpY2VPc1ZlcnNpb24iOiAibGludXggLTEiLCJkZXZpY2VQbGF0Zm9ybSI6ICJ3ZWIiLCJicm93c2VyVmVyc2lvbiI6ICIiLCJzY3JlZW5XaWR0aCI6IDE0NDAsInNjcmVlbkhlaWdodCI6IDEwMDAsImV2ZW50SWQiOiAiZGFfc2NyZWVuIiwiYXBwS2V5IjogIk1BLTlBREEtOTFCRjFBNkM5RTA2IiwidGltZSI6IDE3OTI5Nzc5NjMwMTYsInBlcnNpc3RlZFRpbWUiOiAxNzkyOTc3OTYzMDEwLCJkZXZpY2VVZGlkIjogIjU3Y2IyM2U1YzkwMjFlZWJhNzYwZDkxMjE0YmJlZWI3ZmMxNDZkNTAiLCJwYWdlVGl0bGUiOiAi572R5piT5qCh5Zut5oub6IGYIiwidXJsUGF0aCI6ICIvIiwiY3VycmVudERvbWFpbiI6ICJjYW1wdXMuMTYzLmNvbSIsInBhZ2VPcGVuU2NlbmUiOiAiQnJvd3NlciIsInNlY29uZExldmVsU291cmNlIjogIiJ9&appKey=b274c83cb98ad116e2d7505451baad92a0fb1334&_=1792977963016",
+                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJpZSIsInNlc3Npb25VdWlkIjogIjc3NTY1NzY0ZTdmNmI1N2VhNDkzOTA1ZjIwNTI0NGVkNWUyNTFjYzAiLCJjdXJyZW50VXJsIjogImh0dHBzOi8vY2FtcHVzLjE2My5jb20vIiwic2RrVmVyc2lvbiI6ICIxLjYuMTQiLCJzZGtUeXBlIjogImpzIiwiZGV2aWNlT3MiOiAibGludXgiLCJkZXZpY2VPc1ZlcnNpb24iOiAibGludXggLTEiLCJkZXZpY2VQbGF0Zm9ybSI6ICJ3ZWIiLCJicm93c2VyVmVyc2lvbiI6ICIiLCJzY3JlZW5XaWR0aCI6IDE0NDAsInNjcmVlbkhlaWdodCI6IDEwMDAsImV2ZW50SWQiOiAiZGFfc2Vzc2lvbl9zdGFydCIsImFwcEtleSI6ICJNQS05QURBLTkxQkYxQTZDOUUwNiIsInRpbWUiOiAxNzkyOTc3OTYzMDE1LCJwZXJzaXN0ZWRUaW1lIjogMTc5Mjk3Nzk2MzAxMCwiZGV2aWNlVWRpZCI6ICI1N2NiMjNlNWM5MDIxZWViYTc2MGQ5MTIxNGJiZWViN2ZjMTQ2ZDUwIiwicGFnZVRpdGxlIjogIue9keaYk%2BagoeWbreaLm%2BiBmCIsInVybFBhdGgiOiAiLyIsImN1cnJlbnREb21haW4iOiAiY2FtcHVzLjE2My5jb20iLCJwYWdlT3BlblNjZW5lIjogIkJyb3dzZXIiLCJzZWNvbmRMZXZlbFNvdXJjZSI6ICIifQ%3D%3D&appKey=b274c83cb98ad116e2d7505451baad92a0fb1334&_=1792977963015",
+                "https://campus.163.com/api/campuspc/project/navigation/list?timeStamp=1792977964568",
+                "https://ehr-api.netease.com/api/hubble/track/w/?data=eyJkYXRhVHlwZSI6ICJwdiIsInNlc3Npb25VdWlkIjogIjc3NTY1NzY0ZTdmNmI1N2VhNDkzOTA1ZjIwNTI0NGVkNWUyNTFjYzAiLCJjdXJyZW50VXJsIjogImh0dHBzOi8vY2FtcHVzLjE2My5jb20vYXBwL2luZGV4IiwicmVmZXJyZXIiOiAiaHR0cHM6Ly9jYW1wdXMuMTYzLmNvbS8iLCJyZWZlcnJlckRvbWFpbiI6ICJjYW1wdXMuMTYzLmNvbSIsInNka1ZlcnNpb24iOiAiMS42LjE0Iiwic2RrVHlwZSI6ICJqcyIsImRldmljZU9zIjogImxpbnV4IiwiZGV2aWNlT3NWZXJzaW9uIjogImxpbnV4IC0xIiwiZGV2aWNlUGxhdGZvcm0iOiAid2ViIiwiYnJvd3NlclZlcnNpb24iOiAiIiwic2NyZWVuV2lkdGgiOiAxNDQwLCJzY3JlZW5IZWlnaHQiOiAxMDAwLCJldmVudElkIjogImRhX3NjcmVlbiIsImFwcEtleSI6ICJNQS05QURBLTkxQkYxQTZDOUUwNiIsInRpbWUiOiAxNzkyOTc3OTY0NTczLCJwZXJzaXN0ZWRUaW1lIjogMTc5Mjk3Nzk2MzAxMCwiZGV2aWNlVWRpZCI6ICI1N2NiMjNlNWM5MDIxZWViYTc2MGQ5MTIxNGJiZWViN2ZjMTQ2ZDUwIiwicGFnZVRpdGxlIjogIue9keaYk%2BagoeWbreaLm%2BiBmCIsInVybFBhdGgiOiAiL2FwcC9pbmRleCIsImN1cnJlbnREb21haW4iOiAiY2FtcHVzLjE2My5jb20iLCJwYWdlT3BlblNjZW5lIjogIkJyb3dzZXIiLCJzZWNvbmRMZXZlbFNvdXJjZSI6ICIifQ%3D%3D&appKey=b274c83cb98ad116e2d7505451baad92a0fb1334&_=1792977964574",
+                "https://campus.163.com/api/campuspc/project/navigation/list?timeStamp=1792977964788"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -1699,12 +1752,12 @@
               "dom_links_seen": 36,
               "pages_advanced": 0,
               "observed_endpoints": [
-                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
                 "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json"
+                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
+                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json",
+                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json"
               ],
               "errors": [
                 "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
@@ -1836,75 +1889,11 @@
               "transport": "browser-public-ui-xhr-dom"
             },
             "error": ""
-          },
-          {
-            "id": "auto-recruit-09e5217e0c3f",
-            "company": "普华永道中国",
-            "ok": false,
-            "count": 0,
-            "fresh_count": 0,
-            "preserved_previous": false,
-            "official_url": "https://app.mokahr.com/campus-recruitment/pwc/148260",
-            "diagnostics": {
-              "start_url": "https://app.mokahr.com/campus-recruitment/pwc/148260",
-              "final_url": "https://app.mokahr.com/campus-recruitment/pwc/148260#/",
-              "unique_jobs": 0,
-              "json_responses": 9,
-              "json_candidates": 0,
-              "dom_links_seen": 30,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://app.mokahr.com/api/env",
-                "https://app.mokahr.com/api/outer/ats-jc-apply/website/feature-switches",
-                "https://app.mokahr.com/api/outer/ats-apply/privacy-policy/get",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/flat",
-                "https://app.mokahr.com/api/outer/ats-apply/website/listCountryCallingCodes",
-                "https://app.mokahr.com/api/outer/ats-apply/website/group-by-job",
-                "https://app.mokahr.com/api/outer/ats-apply/website/jobs/departments/structure",
-                "https://app.mokahr.com/api/extension-server/extension/list-by-org?orgId=pwc"
-              ],
-              "errors": [
-                "response Error: Response.json: Response body is unavailable for redirect responses",
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": "zero concrete browser jobs"
-          },
-          {
-            "id": "auto-recruit-0a0b88d9c2ea",
-            "company": "Pacific Fusion",
-            "ok": true,
-            "count": 4,
-            "preserved_previous": false,
-            "official_url": "https://job-boards.greenhouse.io/pacificfusion",
-            "diagnostics": {
-              "start_url": "https://job-boards.greenhouse.io/pacificfusion",
-              "final_url": "https://job-boards.greenhouse.io/pacificfusion",
-              "unique_jobs": 4,
-              "json_responses": 6,
-              "json_candidates": 4,
-              "dom_links_seen": 81,
-              "pages_advanced": 0,
-              "observed_endpoints": [
-                "https://job-boards.cdn.greenhouse.io/locales/zh/board.SBb52_0_psgKBsGCaAZ5jmyA9bXcio_0EbskWPWBonM.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/job_post.EjvlRTKZ2CggexTzZqeBjNl8l7pPncG2PEGaK7q7mHs.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/board.EQO05ZisDgYicUYtxKdpBR223TBY8oPWLgDi4VZ3dQU.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/job_post.xARVcwpAozf1DR3o13mc-j7C04Jk3mAj0ab7ua2Lkwg.json",
-                "https://job-boards.cdn.greenhouse.io/locales/zh/common.UTcEpFxF3AY2rbPLhN4rFG2C-O5pOAE70EwYQwczNIA.json",
-                "https://job-boards.cdn.greenhouse.io/locales/en/common.JhgW1MtlxQMWLxqjNtT6nMMubUGRVw8hHuLsUmHD0-8.json"
-              ],
-              "errors": [
-                "response JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
-              ],
-              "transport": "browser-public-ui-xhr-dom"
-            },
-            "error": ""
           }
         ],
-        "catalog_sweepable": 992,
+        "catalog_sweepable": 997,
         "max_targets": 32,
-        "shard_count": 31,
+        "shard_count": 32,
         "shard_index": 0,
         "shard_mode": "clock-two-hour",
         "forced_companies": [],
@@ -1936,6 +1925,12 @@
             "id": "auto-recruit-023e8cf078cc",
             "company": "中国移动",
             "start_url": "https://job.10086.cn/",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-02b66fc7fb88",
+            "company": "网易",
+            "start_url": "https://hr.163.com/policy.html",
             "origin": "official-source-graph"
           },
           {
@@ -2002,6 +1997,12 @@
             "id": "auto-recruit-059df78e2ca9",
             "company": "太初",
             "start_url": "https://app.mokahr.com/social-recruitment/tecorigin/47401",
+            "origin": "official-source-graph"
+          },
+          {
+            "id": "auto-recruit-05de2afed255",
+            "company": "太初",
+            "start_url": "https://app.mokahr.com/campus-recruitment/tecorigin/47402",
             "origin": "official-source-graph"
           },
           {
@@ -2093,21 +2094,9 @@
             "company": "Brevium",
             "start_url": "https://job-boards.greenhouse.io/brevium",
             "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-09e5217e0c3f",
-            "company": "普华永道中国",
-            "start_url": "https://app.mokahr.com/campus-recruitment/pwc/148260",
-            "origin": "official-source-graph"
-          },
-          {
-            "id": "auto-recruit-0a0b88d9c2ea",
-            "company": "Pacific Fusion",
-            "start_url": "https://job-boards.greenhouse.io/pacificfusion",
-            "origin": "official-source-graph"
           }
         ],
-        "catalog_total": 1066
+        "catalog_total": 1071
       }
     },
     {
@@ -6969,11 +6958,11 @@
     "gank-public-search",
     "offerjack"
   ],
-  "cn_catalog_count": 8588,
+  "cn_catalog_count": 8616,
   "feed_schema": 4,
   "browser_jd_chars": 220,
-  "feed_bytes": 35884903,
-  "cn_feed_bytes": 7177752,
+  "feed_bytes": 35762537,
+  "cn_feed_bytes": 7191143,
   "catalog_cap": 60000,
   "cn_catalog_cap": 30000,
   "default_product_feed": "data/jobs_cn.json",
