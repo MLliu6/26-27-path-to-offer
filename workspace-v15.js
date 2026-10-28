@@ -196,6 +196,13 @@
     const p=palettes[saved.palette]||palettes.sage;
     root.style.setProperty('--accent',p.accent);root.style.setProperty('--accent-strong',p.strong);root.style.setProperty('--accent-soft',p.soft);
     root.dataset.appearance=effectiveAppearance(saved.appearance);
+    const logo=document.querySelector('.brand-mark svg'),icon=document.querySelector('link[rel="icon"]');
+    if(logo&&icon){
+      const svg=logo.cloneNode(true);
+      svg.setAttribute('color',getComputedStyle(logo).color);
+      svg.querySelector('path').setAttribute('stroke',getComputedStyle(logo.querySelector('path')).stroke);
+      icon.href='data:image/svg+xml,'+encodeURIComponent(new XMLSerializer().serializeToString(svg));
+    }
     try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(_){}
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content',root.dataset.appearance==='dark'?'#111113':'#f7f8f5');
   }

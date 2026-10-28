@@ -86,8 +86,25 @@ try{
   await page.locator('#v16SourceSearch').fill('金融');
   assert.ok(await page.locator('#v16SourceDirectory .v15-source-row').count()>0);
   await page.locator('#closeModal').click();
-  await page.locator('#themeBtn').click();await page.locator('[data-v151-appearance="dark"]').click();
-  assert.equal(await page.evaluate(()=>document.documentElement.dataset.appearance),'dark');
+  await page.locator('#themeBtn').click();
+  for(const appearance of ['light','dark']){
+    await page.locator(`[data-v151-appearance="${appearance}"]`).click();
+    const colors=new Set();
+    for(const palette of ['blue','violet','slate','rose','amber','sage']){
+      await page.locator(`[data-v151-palette="${palette}"]`).click();
+      const brand=await page.evaluate(()=>{
+        const logo=document.querySelector('.brand-mark svg'),path=logo.querySelector('path');
+        const icon=new DOMParser().parseFromString(decodeURIComponent(document.querySelector('link[rel="icon"]').href.split(',').slice(1).join(',')),'image/svg+xml');
+        return {tile:getComputedStyle(logo).color,ink:getComputedStyle(path).stroke,iconTile:icon.documentElement.getAttribute('color'),iconInk:icon.querySelector('path')?.getAttribute('stroke'),path:path.getAttribute('d'),iconPath:icon.querySelector('path')?.getAttribute('d'),appearance:document.documentElement.dataset.appearance};
+      });
+      assert.equal(brand.appearance,appearance);
+      assert.equal(brand.iconTile,brand.tile,'tab icon must follow the selected palette');
+      assert.equal(brand.iconInk,brand.ink,'tab icon must follow light/dark appearance');
+      assert.equal(brand.iconPath,brand.path,'tab and page must use the same logo');
+      assert.notEqual(brand.tile,brand.ink);colors.add(brand.tile);
+    }
+    assert.equal(colors.size,6,'each palette must visibly recolor the logo');
+  }
   await page.locator('[data-v151-appearance="light"]').click();
   await page.locator('#themeBtn').click();
   await page.setViewportSize({width:390,height:844});

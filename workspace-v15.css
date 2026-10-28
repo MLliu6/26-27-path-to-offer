@@ -29,7 +29,8 @@ html body svg {width:20px;height:20px;fill:none;stroke:currentColor;stroke-width
 html body .app-shell {max-width:1800px;margin:auto}
 html body .topbar {height:76px;padding:0 28px;gap:20px;backdrop-filter:none;border-bottom:1px solid var(--line);box-shadow:none;z-index:30}
 html body .brand {text-align:left;gap:10px}html body .brand-mark {width:40px;height:40px;border-radius:12px;background:transparent!important;box-shadow:none}
-html body .brand-mark :is(img,svg) {display:block;width:40px;height:40px}
+html body .brand-mark :is(img,svg) {display:block;width:40px;height:40px;color:var(--accent-strong);--brand-ink:#fff}
+html[data-appearance="dark"] body .brand-mark svg {color:var(--accent);--brand-ink:var(--bg)}
 html body .brand strong {font-size:17px;font-weight:750;letter-spacing:-.045em;white-space:nowrap}html body .brand small {font-size:10px;margin-top:3px;letter-spacing:.075em;text-transform:none}
 html body .main-nav {padding:4px;gap:3px;background:transparent!important;box-shadow:none}
 html body .nav-item {display:flex;align-items:center;justify-content:center;gap:9px;padding:9px 12px;white-space:nowrap;border:1px solid transparent;color:var(--muted)}
@@ -142,8 +143,9 @@ html body .theme-popover {width:300px;padding:18px;border-radius:12px}html body 
 .v151-appearance {display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.v151-appearance button {min-height:36px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font-size:12px}.v151-appearance button.active {border-color:var(--v151-accent);background:var(--v151-accent-soft)}
 html[data-appearance="dark"] body :is(.nav-item.active,.seg.active,.view-icon.active,.v151-appearance button.active) {background:color-mix(in srgb,var(--v151-accent) 20%,var(--surface))!important;color:var(--text)!important}
 html[data-appearance="dark"] body .company-avatar {background:color-mix(in srgb,var(--v151-accent) 20%,var(--surface));color:var(--text);border-color:var(--line)}
-html[data-appearance="dark"] body .text-btn {color:#9ac9b8}
-html[data-appearance="dark"] body .pipeline-timeline-node.current .pipeline-timeline-copy strong {color:#9ac9b8}
+html[data-appearance="dark"] body .text-btn {color:var(--accent)}
+html[data-appearance="dark"] body .pipeline-timeline-node.current .pipeline-timeline-copy strong {color:var(--accent)}
+html[data-appearance="dark"] body .v15-summary>button:hover {background:color-mix(in srgb,var(--accent) 20%,var(--surface))}
 
 @media(min-width:1180px) {
   html body .topbar {position:fixed;inset:0 auto 0 max(0px,calc((100vw - 1800px)/2));width:222px;height:100dvh;display:flex;flex-direction:column;align-items:stretch;gap:0;padding:30px 18px 22px;border:0;border-right:1px solid var(--line)}
