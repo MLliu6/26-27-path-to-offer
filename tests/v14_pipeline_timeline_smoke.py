@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 
 from playwright.sync_api import sync_playwright
 
-BASE='http://127.0.0.1:8000'
+BASE=os.environ.get('PTO_TEST_URL','http://127.0.0.1:8000')
 STATE={
     'schemaVersion':2,
     'jobs':[{
@@ -45,6 +46,7 @@ STATUS={'generated_at':'2026-08-21T00:00:00Z','catalog_count':0,'sources':[]}
 
 
 def browser_path():
+    if os.environ.get('PTO_BROWSER_EXECUTABLE'):return os.environ['PTO_BROWSER_EXECUTABLE']
     for name in ('google-chrome','google-chrome-stable','chromium','chromium-browser'):
         path=shutil.which(name)
         if path:return path
@@ -65,12 +67,15 @@ def main():
                 route.fulfill(status=200,content_type='application/json',body=json.dumps(EMPTY_JOBS,ensure_ascii=False))
             elif '/data/priority_source_status.json' in url or '/data/source_status.json' in url:
                 route.fulfill(status=200,content_type='application/json',body=json.dumps(STATUS,ensure_ascii=False))
+            elif '/data/' in url:
+                route.fulfill(status=200,content_type='application/json',body=json.dumps({'jobs':[],'sources':[]}))
             elif url.startswith('https://cdn.jsdelivr.net/'):
                 route.abort()
             else:
                 route.continue_()
         page.route('**/*',route)
         page.goto(BASE,wait_until='domcontentloaded')
+        page.wait_for_function('window.PTO_ENHANCEMENTS_READY === true',timeout=30000)
         page.wait_for_function('() => !!window.PTO_PIPELINE_TIMELINE_V14',timeout=20000)
         page.locator('button.nav-item[data-view="pipeline"]').click()
 

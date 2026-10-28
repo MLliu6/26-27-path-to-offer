@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from playwright.sync_api import sync_playwright
 
-BASE='http://127.0.0.1:8000'
+BASE=os.environ.get('PTO_TEST_URL','http://127.0.0.1:8000')
 
 
 def browser_path():
+    if os.environ.get('PTO_BROWSER_EXECUTABLE'):return os.environ['PTO_BROWSER_EXECUTABLE']
     for name in ('google-chrome','google-chrome-stable','chromium','chromium-browser'):
         path=shutil.which(name)
         if path:return path
@@ -59,6 +61,8 @@ def main():
             elif '/data/jobs.json' in url:
                 if flags['fail_fallback']:route.fulfill(status=503,body='fallback down')
                 else:route.fulfill(status=200,content_type='application/json',body=fallback)
+            elif '/data/' in url:
+                route.fulfill(status=200,content_type='application/json',body=json.dumps({'jobs':[],'sources':[]}))
             elif url.startswith('https://cdn.jsdelivr.net/'):
                 route.abort()
             else:
@@ -66,6 +70,9 @@ def main():
 
         page.route('**/*',route)
         page.goto(BASE,wait_until='domcontentloaded')
+        page.wait_for_function('window.PTO_ENHANCEMENTS_READY === true',timeout=30000)
+        # The fixed historical catalogue must remain testable after 30 days.
+        page.locator('#freshOnly').uncheck()
         page.wait_for_function("window.PTO_V141_FEED_READY === true",timeout=30000)
         page.wait_for_function("window.PTO_FEED_RUNTIME.jobsLoaded === 2",timeout=30000)
 

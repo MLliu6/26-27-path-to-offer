@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:8000"
+BASE = os.environ.get("PTO_TEST_URL", "http://127.0.0.1:8000")
 EXACT_ID = "5e4eb6f3-294f-491b-9d39-42895eed98c3"
 EXACT_URL = f"https://careers.pddglobalhr.com/campus/grad/detail?positionId={EXACT_ID}"
 DIDI_URL = "https://talent.didiglobal.com/social/p/58333"
@@ -112,6 +113,8 @@ DOMESTIC_STATUS = {
 
 
 def browser_path() -> str:
+    if os.environ.get("PTO_BROWSER_EXECUTABLE"):
+        return os.environ["PTO_BROWSER_EXECUTABLE"]
     for candidate in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
         path = shutil.which(candidate)
         if path:
@@ -135,6 +138,11 @@ def main() -> int:
                 route.fulfill(status=200, content_type="application/json", body=json.dumps(PRIORITY_STATUS, ensure_ascii=False))
             elif "/data/source_status.json" in url:
                 route.fulfill(status=200, content_type="application/json", body=json.dumps(DOMESTIC_STATUS, ensure_ascii=False))
+            elif "/data/" in url:
+                route.fulfill(status=200, content_type="application/json", body=json.dumps({"jobs": [], "sources": []}))
+            elif "/sources/sector_sources_v16.json" in url:
+                sources = [{"id": s["name"], "company": s["label"], "url": s["url"], "industry": "互联网", "company_type": "企业", "disciplines": ["计算机"]} for s in PRIORITY_STATUS["sources"]]
+                route.fulfill(status=200, content_type="application/json", body=json.dumps({"sources": sources}, ensure_ascii=False))
             elif url.startswith("https://cdn.jsdelivr.net/"):
                 route.abort()
             else:
@@ -142,9 +150,11 @@ def main() -> int:
 
         page.route("**/*", route_handler)
         page.goto(BASE, wait_until="domcontentloaded")
-        page.wait_for_function("() => window.PTO_PRIORITY_FEED_READY === true && window.PTO_V12_RENDERFIX_READY === true", timeout=20_000)
-        page.wait_for_selector("#priorityFeedChip")
-        assert "10 min" in page.locator("#priorityFeedChip").inner_text()
+        page.wait_for_function("() => window.PTO_ENHANCEMENTS_READY === true && window.PTO_WORKSPACE_V15 && marketJobs.length === 4", timeout=30_000)
+        health = page.locator("#feedHealth")
+        assert health.is_visible() and "4 岗位" in health.inner_text()
+        assert page.evaluate("sourceStatus.priority_catalog_count") == 3
+        assert page.evaluate("marketJobs.filter(j=>j.id==='pdd-exact-ai-infra').length") == 1
 
         page.locator("#jobSearch").fill("AI Infra研发工程师")
         exact = page.locator('.market-card[data-market-id="pdd-exact-ai-infra"]')
@@ -171,6 +181,9 @@ def main() -> int:
         assert page.locator(f'#marketJobDetail a[href="{SHOPEE_URL}"]').count() >= 1
         page.locator("#closeDrawer").click()
 
+        # The workspace defaults to confirmed 2027 graduate roles; social
+        # recruiting remains available when the user includes every cohort.
+        page.locator("#v16Cohort").select_option("all")
         page.locator("#jobSearch").fill("滴滴")
         didi = page.locator('.market-card[data-market-id="didi-public-58333"]')
         didi.wait_for(timeout=8_000)
@@ -181,12 +194,14 @@ def main() -> int:
         page.locator("#closeDrawer").click()
 
         page.locator("#openSourcePanel").click()
-        page.wait_for_selector(".admin-source-gate")
-        gate = page.locator(".admin-source-gate").inner_text()
-        assert "管理员信息已雾化" in gate
-        assert page.locator(".admin-source-blur").count() == 1
-        blurred = page.locator(".admin-source-blur").inner_text()
-        assert "拼多多校园招聘官网" in blurred and "滴滴招聘官网" in blurred and "Shopee" in blurred
+        page.wait_for_selector("#v16SourceDirectory")
+        assert page.locator("#modalTitle").inner_text() == "官方招聘入口"
+        directory = page.locator("#v16SourceDirectory").inner_text()
+        assert "拼多多校园招聘官网" in directory and "滴滴招聘官网" in directory and "Shopee" in directory
+        assert page.locator('#v16SourceDirectory a[href^="https://"]').count() == 3
+        page.locator(".v16-source-health summary").click()
+        diagnostics = page.locator(".v16-source-health").inner_text()
+        assert "拼多多校园招聘官网" in diagnostics and "滴滴招聘官网" in diagnostics and "Shopee" in diagnostics
 
         context.close()
         browser.close()
