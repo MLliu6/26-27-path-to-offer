@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / 'sources/workspace_sources_v15.json'
 FEED = ROOT / 'data/jobs_supplemental.json'
 STATUS = ROOT / 'data/supplemental_source_status.json'
-TITLE = re.compile(r'工程师|研究员|开发|架构师|设计师|算法|Engineer|Developer|Scientist', re.I)
+TITLE = re.compile(r'工程师|研究|开发|架构|设计|算法|财务|会计|审计|税务|金融|投资|证券|风控|法务|合规|人力|行政|市场|品牌|商务|销售|运营|产品|供应链|采购|物流|计划|咨询|战略|管培|材料|化学|化工|工艺|质量|机械|电气|能源|制造|生产|土木|建筑|造价|环境|生物|医药|临床|医学|统计|编辑|记者|教师|教研|地质|食品|农业|翻译|客户经理|分析师|专员|经理|顾问|实习|Engineer|Developer|Scientist|Analyst|Finance|Audit|Legal|Marketing|Sales|Supply|Graduate|Trainee|Intern|Human.Resources|Operations|Consultant|Designer|Research', re.I)
 REJECT = re.compile(r'招聘启动|招聘正式启动|加入我们|隐私|登录|关于我们|招聘流程|岗位职责|任职要求|技能要求|工作职责|了解更多|招聘简章')
 
 def load(path):
@@ -103,10 +103,12 @@ def encode(job, entry, checked):
     sid = 'direct-official:v15:' + entry['id']
     url = job['apply_url']
     key = hashlib.sha256(f"{entry['id']}|{pid or role}|{job.get('location','')}|{url}".encode()).hexdigest()[:20]
-    return dict(i=key, c=entry['company'], r=role, l=job.get('location',''), d=job.get('jd','')[:5000],
+    return dict(i=key, c=entry['company'], r=role, l=job.get('location',''), d=job.get('jd','')[:5000], jd_full=(job.get('jd_full') or job.get('jd',''))[:8000],
                 u=url, n=job.get('notice_url') or url, s=sid, x=entry['company']+'招聘官网 · 扩展采集',
                 q=7, z=pid, b=job.get('batch') or '公开招聘·届别待确认', g=job.get('graduation') or '',
                 t=job.get('updated_at') or '', observed_at=checked,
+                y=job.get('company_type') or entry.get('company_type',''), h=job.get('industry') or entry.get('industry',''),
+                source_url=entry.get('start_url') or entry['official_url'], record_kind='position',
                 observed_via=job.get('observed_via') or 'browser-public-ui', verification='employer-observed')
 
 def main():

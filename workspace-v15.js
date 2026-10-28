@@ -4,16 +4,16 @@
   if(typeof state==='undefined'||!window.PTO_WORKSPACE_CORE)return;
   const C=window.PTO_WORKSPACE_CORE,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
   const PREF='pto.workspace.preferences.v15',BACKUP='pto.secure.snapshots.v15.';
-  let prefs={evidence:'all',kind:'all',hideEmpty:true,scope:'all',view:'discover'};
+  let prefs={evidence:'all',kind:'all',cohort:'2027',hideEmpty:true,scope:'all',view:'discover'};
   try{prefs={...prefs,...JSON.parse(localStorage.getItem(PREF)||'{}')};}catch(_){}
   const storePrefs=()=>{try{localStorage.setItem(PREF,JSON.stringify(prefs));}catch(_){toast('本机设置未能保存');}};
   const clone=v=>JSON.parse(JSON.stringify(v));
   const account=()=>window.PTO_ACCOUNT_SESSION?.id||'guest';
-  let supplemental={jobs:[]},supplementalStatus={sources:[]},flight=null,drawerBefore='',allowClose=false;
-  let undo=null,undoTimer=null,lastFocus=null;
+  let supplemental={jobs:[]},verified={jobs:[]},supplementalStatus={sources:[]},sourceAudit=null,sourceDirectory=[],flight=null,drawerBefore='',allowClose=false;
+  let undo=null,undoTimer=null;
   today=C.localDate;
   const oldNormalize=normalizeMarketJob;
-  normalizeMarketJob=function(j){return {...oldNormalize(j),source:j.s??j.source??'public',positionId:C.positionId(j),verification:j.verification||'',observedAt:j.observed_at||j.observedAt||'',observedVia:j.observed_via||j.observedVia||'',sourceLabel:j.x||j.source_label||j.sourceLabel||oldNormalize(j).sourceLabel};};
+  normalizeMarketJob=function(j){const base=oldNormalize(j),cohort=window.PTO_MATCHING.jobCohort?.(base),share=/service\.weibo\.com\/share|(?:facebook|twitter|linkedin)\.com\/(?:share|intent)/i.test(base.applyUrl||'');return {...base,applyUrl:share?'':base.applyUrl,cohortConflict:!!cohort?.conflict,batch:cohort?.conflict?(cohort.years.join(' / ')+' 届 · '+(/实习|intern/i.test(base.role)?'实习':'校园招聘')):base.batch,jd:j.jd_full||base.jd,updatedAt:C.dateValue(base.updatedAt),location:C.cityNames(base.location).join(' / ')||base.location,source:j.s??j.source??'public',positionId:C.positionId(j),verification:j.verification||'',observedAt:C.dateValue(j.observed_at||j.observedAt||''),observedVia:j.observed_via||j.observedVia||'',sourceLabel:j.x||j.source_label||j.sourceLabel||base.sourceLabel,sourceUrl:j.source_url||base.sourceUrl,deadline:j.deadline||'',listingStatus:j.status||'',graduation:cohort?.years?.length?cohort.years.map(y=>y+'届').join(' / '):(j.g||j.graduation||base.graduation)};};
   window.PTO_PRODUCT_V14.mergeBestJobs=C.mergeJobs;
   ptoMergeJobs=C.mergeJobs;
   ptoCanonicalUrl=C.canonicalUrl;
@@ -25,42 +25,50 @@
       const helper=window.PTO_FEED_V141;
       const more=Promise.all([
         helper.fetchJson('./data/jobs_supplemental.json',{kind:'catalog',retries:0}),
-        helper.fetchJson('./data/supplemental_source_status.json',{kind:'status',retries:0})
+        helper.fetchJson('./data/supplemental_source_status.json',{kind:'status',retries:0}),
+        helper.fetchJson('./data/jobs_verified_v16.json',{kind:'catalog',retries:0})
       ]);
       await baseLoad();
-      const [feed,status]=await more;
+      const [feed,status,fresh]=await more;
       if(feed.ok&&Array.isArray(feed.value?.jobs))supplemental=feed.value;
       if(status.ok&&Array.isArray(status.value?.sources))supplementalStatus=status.value;
+      if(fresh.ok&&Array.isArray(fresh.value?.jobs))verified=fresh.value;
       if(!feed.ok)window.PTO_FEED_RUNTIME.failures.push('supplemental:'+feed.error);
-      marketJobs=C.mergeJobs(marketJobs,supplemental.jobs.map(normalizeMarketJob));
+      marketJobs=C.mergeJobs(marketJobs,supplemental.jobs.map(normalizeMarketJob),verified.jobs.map(normalizeMarketJob));
       window.PTO_FEED_RUNTIME.jobsLoaded=marketJobs.length;
       window.PTO_RANKING_V14?.clearCache?.();renderDiscovery();return marketJobs;
     })().finally(()=>{flight=null;renderFeedHealth();if(button){button.disabled=false;button.textContent='刷新职位';}});
     return flight;
   };
   const baseVisible=visibleMarketJobs;
+  const isPosition=j=>window.PTO_MATCHING.isPosition?window.PTO_MATCHING.isPosition(j):true;
   function leadRows(){
     // A verification queue is not a recommendation. Do not hide uncertain leads
     // behind the resume-fit threshold, but preserve explicit metadata/search filters.
     const q=$('#jobSearch')?.value||'',loc=$('#jobLocationFilter')?.value||'all',typ=$('#jobTypeFilter')?.value||'all',batch=$('#jobBatchFilter')?.value||'all';
-    return marketJobs.filter(j=>C.isLead(j)&&state.decisions[j.id]!=='hidden'&&(loc==='all'||j.location.includes(loc))&&(typ==='all'||j.companyType===typ)&&(batch==='all'||j.batch===batch)&&window.PTO_MATCHING.searchMatch(j,q).matched).map(j=>({...j,match:{score:null,reasons:[],hits:[],components:{}}}));
+    return marketJobs.filter(j=>(C.isLead(j)||!isPosition(j))&&state.decisions[j.id]!=='hidden'&&(loc==='all'||j.location.includes(loc))&&(typ==='all'||j.companyType===typ)&&(batch==='all'||j.batch===batch)&&window.PTO_MATCHING.searchMatch(j,q).matched).map(j=>({...j,match:{score:null,reasons:[],hits:[],components:{}}}));
   }
-  visibleMarketJobs=function(){return (prefs.evidence==='leads'?leadRows():baseVisible()).filter(j=>{
+  let cohortAlternatives=0;
+  visibleMarketJobs=function(){const rows=(prefs.evidence==='leads'?leadRows():baseVisible()).filter(j=>{
+    if(prefs.evidence!=='leads'&&(!isPosition(j)||C.isLead(j)))return false;
     if(prefs.evidence==='official'&&!C.official(j))return false;
-    if(prefs.evidence==='leads'&&!C.isLead(j))return false;
+    if(prefs.evidence==='leads'&&!C.isLead(j)&&isPosition(j))return false;
+    if(/^(closed|expired|inactive|已截止|已下线)$/i.test(j.listingStatus)||(/^\d{4}-\d{2}-\d{2}/.test(j.deadline)&&j.deadline.slice(0,10)<C.localDate()))return false;
     const label=String(j.batch||'')+' '+String(j.role||'');
     if(prefs.kind==='campus'&&!/校招|校园|应届|届|graduate/i.test(label))return false;
     if(prefs.kind==='intern'&&!/实习|intern/i.test(label))return false;
     if(prefs.kind==='social'&&!/社招|社会招聘/.test(label))return false;
     return true;
-  });};
+  });cohortAlternatives=prefs.cohort==='2027'?rows.filter(j=>!window.PTO_MATCHING.jobCohort(j).years.length).length:0;
+    return rows.filter(j=>{const years=window.PTO_MATCHING.jobCohort(j).years;return prefs.cohort==='2027'?years.includes('2027'):prefs.cohort==='unknown'?!years.length:true;});
+  };
   const baseFilters=renderMarketFilters;
   renderMarketFilters=function(){
     const selected=$('#jobLocationFilter')?.value||'all';baseFilters();const sel=$('#jobLocationFilter');if(!sel)return;
     const cities=['北京','上海','深圳','广州','杭州','南京','成都','武汉','西安','苏州','天津','合肥','长沙','重庆'];
-    const observed=[...new Set(marketJobs.flatMap(j=>String(j.location||'').split(/[ ,，、/]+/).filter(x=>x.length>=2&&x.length<=24)))].sort((a,b)=>a.localeCompare(b,'zh-CN'));
+    const observed=[...new Set(marketJobs.flatMap(j=>C.cityNames(j.location)))].sort((a,b)=>a.localeCompare(b,'zh-CN'));
     const popular=cities.filter(c=>observed.some(x=>x.includes(c)));
-    const rest=observed.filter(x=>!popular.includes(x));if(selected!=='all'&&!popular.includes(selected)&&!rest.includes(selected))rest.push(selected);
+    const rest=observed.filter(x=>!popular.includes(x));if(selected!=='all'&&C.cityNames(selected).length&&!popular.includes(selected)&&!rest.includes(selected))rest.push(selected);
     const options=xs=>xs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
     sel.innerHTML='<option value="all">全部地点</option><optgroup label="常用城市">'+options(popular)+'</optgroup><optgroup label="其他已观测地点">'+options(rest)+'</optgroup>';sel.value=selected;
   };
@@ -69,16 +77,20 @@
   promoteMarketJob=function(id,close=true){const j=marketJobs.find(x=>x.id===id);const known=j&&knownJob(j);if(known){toast('该岗位已在你的流程中');openJob(known.id);return;}basePromote(id,close);};
   function decorateMarket(){
     const leads=marketJobs.filter(C.isLead).length;
+    let alternatives=$('#v16CohortAlternatives');if(!alternatives){alternatives=document.createElement('div');alternatives.id='v16CohortAlternatives';alternatives.className='v16-cohort-alternatives';$('.market-head')?.insertAdjacentElement('afterend',alternatives);}
+    alternatives.hidden=!cohortAlternatives;
+    alternatives.innerHTML=cohortAlternatives?`<span>另有 ${cohortAlternatives.toLocaleString()} 个相关岗位尚未注明毕业届别</span><button class="text-btn">查看这些岗位 →</button>`:'';
+    alternatives.querySelector('button')?.addEventListener('click',()=>{prefs.cohort='unknown';$('#v16Cohort').value='unknown';storePrefs();renderMarket();});
     if(!currentProfile()&&Number(($('#marketCount')?.textContent||'0').replace(/,/g,''))>0)$('#jobMarketEmpty')?.classList.add('hidden');
     let meta=$('#v15EvidenceCount');if(!meta){meta=document.createElement('p');meta.id='v15EvidenceCount';meta.className='v15-search-count';$('.market-head')?.insertAdjacentElement('afterend',meta);}
-    meta.textContent=`目录 ${marketJobs.length.toLocaleString()} 条 · 其中 ${leads} 条为待复核线索；页面可访问不等于岗位仍在招聘。`;
+    meta.textContent=`${marketJobs.length.toLocaleString()} 条招聘记录 · ${marketJobs.filter(j=>/2027/.test([j.graduation,j.batch,j.role].join(' '))).length.toLocaleString()} 条明确 2027 届 · ${leads} 条待核验`;
     for(const card of $$('#jobMarketCards [data-market-id]')){
       const j=marketJobs.find(x=>String(x.id)===card.dataset.marketId);if(!j)continue;
       const badge=document.createElement('span');badge.className='v15-badge'+(C.isLead(j)?' lead':'');
-      badge.textContent=C.isLead(j)?'待复核线索 · 地点/届别待确认':C.official(j)?'官网采集 · 投递前确认':'公开索引 · 投递前确认';
-      card.querySelector('.job-facts')?.appendChild(badge);
+      badge.textContent=(C.isLead(j)||!isPosition(j))?'招聘线索 · 查看原文':C.official(j)?'官网来源':'公开招聘索引';
+      card.querySelector('.job-facts')?.appendChild(badge);if(j.observedAt){const time=document.createElement('span');time.className='v15-badge';time.textContent='采集 '+j.observedAt.slice(0,10);badge.after(time);}
       if(C.isLead(j))card.querySelectorAll('a').forEach(a=>{if(/官网投递/.test(a.textContent))a.textContent='核验官方入口 ↗';});
-      const existing=knownJob(j),button=card.querySelector('[data-save-job]');if(existing&&button){button.textContent='已在流程';button.onclick=e=>{e.stopPropagation();openJob(existing.id);};}
+      const apply=card.querySelector('[data-open-apply]');if(apply)apply.textContent=C.official(j)?'官网投递 ↗':'查看招聘原文 ↗';const existing=knownJob(j),button=card.querySelector('[data-save-job]');if(existing&&button){button.textContent='已在流程';button.onclick=e=>{e.stopPropagation();openJob(existing.id);};}
     }
     if($('#jobMarketEmpty')&&!$('#jobMarketEmpty').classList.contains('hidden')&&marketJobs.length&&($('#jobSearch')?.value||prefs.evidence!=='all'||prefs.kind!=='all')){
       const p=$('#jobMarketEmpty p');if(p&&$('#marketCount')?.textContent==='0')p.textContent='当前搜索与筛选组合没有结果。清除筛选后重试；这不代表该公司没有招聘。';
@@ -118,29 +130,47 @@
   $('#jobForm').addEventListener('submit',()=>{drawerBefore=formValue();},true);
   for(const id of ['closeDrawer','cancelJobBtn','drawerBackdrop'])$('#'+id).onclick=()=>closeDrawer();
   window.addEventListener('beforeunload',e=>{if((drawerBefore&&$('#jobDrawer').classList.contains('open')&&!$('#jobForm').classList.contains('hidden')&&formValue()!==drawerBefore)||window.PTO_SECURE_ACCOUNT_V2?.pending?.()){e.preventDefault();e.returnValue='';}});
-  const baseOpenModal=openModal,baseCloseModal=closeModal;
-  openModal=function(title,html){if(!$('#quickModal').classList.contains('show'))lastFocus=document.activeElement;baseOpenModal(title,html);$('.app-shell').inert=true;setTimeout(()=>$('#modalBody input, #modalBody select, #modalBody button, #closeModal')?.focus(),0);};
-  closeModal=function(){baseCloseModal();$('.app-shell').inert=false;if(lastFocus?.isConnected)lastFocus.focus();lastFocus=null;};
   $('#closeModal').onclick=()=>closeModal();$('#modalBackdrop').onclick=()=>closeModal();
-  document.addEventListener('keydown',e=>{if(e.isComposing)return;const modal=$('#quickModal');if(e.key==='Tab'&&modal.classList.contains('show')){const focusable=[...modal.querySelectorAll('button,input,select,textarea,a[href],[tabindex="0"]')].filter(x=>!x.disabled&&x.getClientRects().length);const first=focusable[0],last=focusable.at(-1);if(e.shiftKey&&(document.activeElement===first||!modal.contains(document.activeElement))){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();switchView('discover');$('#jobSearch')?.focus();}},true);
+  document.addEventListener('keydown',e=>{if(e.isComposing||$('#quickModal').classList.contains('show')||$('#jobDrawer').classList.contains('open'))return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();switchView('discover');$('#jobSearch')?.focus();}},true);
   const nativeSet=Storage.prototype.setItem;
   Storage.prototype.setItem=function(key,value){if(this===localStorage&&String(key).startsWith('pto.secure.local.v2.')){const previous=this.getItem(key);if(previous&&previous!==value){try{const vault=JSON.parse(previous);if(vault.schema==='pto-encrypted-vault'){const bk=BACKUP+String(key).slice('pto.secure.local.v2.'.length);const history=JSON.parse(this.getItem(bk)||'[]');nativeSet.call(this,bk,JSON.stringify([{savedAt:new Date().toISOString(),vault},...history].slice(0,3)));}}catch(_){/* Backup quota must never block the primary encrypted write. */}}}return nativeSet.call(this,key,value);};
-  function backup(){const entries={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('pto.secure.local.v2.')||k.startsWith(BACKUP)||k==='pto.secure.device-account.v1')entries[k]=localStorage.getItem(k);}if(!Object.keys(entries).some(k=>k.startsWith('pto.secure.local.v2.'))){toast('当前浏览器尚无加密账户；可在洞察页导出个人数据');return;}const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify({format:'pto-encrypted-device-backup-v15',createdAt:new Date().toISOString(),entries},null,2)],{type:'application/json'}));a.href=url;a.download=`path-to-offer-encrypted-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出密文；请同时保留原密码');}
+  async function backup(){try{await window.PTO_SECURE_ACCOUNT_V2?.flushLocal();}catch(err){toast('备份前保存失败：'+err.message);return;}const entries={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('pto.secure.local.v2.')||k.startsWith(BACKUP)||k==='pto.secure.device-account.v1')entries[k]=localStorage.getItem(k);}if(!Object.keys(entries).some(k=>k.startsWith('pto.secure.local.v2.'))){toast('当前浏览器尚无加密账户；可在洞察页导出个人数据');return;}const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify({format:'pto-encrypted-device-backup-v15',createdAt:new Date().toISOString(),entries},null,2)],{type:'application/json'}));a.href=url;a.download=`path-to-offer-encrypted-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出密文；请同时保留原密码');}
   async function restoreBackup(file){if(!file)return;try{if(file.size>30000000)throw Error('备份过大');const doc=JSON.parse(await file.text());if(doc.format!=='pto-encrypted-device-backup-v15'||!doc.entries)throw Error('请选择加密设备备份文件');const items=Object.entries(doc.entries).filter(([k])=>/^pto\.secure\.local\.v2\.[a-f0-9]{64}$/.test(k));if(!items.length)throw Error('备份中没有加密账户');for(const [,v] of items){const b=JSON.parse(v);if(b.schema!=='pto-encrypted-vault')throw Error('备份格式错误');}if(!confirm(`恢复 ${items.length} 个加密账户副本？本机已有账户不覆盖，只保存为可恢复快照。`))return;for(const [k,v] of items){if(localStorage.getItem(k)){const bk=BACKUP+k.slice('pto.secure.local.v2.'.length),old=JSON.parse(localStorage.getItem(bk)||'[]');nativeSet.call(localStorage,bk,JSON.stringify([{savedAt:new Date().toISOString(),vault:JSON.parse(v)},...old].slice(0,3)));}else nativeSet.call(localStorage,k,v);}if(!window.PTO_DEVICE_ACCOUNT_HINT?.read()){const hint=doc.entries['pto.secure.device-account.v1'];if(hint)window.PTO_DEVICE_ACCOUNT_HINT?.remember(JSON.parse(hint));}window.PTO_DEVICE_ACCOUNT_HINT?.sync();toast('密文已恢复；在账户中使用原密码解锁');}catch(err){toast('未恢复：'+err.message);}}
-  function sourcesPanel(){const groups=[...(sourceStatus?.sources||[])];const rows=supplementalStatus.sources||[];openModal('信源覆盖与数据质量',`<p class="v15-note">这里仅展示公开招聘数据，不读取或切换你的账户。来源登记、抓到岗位、完整分页是不同状态；本次未抓到岗位不等于企业停止招聘。</p><div class="v15-summary"><div><strong>${marketJobs.filter(C.official).length.toLocaleString()}</strong><span>官网来源记录</span></div><div><strong>${marketJobs.filter(C.isLead).length}</strong><span>待复核线索</span></div></div><h3>新增来源的逐家结果</h3>${rows.length?rows.map(s=>`<div class="v15-source-row"><div><strong>${esc(s.company)}</strong><small>${esc(s.checked_at||'尚未检查')}${s.last_success_at?' · 上次成功 '+esc(s.last_success_at):''}</small></div><span class="v15-badge">${s.ok?'本轮采集 '+s.count+' 条':s.preserved_previous?'暂不可用 · 保留 '+s.count+' 条':s.checked_at?'未取得有效职位':'待巡检'}</span></div>`).join(''):'<p class="v15-note">新增信源刷新结果暂未载入，现有岗位目录仍可使用。</p>'}<h3>现有采集组</h3>${groups.map(s=>`<div class="v15-source-row"><strong>${esc(s.label||s.name)}</strong><span>${s.ok?'正常':'异常'} · ${Number(s.count||0)} 条</span></div>`).join('')}`);}
+  async function sourcesPanel(){
+    openModal('官方招聘入口', '<p role="status">正在读取行业目录…</p>');
+    const [directory,audit]=await Promise.all([
+      window.PTO_FEED_V141.fetchJson('./sources/sector_sources_v16.json',{kind:'status',retries:0}),
+      window.PTO_FEED_V141.fetchJson('./data/source_integrity_audit.json',{kind:'status',retries:0})
+    ]);
+    if(directory.ok)sourceDirectory=directory.value.sources||[];
+    if(audit.ok)sourceAudit=audit.value;
+    if(!$('#quickModal').classList.contains('show')||$('#modalTitle').textContent!=='官方招聘入口')return;
+    const industries=[...new Set(sourceDirectory.map(s=>s.industry).filter(Boolean))];
+    const types=[...new Set(sourceDirectory.map(s=>s.company_type).filter(Boolean))];
+    const cohort=marketJobs.filter(j=>/2027/.test([j.graduation,j.batch,j.role].join(' '))).length;
+    openModal('官方招聘入口',`<p class="v15-note">按行业找到企业官网，直接查看最新岗位与报名要求。</p><div class="v15-summary"><div><strong>${sourceDirectory.length}</strong><span>官方入口</span></div><div><strong>${industries.length}</strong><span>行业方向</span></div><div><strong>${cohort.toLocaleString()}</strong><span>目录中明确 2027 届</span></div></div><div class="v16-source-filters"><input class="search" id="v16SourceSearch" aria-label="搜索公司、专业或行业" placeholder="公司、专业或行业"><select id="v16SourceIndustry" aria-label="选择行业"><option value="all">全部行业</option>${industries.map(v=>`<option>${esc(v)}</option>`).join('')}</select><select id="v16SourceType" aria-label="选择企业性质"><option value="all">全部企业性质</option>${types.map(v=>`<option>${esc(v)}</option>`).join('')}</select></div><div id="v16SourceDirectory"></div><details class="v16-source-health"><summary>采集状态与覆盖详情</summary><p class="v15-note">最近审查：${esc((sourceAudit?.generated_at||'').slice(0,19).replace('T',' ')||'尚未完成')}。各来源按公开招聘页面持续更新。</p>${[...(supplementalStatus.sources||[]),...(sourceStatus?.sources||[])].map(s=>`<div class="v15-source-row"><strong>${esc(s.company||s.label||s.name)}</strong><span>${s.ok?'已更新':s.preserved_previous?'待重试 · 保留上次记录':'待重试'} · ${Number(s.count||0).toLocaleString()} 条</span></div>`).join('')}</details>`);
+    function renderDirectory(){
+      const query=$('#v16SourceSearch').value.trim().toLowerCase(),industry=$('#v16SourceIndustry').value,type=$('#v16SourceType').value;
+      const rows=sourceDirectory.filter(s=>(industry==='all'||s.industry===industry)&&(type==='all'||s.company_type===type)&&[s.company,s.industry,...(s.disciplines||[])].join(' ').toLowerCase().includes(query));
+      const checks=sourceAudit?.portal_checks||[];
+      $('#v16SourceDirectory').innerHTML=rows.map(s=>{const check=Array.isArray(checks)?checks.find(c=>c.id===s.id||c.url===s.url):checks[s.id];const href=/^https?:\/\//i.test(s.url)?s.url:'#';return `<article class="v15-source-row"><div><strong>${esc(s.company)}</strong><small>${esc(s.company_type)} · ${esc(s.industry)}<br>${esc((s.disciplines||[]).join(' / '))}</small></div><div><span class="v15-badge">${check?.status==='browser_required'?'需浏览器打开':check?.reachable?'入口可访问':check?'访问待复核':'官方招聘入口'}</span><a class="text-btn" href="${esc(href)}" target="_blank" rel="noopener noreferrer">查看官网 ↗</a></div></article>`;}).join('')||'<p class="empty-state">没有符合筛选的入口，试试其他行业或关键词。</p>';
+    }
+    $('#v16SourceSearch').oninput=renderDirectory;$('#v16SourceIndustry').onchange=renderDirectory;$('#v16SourceType').onchange=renderDirectory;renderDirectory();
+  }
   function setup(){
     const skip=document.createElement('a');skip.className='v15-skip';skip.href='#jobSearch';skip.textContent='跳到岗位搜索';document.body.prepend(skip);
-    $('.brand small').textContent='求职工作台';$('.brand strong').insertAdjacentHTML('beforeend','<span class="v15-app-version">1.5</span>');
-    $('#discoverView h1').textContent='找到机会，推进下一步。';$('#discoverView .page-head p:not(.eyebrow)').textContent='搜索真实岗位，区分待核验线索；简历留在本机，投递进度由你掌握。';
-    const toolbar=document.createElement('div');toolbar.className='v15-toolbar';toolbar.innerHTML='<label>证据<select id="v15Evidence"><option value="all">全部记录</option><option value="official">仅官网采集</option><option value="leads">仅待复核线索</option></select></label><label>招聘类型<select id="v15Kind"><option value="all">全部类型</option><option value="campus">校园 / 应届</option><option value="intern">实习</option><option value="social">明确社招</option></select></label><button id="v15ResetFilters" class="btn ghost">清除筛选</button><button id="v15SourceButton" class="text-btn">信源覆盖</button>';
+    $('.brand small').textContent='每一步，更接近 Offer';
+    $('#discoverView h1').textContent='发现你的下一站';$('#discoverView .page-head p:not(.eyebrow)').textContent='从匹配岗位到每一次面试，让求职有序向前。';if(matchMedia('(max-width: 760px)').matches)$('.match-rail')?.removeAttribute('open');
+    const toolbar=document.createElement('div');toolbar.className='v15-toolbar';toolbar.innerHTML='<label>来源<select id="v15Evidence"><option value="all">全部记录</option><option value="official">仅官网采集</option><option value="leads">仅待复核线索</option></select></label><label>招聘类型<select id="v15Kind"><option value="all">全部类型</option><option value="campus">校园 / 应届</option><option value="intern">实习</option><option value="social">明确社招</option></select></label><label>毕业届别<select id="v16Cohort"><option value="all">全部届别</option><option value="2027">明确 2027 届</option><option value="unknown">届别待确认</option></select></label><button id="v15ResetFilters" class="btn ghost">清除筛选</button><button id="v15SourceButton" class="text-btn">信源覆盖</button>';
     $('.discovery-toolbar').insertAdjacentElement('afterend',toolbar);
-    for(const [id,key] of [['v15Evidence','evidence'],['v15Kind','kind']]){$('#'+id).value=prefs[key];$('#'+id).onchange=e=>{prefs[key]=e.target.value;storePrefs();renderMarket();};}
-    $('#v15ResetFilters').onclick=()=>{prefs.kind=prefs.evidence='all';$('#jobSearch').value='';$('#v15Evidence').value=$('#v15Kind').value='all';for(const s of ['#jobLocationFilter','#jobTypeFilter','#jobBatchFilter'])$(s).value='all';storePrefs();window.PTO_RANKING_V14?.clearCache?.();renderMarket();};$('#v15SourceButton').onclick=sourcesPanel;
-    const actions=document.createElement('div');actions.className='v15-toolbar';actions.innerHTML='<label>范围<select id="v15Scope"><option value="all">全部记录</option><option value="active">正在推进</option><option value="interview">面试阶段</option><option value="due">到期跟进</option></select></label><label><input type="checkbox" id="v15HideEmpty">隐藏空阶段</label><button class="btn ghost" id="v15Backup">导出加密备份</button><label class="btn ghost">导入加密备份<input hidden type="file" id="v15Restore" accept=".json"></label><span class="v15-backup-status">加密账户另保留最近 3 个本机密文快照</span>';
+    const extraFilters=document.createElement('details');extraFilters.className='v16-extra-filters';extraFilters.open=!matchMedia('(max-width: 760px)').matches;extraFilters.innerHTML='<summary>更多筛选</summary>';toolbar.before(extraFilters);extraFilters.appendChild(toolbar);const sourceShortcut=document.createElement('button');sourceShortcut.className='text-btn v16-source-shortcut';sourceShortcut.textContent='官方招聘入口 ↗';sourceShortcut.onclick=sourcesPanel;$('.search-policy')?.before(sourceShortcut);
+    for(const [id,key] of [['v15Evidence','evidence'],['v15Kind','kind'],['v16Cohort','cohort']]){$('#'+id).value=prefs[key];$('#'+id).onchange=e=>{prefs[key]=e.target.value;storePrefs();renderMarket();};}
+    $('#v15ResetFilters').onclick=()=>{prefs.kind=prefs.evidence=prefs.cohort='all';#scoreThreshold.value='0';#scoreThresholdLabel.textContent='0 · 全部浏览';#freshOnly.checked=false;$('#jobSearch').value='';$('#v15Evidence').value=$('#v15Kind').value=$('#v16Cohort').value='all';for(const s of ['#jobLocationFilter','#jobTypeFilter','#jobBatchFilter'])$(s).value='all';storePrefs();window.PTO_RANKING_V14?.clearCache?.();renderMarket();};$('#v15SourceButton').onclick=sourcesPanel;if($('#openSourcePanel'))$('#openSourcePanel').onclick=sourcesPanel;showSources=sourcesPanel;
+    const actions=document.createElement('div');actions.className='v15-toolbar';actions.innerHTML='<label>范围<select id="v15Scope"><option value="all">全部记录</option><option value="active">正在推进</option><option value="interview">面试阶段</option><option value="due">到期跟进</option></select></label><label><input type="checkbox" id="v15HideEmpty">隐藏空阶段</label><button class="btn ghost" id="v15Backup">导出加密备份</button><label class="btn ghost" tabindex="0" role="button">导入加密备份<input hidden type="file" id="v15Restore" accept=".json"></label><span class="v15-backup-status">加密账户另保留最近 3 个本机密文快照</span>';
     $('#pipelineView .filter-row').insertAdjacentElement('afterend',actions);$('#v15Scope').onchange=e=>{prefs.scope=e.target.value;storePrefs();renderPipeline();};$('#v15HideEmpty').checked=prefs.hideEmpty;$('#v15HideEmpty').onchange=e=>{prefs.hideEmpty=e.target.checked;storePrefs();renderPipeline();};$('#v15Backup').onclick=backup;$('#v15Restore').onchange=e=>restoreBackup(e.target.files[0]);
     $('#toast').setAttribute('role','status');$('#toast').setAttribute('aria-live','polite');$('#jobSearch').setAttribute('aria-label','搜索公司、岗位、技能或城市');$('#closeModal').setAttribute('aria-label','关闭对话框');
-    const stylesheet=document.createElement('link');stylesheet.rel='stylesheet';stylesheet.href='workspace-v15.css?v=1.5.0';document.head.appendChild(stylesheet);
-    const fixMeta=()=>{$('meta[name="theme-color"]')?.setAttribute('content',document.documentElement.dataset.appearance==='dark'?'#111113':'#f5f5f7');};fixMeta();new MutationObserver(fixMeta).observe(document.documentElement,{attributes:true,attributeFilter:['data-appearance']});
+
+    const fixMeta=()=>{$('meta[name="theme-color"]')?.setAttribute('content',document.documentElement.dataset.appearance==='dark'?'#111113':'#f7f8f5');};fixMeta();new MutationObserver(fixMeta).observe(document.documentElement,{attributes:true,attributeFilter:['data-appearance']});
     renderAll();
   }
   window.PTO_WORKSPACE_V15={quickUpdate,backup,restoreBackup,sourcesPanel,version:'1.5.0'};
@@ -157,26 +187,26 @@
     slate:{name:'石墨',accent:'#7e8794',strong:'#5e6875',soft:'#eef0f3'},
     rose:{name:'玫瑰',accent:'#d47b92',strong:'#b85c76',soft:'#fbeef2'},
     amber:{name:'琥珀',accent:'#c59a55',strong:'#9c7535',soft:'#fbf3e5'},
-    sage:{name:'灰绿',accent:'#8eaa9d',strong:'#66877a',soft:'#edf3f0'}
+    sage:{name:'松绿',accent:'#3d8b76',strong:'#176454',soft:'#e8f2ed'}
   };
-  let saved={palette:'blue',appearance:'system'};try{saved={...saved,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(_){}
+  let saved={palette:'sage',appearance:'system'};try{saved={...saved,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(_){}
   const root=document.documentElement;
   function effectiveAppearance(v){return v==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):v}
   function apply(){
-    const p=palettes[saved.palette]||palettes.blue;
+    const p=palettes[saved.palette]||palettes.sage;
     root.style.setProperty('--accent',p.accent);root.style.setProperty('--accent-strong',p.strong);root.style.setProperty('--accent-soft',p.soft);
     root.dataset.appearance=effectiveAppearance(saved.appearance);
     try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(_){}
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content',root.dataset.appearance==='dark'?'#111113':'#f5f5f7');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content',root.dataset.appearance==='dark'?'#111113':'#f7f8f5');
   }
   function render(){
     const pop=document.querySelector('#themePopover');if(!pop)return;
-    pop.innerHTML='<p><strong>外观与强调色</strong></p><div class="v151-appearance">'+[['light','浅色'],['dark','深色'],['system','跟随系统']].map(([k,n])=>`<button data-v151-appearance="${k}" class="${saved.appearance===k?'active':''}">${n}</button>`).join('')+'</div><div class="v151-theme-grid">'+Object.entries(palettes).map(([k,p])=>`<button class="v151-swatch ${saved.palette===k?'active':''}" data-v151-palette="${k}" style="--swatch:${p.strong}"><i></i><span>${p.name}</span></button>`).join('')+'</div><small>背景保持中性黑灰；这里只改变强调色。设置仅保存在本机。</small>';
+    pop.innerHTML='<p><strong>外观与强调色</strong></p><div class="v151-appearance">'+[['light','浅色'],['dark','深色'],['system','跟随系统']].map(([k,n])=>`<button data-v151-appearance="${k}" class="${saved.appearance===k?'active':''}">${n}</button>`).join('')+'</div><div class="v151-theme-grid">'+Object.entries(palettes).map(([k,p])=>`<button class="v151-swatch ${saved.palette===k?'active':''}" data-v151-palette="${k}" style="--swatch:${p.strong}"><i></i><span>${p.name}</span></button>`).join('')+'</div><small>选择喜欢的外观，设置自动保存在本机。</small>';
     pop.querySelectorAll('[data-v151-palette]').forEach(b=>b.onclick=e=>{e.stopPropagation();saved.palette=b.dataset.v151Palette;apply();render();});
     pop.querySelectorAll('[data-v151-appearance]').forEach(b=>b.onclick=e=>{e.stopPropagation();saved.appearance=b.dataset.v151Appearance;apply();render();});
   }
   function openTheme(e){e?.preventDefault();e?.stopImmediatePropagation();const pop=document.querySelector('#themePopover');if(!pop)return;render();const opening=!pop.classList.contains('open');pop.classList.toggle('open',opening);pop.style.display=opening?'block':'none';}
-  addEventListener('load',()=>{apply();const btn=document.querySelector('#themeBtn');if(btn){btn.title='外观与强调色';btn.addEventListener('click',openTheme,true);}render();});
+  apply();const btn=document.querySelector('#themeBtn');if(btn){btn.title='外观与强调色';btn.addEventListener('click',openTheme,true);}render();
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if(saved.appearance==='system')apply();});
   document.addEventListener('click',e=>{const pop=document.querySelector('#themePopover');if(pop?.classList.contains('open')&&!e.target.closest('#themePopover')&&!e.target.closest('#themeBtn')){pop.classList.remove('open');pop.style.display='none';}},true);
 })();

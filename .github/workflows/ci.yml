@@ -16,7 +16,6 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    continue-on-error: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -26,7 +25,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install test dependencies
-        run: python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright
+        run: |
+          python -m pip install --disable-pip-version-check requests==2.32.5 beautifulsoup4==4.13.4 playwright pycryptodome==3.23.0
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
 
       - name: Check JavaScript and Python syntax
         run: |
@@ -37,6 +39,11 @@ jobs:
           node tests/general_matching_v13.mjs
           node tests/v14_score_calibration.mjs
           node tests/workspace_v15.mjs
+          node tests/matching_resume_v16.mjs
+          node tests/matching_adversarial_v16.mjs
+          node tests/account_vault.mjs
+          node tests/account_vault_security.mjs
+          node --check resume-core-v16.js
           python -m py_compile \
             scripts/aggregate_jobs.py scripts/expand_feed.py scripts/merge_public_tables.py \
             scripts/federated_harvester.py scripts/direct_china_official.py scripts/priority_official_harvester.py \
@@ -50,7 +57,7 @@ jobs:
             tests.test_aggregate_jobs tests.test_public_tables tests.test_federated_harvester \
             tests.test_compact_feed tests.test_expand_feed tests.test_direct_china_official \
             tests.test_ncss_public_harvester tests.test_priority_browser_harvester \
-            tests.test_priority_browser_runner tests.test_user_target_overlay tests.test_workspace_v15
+            tests.test_priority_browser_runner tests.test_user_target_overlay tests.test_workspace_v15 tests.test_source_integrity_v16
 
       - name: Check product invariants
         run: |
@@ -71,8 +78,8 @@ jobs:
           source_catalog=Path('scripts/user_target_source_catalog.py').read_text(encoding='utf-8')
           target_workflow=Path('.github/workflows/refresh-user-target-coverage.yml').read_text(encoding='utf-8')
 
-          assert "version: '1.5.0'" in config
-          assert "buildVersion: '1.5.0-neutral-workspace'" in config
+          assert "version: '1.6.0'" in config
+          assert "buildVersion: '1.6.0-reviewed-workspace'" in config
           assert 'domesticJobsFeed' in config and 'priorityJobsFeed' in config and 'PTO_NATIVE_FETCH' in config
           assert config.index('ranking-v13.js') < config.index('ranking-v14.js') < config.index('market-v06.js')
           assert config.index('enhancements-v13.js') < config.index('enhancements-v14.js') < config.index('enhancements-v141.js')
@@ -107,15 +114,20 @@ jobs:
           for token in ['user-target-20260903','target_source_count','sweep_enabled']:
               assert token in source_catalog, token
           assert '17 * * * *' in target_workflow and 'user_target_overlay.py' in target_workflow
-          print('Path to Offer v1.5.0 universal matching and target-coverage checks passed.')
+          assert 'vendor/pdf.min.js' in html and 'vendor/mammoth.browser.min.js' in html
+          assert config.index('workspace-v15.js') < config.index('resume-core-v16.js')
+          print('Path to Offer v1.6 product invariants passed.')
           PY
 
       - name: Browser smoke tests
+        env:
+          PTO_TEST_URL: http://127.0.0.1:8000/
         run: |
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/path-to-offer-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           sleep 1
-          python tests/browser_smoke.py
-          python tests/theme_smoke.py
-          python tests/large_catalog_smoke.py
+          node tests/workspace_v16.mjs
+          node tests/matching_resume_browser_v16.mjs
+          node tests/frontend_accessibility_v16.mjs
+          node tests/account_concurrency_v16.mjs

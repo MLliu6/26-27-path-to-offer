@@ -65,6 +65,41 @@
     const all=(text.match(/20(?:2[4-9]|3\d)/g)||[]);
     return uniq([...explicit,...graduation,...all]).sort();
   }
+  function inferGraduationYear(text){
+    const raw=String(text||'');
+    const explicit=raw.match(/\b(20\d{2})\s*届|\b(2[4-9]|3\d)\s*届/);
+    if(explicit)return explicit[1]||`20${explicit[2]}`;
+    const labelled=raw.match(/(?:预计毕业|毕业时间|毕业日期|预期毕业|expected\s+graduation|graduation(?:\s+date)?|graduating)[^\n\d]{0,25}(20\d{2})/i)
+      ||raw.match(/(20\d{2})(?:[.\/-]\d{1,2}|年\d{1,2}月)?\s*(?:毕业|graduation)/i);
+    if(labelled)return labelled[1];
+    const education=raw.match(/(?:教育背景|教育经历|education)[\s\S]*?(?=\n\s*(?:项目|工作|实习|科研|专业技能|experience|projects|skills)|$)/i)?.[0]||'';
+    const ends=[...education.matchAll(/20\d{2}(?:[.\/-]\d{1,2}|年\d{1,2}月)?\s*[-–—~至]\s*(20\d{2})/g)].map(m=>m[1]);
+    return ends.sort().at(-1)||'';
+  }
+  function jobCohort(job={}){
+    const yearsIn=value=>{
+      const text=String(value||'');
+      const years=[...text.matchAll(/\b(20\d{2}|2[4-9]|3\d)\s*(?:届|年(?:度)?\s*(?:校|应届|毕业)|校招|校园招聘|秋招|春招)/g)].map(m=>m[1].length===2?'20'+m[1]:m[1]);
+      for(const m of text.matchAll(/(20\d{2})\s*[-–—~至/]\s*(20\d{2})\s*届/g))for(let y=Number(m[1]);y<=Number(m[2])&&y<Number(m[1])+6;y++)years.push(String(y));
+      return [...new Set(years)].sort();
+    };
+    const title=yearsIn(job.role||job.r||job.title),description=yearsIn(job.jd_full||job.jd||job.d||job.description);
+    const graduation=String(job.graduation||job.g||'').trim();
+    const metadata=yearsIn([/^20\d{2}$/.test(graduation)?graduation+'届':graduation,job.batch||job.b].filter(Boolean).join(' '));
+    const years=title.length?title:description.length?description:metadata;
+    return {years,source:title.length?'title':description.length?'description':metadata.length?'metadata':'unknown',conflict:[...title,...description,...metadata].some(y=>!years.includes(y))};
+  }
+  function isPosition(job={}){
+    const title=String(job.role||job.r||job.title||'').trim();
+    if(!title)return false;
+    const description=String(job.jd_full||job.jd||job.d||job.description||'');
+    const url=String(job.applyUrl||job.apply_url||job.u||job.noticeUrl||job.n||'');
+    if(/\/(?:teachin|careerfair|jobfair)\//i.test(url)||/[#/]jobs\/?(?:[?]|$)/i.test(url)&&/其他职位|更多职位|校招类[\s\S]*校招类/.test(description))return false;
+    if(/(?:校园招聘|校招|秋季招聘|秋招|招聘会)(?:\s*[|·:：—-]?\s*)(?:学生活动中心|教学楼|教室|报告厅|大礼堂|就业中心|校区|宣讲|[A-Z]?\d{3,4})/i.test(title))return false;
+    if(/(?:公司|集团|研究院|银行|事务所).{0,20}(?:20\d{2})?\s*(?:届|年|年度)?\s*(?:校园招聘|校招|秋招)\s*$/.test(title))return false;
+    return !/(?:招聘|校园|校招)(?:首页|官网|入口|网站|门户|平台)|邀请函|招聘活动|招聘会|宣讲会|校园宣讲|空中宣讲|报名通知|考试通知|笔试公告|招聘公告|招聘简章|岗位总览|职位列表|岗位列表|常见问题|关于我们|联系我们/i.test(title)
+      && !/^(?:careers?|join\s+us|job\s+openings?|招聘|校园招聘|社会招聘|加入我们|人才招聘|招聘信息)$/i.test(title);
+  }
   function extractKeywords(text){
     const latin=(norm(text).match(/[a-z][a-z0-9+.#/_-]{1,28}/g)||[]).filter(x=>!['and','the','with','from','using','for','of','to','in','on','or','is','as'].includes(x));
     const chinese=(text.match(/[\u4e00-\u9fa5]{2,9}/g)||[]).filter(x=>!STOP.has(x));
@@ -89,7 +124,7 @@
       directions:directionScores.slice(0,4).map(x=>x.name), directionScores,
       primaryDirection:directionScores[0]?.name||'',
       recommendedRoles, degree, years,
-      graduationYear:years.find(y=>raw.includes(`${y}届`))||years.at(-1)||'',
+      graduationYear:inferGraduationYear(raw),
       mentionedCities:mentionedCities.slice(0,16), keywords:extractKeywords(raw)
     };
   }
@@ -160,5 +195,5 @@
     return rows;
   }
 
-  return {version:'4.0.0',DIRECTIONS,COMPANY_ALIASES,DEGREE_RANK,extractSignals,extractKeywords,buildProfile,scoreJob,searchMatch,filterAndRank,directionEvidence,cleanText,norm};
+  return {version:'4.0.0',DIRECTIONS,COMPANY_ALIASES,DEGREE_RANK,extractSignals,extractKeywords,buildProfile,scoreJob,searchMatch,filterAndRank,directionEvidence,cleanText,norm,inferGraduationYear,jobCohort,isPosition};
 });

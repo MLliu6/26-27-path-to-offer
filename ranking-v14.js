@@ -8,6 +8,7 @@
   const rankCache=new Map();
   const SEARCH_SCORE_LIMIT=1200;
   const MAX_RANK_CACHE=14;
+  const profileKeys=new WeakMap();
 
   const clamp=(n,min=0,max=1)=>Math.max(min,Math.min(max,Number(n)||0));
   const round=n=>Math.round((Number(n)||0)*10)/10;
@@ -16,11 +17,12 @@
   function profileKey(profile){
     if(!profile)return 'none';
     const s=profile.signals||{};
-    return String(profile.id||profile.name||[
-      s.primaryCareerDomain||s.primaryDirection||'',s.degree||'',s.graduationYear||'',
-      ...(s.skills||[]).slice(0,8)
-    ].join('|'));
+    const signals=JSON.stringify(s),cached=profileKeys.get(profile);
+    if(cached?.signals===signals&&cached?.rawText===profile.rawText)return cached.key;
+    const key=digest([profile.id||'',signals,profile.rawText||''].join('|'));
+    profileKeys.set(profile,{signals,rawText:profile.rawText,key});return key;
   }
+  function digest(value){let hash=2166136261;for(let i=0;i<value.length;i++)hash=Math.imul(hash^value.charCodeAt(i),16777619);return (hash>>>0).toString(36);}
   function preferenceKey(opts={}){
     return `${(opts.targetLocations||[]).join(',')}|${(opts.targetDirections||[]).join(',')}`;
   }
@@ -43,14 +45,14 @@
   function explicitGraduationConflict(job,profile){
     const wanted=String(profile?.signals?.graduationYear||'').match(/20\d{2}/)?.[0];
     if(!wanted)return false;
-    const blob=[job.graduation,job.batch,job.role].filter(Boolean).join(' ');
-    const years=[...new Set(blob.match(/20\d{2}/g)||[])];
+    const years=CORE.jobCohort(job).years;
     return years.length>0&&!years.includes(wanted);
   }
 
   function calibrate(job,profile,legacy,opts={}){
-    if(!profile||legacy?.score===null)return {score:null,reasons:legacy?.reasons||[],hits:legacy?.hits||[],components:legacy?.components||{},calibration:'no-profile'};
+    if(!profile||legacy?.score===null)return {...legacy,score:null,reasons:legacy?.reasons||[],hits:legacy?.hits||[],components:legacy?.components||{},calibration:legacy?.calibration||'no-profile'};
     const c=legacy?.components||{};
+    if(!Number(c.direction)&&!Number(c.skillRequired))return {...legacy,score:null,band:'待补充职位描述',reasons:['补充岗位职责与技能要求后生成匹配结果'],calibration:'insufficient-job-evidence'};
     const locationRequired=(opts.targetLocations||[]).filter(Boolean).length>0;
     const domain=clamp(Number(c.direction||0)/30);
     const skills=clamp(Number(c.skills||0)/24);
@@ -78,7 +80,9 @@
     else if(legacyCap<=70)cap=Math.min(cap,70);
     if(locationRequired&&Number(c.location||0)<=0)cap=Math.min(cap,78);
     if((legacy?.reasons||[]).some(x=>/学历可能不满足/.test(String(x))))cap=Math.min(cap,62);
-    if(explicitGraduationConflict(job,profile))cap=Math.min(cap,68);
+    if(explicitGraduationConflict(job,profile))cap=Math.min(cap,35);
+    if(c.roleGap)cap=Math.min(cap,68);
+    if(c.experienceConflict)cap=Math.min(cap,62);
     const skillHits=Number(c.skillHits||0);
     if(skillHits===0)cap=Math.min(cap,84);
     else if(skillHits===1)cap=Math.min(cap,89);
@@ -123,17 +127,21 @@
     // Employer APIs frequently reuse a position id while changing the JD,
     // source tier or update time. Cache the expensive score, but never let a
     // refresh keep stale explanation/confidence for the same id.
-    return [
+    return digest([
       job?.id||`${job?.company||''}|${job?.role||''}`,
       job?.role||'',job?.location||'',job?.sourceTier||0,
-      job?.updatedAt||job?.updated_at||'',String(job?.jd||'').length
-    ].join('~');
+      job?.updatedAt||job?.updated_at||'',job?.jd||'',job?.education||'',job?.graduation||'',
+      job?.batch||'',job?.department||'',job?.industry||'',job?.sourceLabel||'',job?.applyUrl||'',(job?.tags||[]).join(',')
+    ].join('~'));
   }
   function scoreJobV14(job,profile,opts={}){
+    if(!CORE.isPosition(job))return {score:null,reasons:['这是招聘入口或活动信息'],hits:[],components:{},evidenceConfidence:0,calibration:'non-position'};
     if(!profile)return {score:null,reasons:[],hits:[],components:{},calibration:'no-profile'};
     const age=Number.isFinite(Number(opts.ageDays))?Math.floor(Number(opts.ageDays)):999;
     const key=`${profileKey(profile)}|${jobEvidenceKey(job)}|${preferenceKey(opts)}|${age}`;
     if(scoreCache.has(key))return scoreCache.get(key);
+    const evidenceKey=jobEvidenceKey(job);
+    if(job._ptoScoreEvidenceKey!==evidenceKey){delete job._ptoV13Domains;job._ptoScoreEvidenceKey=evidenceKey;}
     const legacy=scoreV13(job,profile,opts);
     const result=calibrate(job,profile,legacy,opts);
     if(scoreCache.size>16000)scoreCache.clear();
@@ -155,13 +163,14 @@
     return affinity*10+source*1.5+freshnessQuick(ageOf(job,options));
   }
   function searchIndex(job){
-    if(job._ptoSearchV14)return job._ptoSearchV14;
+    const evidenceKey=jobEvidenceKey(job);
+    if(job._ptoSearchV14&&job._ptoSearchEvidenceKey===evidenceKey)return job._ptoSearchV14;
     const fields={
       company:norm(job.company),role:norm(job.role),location:norm(job.location),department:norm(job.department),
       industry:norm(job.industry),jd:norm(job.jd),batch:norm(job.batch),graduation:norm(job.graduation)
     };
     const blob=Object.values(fields).join(' ');
-    try{Object.defineProperty(job,'_ptoSearchV14',{value:{fields,blob},writable:true,configurable:true});}
+    try{Object.defineProperty(job,'_ptoSearchV14',{value:{fields,blob},writable:true,configurable:true});job._ptoSearchEvidenceKey=evidenceKey;}
     catch(_){job._ptoSearchV14={fields,blob};}
     return job._ptoSearchV14;
   }
@@ -185,8 +194,7 @@
     return {matched:true,boost};
   }
   function catalogueKey(jobs){
-    const a=jobs?.[0],b=jobs?.[jobs.length-1];
-    return `${jobs?.length||0}:${a?.id||a?.company||''}:${b?.id||b?.company||''}`;
+    return digest((jobs||[]).map(jobEvidenceKey).join('|'));
   }
   function optionsKey(jobs,options){
     return [catalogueKey(jobs),options.query||'',options.location||'all',options.companyType||'all',options.batch||'all',

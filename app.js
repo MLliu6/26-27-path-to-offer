@@ -82,11 +82,34 @@ function uid(prefix='id'){ return `${prefix}_${Date.now().toString(36)}_${Math.r
 function today(){ return new Date().toISOString().slice(0,10); }
 function stageName(id){ return stages.find(s=>s[0]===id)?.[1] || id; }
 function esc(s=''){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function safeExternalUrl(value){ try{const url=new URL(String(value||'').trim());return /^https?:$/.test(url.protocol)?url.href:'';}catch(_){return '';} }
 function fmt(date){ if(!date) return '未记录'; const d=new Date(`${String(date).slice(0,10)}T00:00:00`); return Number.isNaN(d.getTime())?date:d.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}); }
 function daysAgo(date){ if(!date) return 999; const d=new Date(String(date).slice(0,10)); if(Number.isNaN(d.getTime())) return 999; return Math.max(0,Math.floor((Date.now()-d.getTime())/86400000)); }
 function toast(msg){ const el=document.querySelector('#toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('show'),1900); }
-function openModal(title,html){ document.querySelector('#modalTitle').textContent=title; document.querySelector('#modalBody').innerHTML=html; document.querySelector('#modalBackdrop').classList.add('show'); document.querySelector('#quickModal').classList.add('show'); document.querySelector('#quickModal').setAttribute('aria-hidden','false'); }
-function closeModal(){ document.querySelector('#modalBackdrop').classList.remove('show'); document.querySelector('#quickModal').classList.remove('show'); document.querySelector('#quickModal').setAttribute('aria-hidden','true'); }
+let modalReturnFocus=null,drawerReturnFocus=null;
+function overlayControls(el){return [...el.querySelectorAll('button,input,select,textarea,a[href],summary,[tabindex="0"]')].filter(x=>!x.disabled&&!x.hidden&&x.getClientRects().length);}
+function syncOverlayInert(){
+  const modal=document.querySelector('#quickModal'),drawer=document.querySelector('#jobDrawer');
+  const modalOpen=modal.classList.contains('show'),drawerOpen=drawer.classList.contains('open');
+  document.querySelector('.app-shell').inert=modalOpen||drawerOpen;
+  modal.inert=!modalOpen;drawer.inert=modalOpen||!drawerOpen;
+}
+function openModal(title,html){
+  const modal=document.querySelector('#quickModal');
+  if(!modal.classList.contains('show'))modalReturnFocus=document.activeElement;
+  document.querySelector('#modalTitle').textContent=title;document.querySelector('#modalBody').innerHTML=html;
+  modal.hidden=false;modal.classList.add('show');modal.setAttribute('aria-hidden','false');
+  document.querySelector('#modalBackdrop').classList.add('show');syncOverlayInert();
+  (overlayControls(document.querySelector('#modalBody'))[0]||document.querySelector('#closeModal')).focus();
+}
+function closeModal(){
+  const modal=document.querySelector('#quickModal');if(!modal.classList.contains('show'))return;
+  document.querySelector('#modalBackdrop').classList.remove('show');modal.classList.remove('show');
+  modal.hidden=true;modal.setAttribute('aria-hidden','true');syncOverlayInert();
+  if(modalReturnFocus?.isConnected)modalReturnFocus.focus();
+  else if(document.querySelector('#jobDrawer').classList.contains('open'))overlayControls(document.querySelector('#jobDrawer'))[0]?.focus();
+  modalReturnFocus=null;
+}
 function currentProfile(){ return state.resumes.find(r=>r.id===state.activeResumeId) || state.resumes[0] || null; }
 
 function switchView(view){
@@ -144,7 +167,7 @@ async function extractResumeText(file,ext){
   if(ext==='pdf'){
     if(!window.pdfjsLib) throw new Error('PDF 解析器尚未加载');
     pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-    const pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise;
+    const pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf),isEvalSupported:false}).promise;
     const pages=[];
     for(let i=1;i<=pdf.numPages;i++){
       const page=await pdf.getPage(i); const content=await page.getTextContent();
@@ -237,7 +260,7 @@ function renderProfile(){
   if(!p) return;
   document.querySelector('#profileName').textContent=p.displayName||p.name;
   const s=p.signals||{};
-  document.querySelector('#profileMeta').textContent=[s.degree, (s.years||[]).length?`${s.years.join('/')} 届别信号`:'', `${p.rawText?.length||0} 字符已解析`].filter(Boolean).join(' · ');
+  document.querySelector('#profileMeta').textContent=[s.degree,s.graduationYear?`${s.graduationYear} 届`:'届别待补充','简历已就绪'].filter(Boolean).join(' · ');
   const chips=[...(s.directions||[]).slice(0,3),...(s.skills||[]).slice(0,5)];
   document.querySelector('#profileSignals').innerHTML=chips.length?chips.map(x=>`<span class="signal-chip">${esc(x)}</span>`).join(''):'<span class="muted">暂未识别到明确技术信号，可在画像中补充偏好。</span>';
 }
@@ -287,7 +310,7 @@ function openMarketJob(id){
   const j=marketJobs.find(x=>x.id===id); if(!j)return; const m=scoreJob(j,currentProfile());
   document.querySelector('#drawerEyebrow').textContent='DISCOVERED JOB'; document.querySelector('#drawerTitle').textContent=j.company||'岗位详情';
   document.querySelector('#jobForm').classList.add('hidden'); const detail=document.querySelector('#marketJobDetail'); detail.classList.remove('hidden');
-  detail.innerHTML=`<div class="detail-hero"><div><p class="eyebrow">${esc(j.sourceLabel)} · ${j.updatedAt?esc(fmt(j.updatedAt)):'更新时间未知'}</p><h2>${esc(j.role)}</h2><p>${esc(j.company)}${j.department?` · ${esc(j.department)}`:''}</p></div>${m.score===null?'':`<div class="detail-score"><strong>${m.score}</strong><span>简历匹配</span></div>`}</div><div class="detail-facts">${[['地点',j.location],['薪资',j.salary],['批次',j.batch],['性质',j.companyType],['行业',j.industry],['届别',j.graduation],['学历',j.education]].filter(x=>x[1]).map(([a,b])=>`<div><small>${a}</small><strong>${esc(b)}</strong></div>`).join('')}</div>${m.reasons.length?`<section class="detail-section"><p class="eyebrow">WHY THIS MATCH</p><div class="reason-grid">${m.reasons.map(x=>`<span>${esc(x)}</span>`).join('')}</div></section>`:''}<section class="detail-section"><p class="eyebrow">JOB DESCRIPTION</p><div class="jd-text">${esc(j.jd||'职位源暂未提供完整 JD。')}</div></section><div class="detail-actions">${j.noticeUrl?`<a class="btn ghost" target="_blank" rel="noopener" href="${esc(j.noticeUrl)}">招聘公告 ↗</a>`:''}${j.applyUrl?`<a class="btn ghost" target="_blank" rel="noopener" href="${esc(j.applyUrl)}">投递地址 ↗</a>`:''}<button class="btn primary" id="detailPromote">加入我的流程</button></div>`;
+  detail.innerHTML=`<div class="detail-hero"><div><p class="eyebrow">${esc(j.sourceLabel)} · ${j.updatedAt?esc(fmt(j.updatedAt)):'更新时间未知'}</p><h2>${esc(j.role)}</h2><p>${esc(j.company)}${j.department?` · ${esc(j.department)}`:''}</p></div>${m.score===null?'':`<div class="detail-score"><strong>${m.score}</strong><span>简历匹配</span></div>`}</div><div class="detail-facts">${[['地点',j.location],['薪资',j.salary],['批次',j.batch],['性质',j.companyType],['行业',j.industry],['届别',j.graduation],['学历',j.education]].filter(x=>x[1]).map(([a,b])=>`<div><small>${a}</small><strong>${esc(b)}</strong></div>`).join('')}</div>${m.reasons.length?`<section class="detail-section"><p class="eyebrow">WHY THIS MATCH</p><div class="reason-grid">${m.reasons.map(x=>`<span>${esc(x)}</span>`).join('')}</div></section>`:''}<section class="detail-section"><p class="eyebrow">JOB DESCRIPTION</p><div class="jd-text">${esc(j.jd||'职位源暂未提供完整 JD。')}</div></section><div class="detail-actions">${safeExternalUrl(j.noticeUrl)?`<a class="btn ghost" target="_blank" rel="noopener" href="${esc(safeExternalUrl(j.noticeUrl))}">招聘公告 ↗</a>`:''}${safeExternalUrl(j.applyUrl)?`<a class="btn ghost" target="_blank" rel="noopener" href="${esc(safeExternalUrl(j.applyUrl))}">投递地址 ↗</a>`:''}<button class="btn primary" id="detailPromote">加入我的流程</button></div>`;
   document.querySelector('#detailPromote').onclick=()=>promoteMarketJob(j.id,true); openDrawer();
 }
 function promoteMarketJob(id,close=false){
@@ -315,8 +338,18 @@ function renderPipeline(){
 }
 function bindDnD(){ let dragging=null; document.querySelectorAll('.job-card').forEach(card=>{card.addEventListener('dragstart',e=>{dragging=card.dataset.jobId;card.classList.add('dragging');e.dataTransfer.effectAllowed='move'});card.addEventListener('dragend',()=>card.classList.remove('dragging'))}); document.querySelectorAll('.kanban-col').forEach(col=>{col.addEventListener('dragover',e=>e.preventDefault());col.addEventListener('drop',e=>{e.preventDefault();const job=state.jobs.find(j=>j.id===dragging);const next=col.dataset.stage;if(job&&job.status!==next){job.status=next;job.statusDate=today();job.timeline=job.timeline||[];job.timeline.push({status:next,date:today()});saveState();toast(`已更新为「${stageName(next)}」`)}})}); }
 
-function openDrawer(){ document.querySelector('#drawerBackdrop').classList.add('show');document.querySelector('#jobDrawer').classList.add('open');document.querySelector('#jobDrawer').setAttribute('aria-hidden','false'); }
-function closeDrawer(){ document.querySelector('#drawerBackdrop').classList.remove('show');document.querySelector('#jobDrawer').classList.remove('open');document.querySelector('#jobDrawer').setAttribute('aria-hidden','true'); }
+function openDrawer(){
+  const drawer=document.querySelector('#jobDrawer');if(!drawer.classList.contains('open'))drawerReturnFocus=document.activeElement;
+  document.querySelector('#drawerBackdrop').classList.add('show');drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');
+  syncOverlayInert();overlayControls(drawer)[0]?.focus();
+}
+function closeDrawer(){
+  const drawer=document.querySelector('#jobDrawer');if(!drawer.classList.contains('open'))return;
+  document.querySelector('#drawerBackdrop').classList.remove('show');drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');
+  syncOverlayInert();if(!document.querySelector('#quickModal').classList.contains('show')){
+    (drawerReturnFocus?.isConnected?drawerReturnFocus:document.querySelector('#addJobBtn'))?.focus();
+  }drawerReturnFocus=null;
+}
 function openJob(id=null){
   const form=document.querySelector('#jobForm'); document.querySelector('#marketJobDetail').classList.add('hidden'); form.classList.remove('hidden');
   document.querySelector('#drawerEyebrow').textContent='JOB RECORD'; document.querySelector('#drawerTitle').textContent=id?'岗位详情':'记录岗位'; form.reset(); form.id.value=id||'';
@@ -334,12 +367,12 @@ function renderLibrary(){
   list.innerHTML=state.resumes.length?state.resumes.map(r=>`<div class="asset-item resume-item ${r.id===p?.id?'active':''}"><div><div class="asset-title"><strong>${esc(r.name)}</strong>${r.id===p?.id?'<span class="mini-badge">当前</span>':''}</div><small>${esc((r.signals?.directions||[]).slice(0,2).join(' · ')||'未识别方向')} · ${new Date(r.uploadedAt).toLocaleDateString('zh-CN')}</small></div><div class="asset-actions"><button class="text-btn" data-use-resume="${r.id}">设为当前</button><button class="text-btn quiet" data-delete-resume="${r.id}">删除</button></div></div>`).join(''):'<div class="empty-state"><strong>还没有简历版本</strong><p>上传 PDF / DOCX / TXT 后会自动建立解析画像。</p></div>';
   document.querySelectorAll('[data-use-resume]').forEach(b=>b.onclick=()=>{state.activeResumeId=b.dataset.useResume;saveState();toast('已切换当前简历')});
   document.querySelectorAll('[data-delete-resume]').forEach(b=>b.onclick=()=>{const id=b.dataset.deleteResume;state.resumes=state.resumes.filter(r=>r.id!==id);if(state.activeResumeId===id)state.activeResumeId=state.resumes[0]?.id||null;saveState();});
-  const assets=document.querySelector('#assetList'); assets.innerHTML=state.assets.length?state.assets.map((a,i)=>`<div class="asset-item"><div><strong>${esc(a.name)}</strong><small>${esc(a.note||a.url||'')}</small></div><div class="asset-actions"><a class="text-btn" href="${esc(a.url)}" target="_blank" rel="noopener">打开 ↗</a><button class="text-btn quiet" data-delete-asset="${i}">删除</button></div></div>`).join(''):`<div class="empty-state"><strong>资料区目前为空</strong><p>可添加 GitHub、Notion、语雀或其他准备材料。你的 26-27-interview 仓库入口保留在标题栏。</p></div>`;
+  const assets=document.querySelector('#assetList'); assets.innerHTML=state.assets.length?state.assets.map((a,i)=>`<div class="asset-item"><div><strong>${esc(a.name)}</strong><small>${esc(a.note||a.url||'')}</small></div><div class="asset-actions">${safeExternalUrl(a.url)?`<a class="text-btn" href="${esc(safeExternalUrl(a.url))}" target="_blank" rel="noopener noreferrer">打开 ↗</a>`:'<span class="muted">链接需更新</span>'}<button class="text-btn quiet" data-delete-asset="${i}">删除</button></div></div>`).join(''):`<div class="empty-state"><strong>资料区目前为空</strong><p>可添加 GitHub、Notion、语雀或其他准备材料。你的 26-27-interview 仓库入口保留在标题栏。</p></div>`;
   document.querySelectorAll('[data-delete-asset]').forEach(b=>b.onclick=()=>{state.assets.splice(Number(b.dataset.deleteAsset),1);saveState();});
 }
 
 function renderReviews(){
-  const list=document.querySelector('#reviewList'); list.innerHTML=state.reviews.length?state.reviews.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(r=>`<article class="review-card ${r.id===selectedReviewId?'active':''}" data-review-id="${r.id}"><p class="eyebrow">${fmt(r.date)}</p><h3>${esc(r.title)}</h3><small>${r.content.length} 字符</small></article>`).join(''):'<div class="empty-state"><strong>还没有面经</strong><p>导入 TXT / DOCX 后会保存在当前浏览器。</p></div>';
+  const list=document.querySelector('#reviewList'); list.innerHTML=state.reviews.length?state.reviews.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(r=>`<button type="button" class="review-card ${r.id===selectedReviewId?'active':''}" data-review-id="${esc(r.id)}" aria-pressed="${r.id===selectedReviewId}"><span class="eyebrow">${fmt(r.date)}</span><strong class="review-title">${esc(r.title)}</strong><small>${r.content.length} 字符</small></button>`).join(''):'<div class="empty-state"><strong>还没有面经</strong><p>导入 TXT / DOCX 后会保存在当前浏览器。</p></div>';
   document.querySelectorAll('[data-review-id]').forEach(c=>c.onclick=()=>{selectedReviewId=c.dataset.reviewId;renderReviews();}); const r=state.reviews.find(x=>x.id===selectedReviewId); const empty=document.querySelector('#reviewEmpty'); const content=document.querySelector('#reviewContent'); empty.classList.toggle('hidden',!!r); content.classList.toggle('hidden',!r);
   if(r){const job=state.jobs.find(j=>j.id===r.jobId);content.innerHTML=`<div class="panel-head"><div><p class="eyebrow">${job?esc(job.company):'INTERVIEW REVIEW'}</p><h2>${esc(r.title)}</h2></div><button class="text-btn quiet" id="deleteReview">删除</button></div><p class="muted">${fmt(r.date)}</p><pre>${esc(r.content)}</pre>`;document.querySelector('#deleteReview').onclick=()=>{state.reviews=state.reviews.filter(x=>x.id!==r.id);selectedReviewId=state.reviews[0]?.id||null;saveState();};}
 }
@@ -360,7 +393,7 @@ function inspectProfile(){
   document.querySelector('#clearResumeText').onclick=()=>{p.rawText='';saveState();closeModal();toast('已删除简历原始解析文本，画像信号仍保留');};
 }
 function pasteResume(){ openModal('粘贴简历文本',`<div class="stack-form"><p class="muted">文本只在浏览器本地解析。</p><textarea id="resumePasteText" rows="14" placeholder="粘贴简历正文…"></textarea><input id="resumePasteName" placeholder="简历版本名称，例如 AI Infra 版"><div class="modal-actions"><button class="btn primary" id="parsePastedResume">解析并匹配</button></div></div>`);document.querySelector('#parsePastedResume').onclick=()=>{const text=document.querySelector('#resumePasteText').value.trim();if(text.length<30){toast('文本过短');return;}const name=document.querySelector('#resumePasteName').value.trim()||`粘贴简历 ${today()}`;const p=buildResumeProfile(text,`${name}.txt`);p.name=name;state.resumes.unshift(p);state.activeResumeId=p.id;saveState();closeModal();toast('候选人画像已建立');}; }
-function addAsset(){ openModal('添加准备资料',`<div class="stack-form"><label><span>名称</span><input id="assetName" placeholder="例如 CUDA GEMM 项目讲稿"></label><label><span>链接</span><input id="assetUrl" type="url" placeholder="https://..."></label><label><span>备注</span><input id="assetNote" placeholder="用途 / 对应岗位"></label><div class="modal-actions"><button class="btn primary" id="saveAsset">添加</button></div></div>`);document.querySelector('#saveAsset').onclick=()=>{const name=document.querySelector('#assetName').value.trim(),url=document.querySelector('#assetUrl').value.trim();if(!name||!url){toast('名称和链接不能为空');return;}state.assets.unshift({name,url,note:document.querySelector('#assetNote').value.trim()});saveState();closeModal();}; }
+function addAsset(){ openModal('添加准备资料',`<div class="stack-form"><label><span>名称</span><input id="assetName" placeholder="例如 CUDA GEMM 项目讲稿"></label><label><span>链接</span><input id="assetUrl" type="url" placeholder="https://..."></label><label><span>备注</span><input id="assetNote" placeholder="用途 / 对应岗位"></label><div class="modal-actions"><button class="btn primary" id="saveAsset">添加</button></div></div>`);document.querySelector('#saveAsset').onclick=()=>{const name=document.querySelector('#assetName').value.trim(),url=document.querySelector('#assetUrl').value.trim();if(!name||!url){toast('名称和链接不能为空');return;}if(!safeExternalUrl(url)){toast('请输入有效的 HTTP 或 HTTPS 链接');return;}state.assets.unshift({name,url,note:document.querySelector('#assetNote').value.trim()});saveState();closeModal();}; }
 function showSources(){
   const sources=sourceStatus.sources||[]; const rows=sources.length?sources.map(s=>`<div class="source-status-row"><div><strong>${esc(s.label||s.name||s.source)}</strong><small>${esc(s.url||'')}</small></div><span class="source-health ${s.ok?'ok':'bad'}">${s.ok?`${s.count||0} 条`:`异常 · ${esc(s.error||'unknown')}`}</span></div>`).join(''):'<div class="empty-state"><strong>尚无刷新记录</strong><p>定时聚合工作流运行后，这里会展示每个数据源的成功状态、数量和错误。</p></div>';
   openModal('岗位源与刷新状态',`<div class="source-modal"><p>聚合器每 2 小时运行一次。当前适配器只访问公开、无需登录的页面/Feed；遇到验证码、登录墙或明确禁止自动访问时停止，不做绕过。</p>${rows}<div class="source-foot"><span>OfferJack 被作为公开聚合产品的黑盒参考与公开页面适配源；本站代码为独立实现，不复制其非公开源码。</span></div></div>`);
@@ -381,13 +414,21 @@ function bindEvents(){
   document.querySelector('#closeModal').onclick=closeModal;document.querySelector('#modalBackdrop').onclick=closeModal;
   document.querySelector('#resumeImport').onchange=e=>handleResumeFile(e.target.files[0]); document.querySelector('#libraryResumeImport').onchange=e=>handleResumeFile(e.target.files[0]);document.querySelector('#replaceResumeInput').onchange=e=>handleResumeFile(e.target.files[0]);
   document.querySelector('#replaceResumeBtn').onclick=()=>document.querySelector('#replaceResumeInput').click();document.querySelector('#pasteResumeBtn').onclick=pasteResume;document.querySelector('#inspectProfileBtn').onclick=inspectProfile;
-  ['#jobSearch','#jobLocationFilter','#jobTypeFilter','#jobBatchFilter','#scoreThreshold','#freshOnly','#matchDegree','#matchGrad'].forEach(sel=>{const el=document.querySelector(sel);el?.addEventListener(el?.tagName==='INPUT'&&el.type==='text'?'input':'change',()=>{if(sel==='#scoreThreshold')document.querySelector('#scoreThresholdLabel').textContent=el.value;renderMarket();});});
+  ['#jobSearch','#jobLocationFilter','#jobTypeFilter','#jobBatchFilter','#scoreThreshold','#freshOnly','#matchDegree','#matchGrad'].forEach(sel=>{const el=document.querySelector(sel);el?.addEventListener(el?.tagName==='INPUT'&&['text','search'].includes(el.type)?'input':'change',()=>{if(sel==='#scoreThreshold')document.querySelector('#scoreThresholdLabel').textContent=el.value;renderMarket();});});
   document.querySelector('#refreshFeedBtn').onclick=async()=>{toast('正在读取最新聚合结果…');await loadFeeds();toast('岗位列表已刷新');};document.querySelector('#openSourcePanel').onclick=showSources;
   document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{marketSort=b.dataset.sort;document.querySelectorAll('[data-sort]').forEach(x=>x.classList.toggle('active',x===b));renderMarket();});
   document.querySelectorAll('[data-job-view]').forEach(b=>b.onclick=()=>{marketMode=b.dataset.jobView;document.querySelectorAll('[data-job-view]').forEach(x=>x.classList.toggle('active',x===b));renderMarket();});
   ['#pipelineSearch','#priorityFilter','#directionFilter'].forEach(sel=>document.querySelector(sel).addEventListener(sel==='#pipelineSearch'?'input':'change',renderPipeline));document.querySelectorAll('[data-pipeline-mode]').forEach(b=>b.onclick=()=>{pipelineMode=b.dataset.pipelineMode;document.querySelectorAll('[data-pipeline-mode]').forEach(x=>x.classList.toggle('active',x===b));renderPipeline();});
   document.querySelector('#reviewImport').onchange=e=>importReview(e.target.files[0]);document.querySelector('#addAssetBtn').onclick=addAsset;document.querySelector('#exportBtn').onclick=exportData;document.querySelector('#githubLoginBtn').onclick=githubLogin;
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDrawer();}});
+  document.addEventListener('keydown',e=>{
+    if(e.isComposing)return;
+    if((e.key==='Enter'||e.key===' ')&&e.target.matches('label[role="button"]')){e.preventDefault();e.target.querySelector('input[type="file"]')?.click();return;}
+    const overlay=document.querySelector('#quickModal.show')||document.querySelector('#jobDrawer.open');if(!overlay)return;
+    if(e.key==='Escape'){e.preventDefault();if(overlay.id==='quickModal')closeModal();else closeDrawer();return;}
+    if(e.key!=='Tab')return;const controls=overlayControls(overlay),first=controls[0],last=controls.at(-1);
+    if(e.shiftKey&&(document.activeElement===first||!overlay.contains(document.activeElement))){e.preventDefault();last?.focus();}
+    else if(!e.shiftKey&&(document.activeElement===last||!overlay.contains(document.activeElement))){e.preventDefault();first?.focus();}
+  },true);
   setupTheme();
 }
 function setupTheme(){

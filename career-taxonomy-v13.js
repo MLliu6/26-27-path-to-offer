@@ -14,7 +14,7 @@
   const DOMAINS=[
     {id:'ai-infra',name:'AI Infra / 训练推理系统',roles:['AI基础设施研发工程师','AI基础架构工程师','训练/推理框架工程师','机器学习平台研发工程师','大模型系统研发工程师'],major:['计算机科学','软件工程','电子信息','人工智能'],terms:{'ai infra':9,'ai基础设施':10,'ai基础架构':10,'大模型推理':9,'训练框架':8,'推理框架':9,'vllm':9,'sglang':9,'megatron':7,'deepspeed':7,'cuda':5,'gpu集群':8,'gpu调度':8,'kubernetes':6,'kubeflow':7,'volcano':7,'ray':6,'rdma':7,'nccl':7,'分布式训练':8,'分布式推理':9,'高性能计算':6,'算力调度':8,'模型服务':7,'serving':7}},
     {id:'ai-algorithm',name:'AI / 机器学习 / 算法',roles:['算法工程师','机器学习工程师','大模型算法工程师','推荐算法工程师','计算机视觉算法工程师'],major:['人工智能','机器学习','计算机视觉','模式识别','数据科学','计算机科学'],terms:{'机器学习':8,'深度学习':8,'算法工程师':8,'大模型算法':9,'transformer':6,'pytorch':5,'tensorflow':4,'多模态':7,'计算机视觉':7,'自然语言处理':7,'推荐算法':7,'搜索算法':7,'aigc':6,'强化学习':7,'目标检测':6,'yolo':5,'llm':5,'nlp':5}},
-    {id:'software-backend',name:'软件工程 / 后端 / 分布式系统',roles:['后端研发工程师','软件开发工程师','服务端研发工程师','基础架构工程师','云平台研发工程师'],major:['软件工程','计算机科学','计算机技术','网络工程','信息工程'],terms:{'后端':9,'服务端':9,'软件开发':7,'研发工程师':3,'java':5,'golang':6,'spring':5,'mysql':5,'redis':5,'kafka':5,'微服务':6,'分布式系统':7,'云原生':6,'高并发':6,'grpc':5,'数据库':4,'操作系统':4,'计算机网络':4}},
+    {id:'software-backend',name:'软件工程 / 后端 / 分布式系统',roles:['后端研发工程师','软件开发工程师','服务端研发工程师','基础架构工程师','云平台研发工程师'],major:['软件工程','计算机科学','计算机技术','网络工程','信息工程'],terms:{'后端':9,'服务端':9,'软件开发':7,'java':5,'golang':6,'spring':5,'mysql':5,'redis':5,'kafka':5,'微服务':6,'分布式系统':7,'云原生':6,'高并发':6,'grpc':5,'数据库':4,'操作系统':4,'计算机网络':4}},
     {id:'frontend-client',name:'前端 / 客户端 / 移动开发',roles:['前端开发工程师','客户端开发工程师','Android开发工程师','iOS开发工程师','Web前端工程师'],major:['软件工程','计算机科学','数字媒体技术'],terms:{'前端':10,'javascript':7,'typescript':7,'react':7,'vue':7,'web开发':6,'android':8,'ios':8,'swift':7,'kotlin':7,'flutter':6,'客户端':8,'html':5,'css':5}},
     {id:'data',name:'数据 / 数据科学 / 搜索推荐',roles:['数据分析师','数据工程师','数据科学家','搜索算法工程师','推荐算法工程师'],major:['数据科学','统计学','大数据','信息管理','计算机科学'],terms:{'数据分析':9,'数据科学':9,'数据工程':8,'大数据':7,'sql':6,'spark':6,'flink':6,'hadoop':5,'数据仓库':6,'商业分析':6,'推荐':6,'搜索':5,'数据挖掘':7,'bi':5,'tableau':4}},
     {id:'sre-security',name:'测试 / SRE / 运维 / 网络安全',roles:['测试开发工程师','SRE工程师','运维研发工程师','安全研发工程师','网络安全工程师'],major:['网络空间安全','信息安全','计算机科学','软件工程'],terms:{'测试开发':9,'软件测试':7,'自动化测试':7,'sre':9,'devops':7,'运维':7,'可观测性':6,'网络安全':9,'信息安全':8,'渗透测试':7,'漏洞':6,'攻防':7,'prometheus':5,'grafana':5,'ci/cd':5}},
@@ -53,7 +53,41 @@
   const GENERIC=new Set(['python','matlab','c++','java','linux','office','excel','项目','研究','工程','研发','分析','设计','管理','技术','系统','模型','算法','实验']);
   const norm=v=>String(v||'').toLowerCase().replace(/[‐‑‒–—]/g,'-').replace(/\s+/g,' ').trim();
   const uniq=a=>[...new Set((a||[]).filter(Boolean))];
-  function occurrences(text,term){let n=0,p=0,t=norm(term);if(!t)return 0;while((p=text.indexOf(t,p))>=0&&n<3){n++;p+=Math.max(1,t.length);}return n;}
+  function occurrences(text,term){
+    let n=0,p=0;const t=norm(term);if(!t)return 0;
+    while((p=text.indexOf(t,p))>=0&&n<3){
+      const before=text[p-1]||'',after=text[p+t.length]||'';
+      const asciiBoundary=(!/[a-z0-9]/i.test(t[0])||!/[a-z0-9]/i.test(before))&&(!/[a-z0-9]/i.test(t.at(-1))||!/[a-z0-9]/i.test(after));
+      // Chinese short terms can straddle words: 优化 + 工程师 is not 化工.
+      const chineseBoundary=!(t==='化工'&&/[优净转绿智自]/.test(before));
+      if(asciiBoundary&&chineseBoundary)n++;p+=Math.max(1,t.length);
+    }return n;
+  }
+  // A job's function comes before its employer's sector. These are role
+  // families, shared by every company; detailed terms still use the taxonomy.
+  const TITLE_FUNCTIONS=[
+    [/销售|商务|客户经理|客户代表|医药代表|医药推广|医药信息推广|医药信息沟通|医学信息沟通|学术推广|营销|市场拓展|\bsales\b|\bbd\b|business development|account executive/i,'marketing-sales'],
+    [/采购|供应链|物流|仓储|\bprocurement\b|\bsourcing\b|supply chain/i,'operations-supply'],
+    [/人力资源|招聘专员|招聘顾问|薪酬|员工关系|\bhr\b|human resources|\brecruiter\b/i,'hr-admin'],
+    [/财务|会计|审计|税务|\baccountant\b|\bauditor\b/i,'finance-accounting'],
+    [/法务|合同审查|法律|合规|\blegal\b|\bcompliance\b/i,'legal'],
+    [/产品经理|产品规划|项目经理|项目管理|product manager|project manager/i,'product-project'],
+    [/芯片软件|(?:cpu|gpu).*软件|编译器|\bcompiler\b|\bruntime\b|算子(?:开发|优化)/i,'chip-software'],
+    [/先进封装|电子封装|封装(?:工程|设计)|(?:芯片|半导体|晶圆|版图|数字ic|模拟ic|\bic\b|\basic\b|\bsoc\b|\brtl\b|\bverilog\b|\bfpga\b|\bcpu\b).{0,8}(?:设计|验证|物理|架构)|(?:\bic|\bsoc|\basic|\brtl)(?:数字|模拟|设计|验证)|芯片中后端/i,'semiconductor'],
+    [/计算生物|生物信息|计算化学|药物化学|分子模拟|computational biology|bioinformatics/i,'biotech-pharma'],
+    [/智能制造|机械|液压|气动|减速器|汽车底盘|自动化工程|设备操作|工业机器人|制造工程师|结构工程师|\bmechanical\b|\bhydraulic\b/i,'mechanical-automation'],
+    [/后端|服务端|java(?:开发|工程)|软件开发|\bbackend\b/i,'software-backend'],
+    [/前端|web前端|\bfrontend\b/i,'frontend-client'],
+  ];
+  function titleFunction(title){
+    const text=norm(title),specific=TITLE_FUNCTIONS.find(([pattern])=>pattern.test(text));
+    if(specific)return specific[1];
+    const candidates=DOMAINS.map(domain=>({id:domain.id,score:
+      (domain.roles||[]).reduce((sum,role)=>sum+(occurrences(text,role)?20:0),0)+
+      Object.entries(domain.terms||{}).reduce((sum,[term,weight])=>sum+(weight>=7&&occurrences(text,term)?weight:0),0)
+    })).filter(row=>row.score>=7).sort((a,b)=>b.score-a.score);
+    return candidates[0]?.id||'';
+  }
   function majorWindow(text){
     const lines=String(text||'').split(/\n/).map(x=>x.trim()).filter(Boolean);
     return lines.filter(line=>/(专业|major|主修|学位|学院|系[:：]|硕士|本科|博士)/i.test(line)).slice(0,20).join(' ');
@@ -61,13 +95,13 @@
   function scoreDomain(domain,text,{title='',majorText='',resume=false}={}){
     const body=norm(text),ttl=norm(title),major=norm(majorText);let score=0;const evidence=[];let anchors=0;
     for(const term of domain.major||[]){
-      if(major.includes(norm(term))||body.includes(norm(term))){score+=resume?14:5;anchors++;evidence.push(term);}
+      if(occurrences(major,term)||occurrences(body,term)){score+=resume?14:5;anchors++;evidence.push(term);}
     }
     for(const [term,w] of Object.entries(domain.terms||{})){
       const n=occurrences(body,term);if(!n)continue;
       let value=Number(w||1)*Math.min(2,n);
-      if(ttl&&ttl.includes(norm(term)))value*=1.85;
-      if(major&&major.includes(norm(term)))value*=1.55;
+      if(ttl&&occurrences(ttl,term))value*=1.85;
+      if(major&&occurrences(major,term))value*=1.55;
       score+=value;evidence.push(term);
       if(Number(w)>=7)anchors++;
     }
@@ -75,7 +109,12 @@
   }
   function classifyText(text,options={}){
     const major=options.majorText??(options.resume?majorWindow(text):'');
-    const rows=DOMAINS.map(d=>scoreDomain(d,text,{...options,majorText:major})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+    const titleDomain=!options.resume&&titleFunction(options.title||'');
+    const rows=DOMAINS.map(d=>{
+      const row=scoreDomain(d,text,{...options,majorText:major});
+      if(titleDomain===d.id){row.score+=100;row.anchors+=3;row.titleAnchor=true;row.evidence.unshift(options.title);}
+      return row;
+    }).filter(x=>x.score>0).sort((a,b)=>Number(b.titleAnchor||0)-Number(a.titleAnchor||0)||b.score-a.score);
     const top=rows[0],second=rows[1];
     const raw=top?.score||0,margin=Math.max(0,raw-(second?.score||0));
     let confidence=0;
@@ -87,7 +126,7 @@
     const scores=rows.slice(0,7).map((row,index)=>({
       name:row.name,rawScore:row.score,
       confidence:index===0?confidence:Math.max(18,Math.min(94,Math.round(confidence*(row.score/Math.max(1,raw))*0.94))),
-      evidence:row.evidence,roles:row.roles,id:row.id,anchors:row.anchors,
+      evidence:row.evidence,roles:row.roles,id:row.id,anchors:row.anchors,titleAnchor:!!row.titleAnchor,
     }));
     return {scores,primary:scores[0]||null,confidence,majorText:major};
   }
@@ -95,7 +134,7 @@
     const lower=norm(text),out=[];
     for(const row of result.scores.slice(0,4)){
       const d=DOMAIN_MAP[row.name];if(!d)continue;
-      for(const [term,w] of Object.entries(d.terms||{}))if(Number(w)>=5&&lower.includes(norm(term))&&!GENERIC.has(norm(term)))out.push(term);
+      for(const [term,w] of Object.entries(d.terms||{}))if(Number(w)>=5&&occurrences(lower,term)&&!GENERIC.has(norm(term)))out.push(term);
     }
     return uniq(out).sort((a,b)=>b.length-a.length).slice(0,64);
   }
@@ -105,7 +144,7 @@
     const old=BASE_EXTRACT_SIGNALS?BASE_EXTRACT_SIGNALS(text):{};
     const directions=result.scores.slice(0,5).map(x=>x.name);
     const roles=uniq(result.scores.slice(0,4).flatMap(x=>x.roles||[])).slice(0,18);
-    const skills=uniq([...extractDomainSkills(text,result),...(old.skills||[])]).slice(0,72);
+    const skills=uniq([...extractDomainSkills(text,result),...(old.skills||[])]).filter(term=>occurrences(norm(text),term)).slice(0,72);
     const signals={...old,
       careerDomainScores:result.scores,
       careerDomains:directions,
@@ -129,7 +168,7 @@
   function jobDomains(job){
     if(job&&job._ptoV13Domains)return job._ptoV13Domains;
     const title=String(job?.role||job?.title||'');
-    const text=[title,job?.department,job?.industry,job?.jd,job?.description,(job?.tags||[]).join(' ')].join(' ');
+    const text=[title,job?.jd,job?.description].join(' ');
     const result=classifyText(text,{title,resume:false});
     try{Object.defineProperty(job,'_ptoV13Domains',{value:result,writable:true,configurable:true});}catch(_){/* immutable test rows */}
     return result;
@@ -156,5 +195,5 @@
     BASE.buildProfile=buildProfile;
     BASE.CAREER_DOMAINS=DOMAINS;
   }
-  return {version:'13.0.1',DOMAINS,DOMAIN_MAP,TECH_IDS,classifyText,buildSignals,buildProfile,jobDomains,profileDomains,termsFor,cheapAffinity,norm,uniq};
+  return {version:'13.0.1',DOMAINS,DOMAIN_MAP,TECH_IDS,classifyText,buildSignals,buildProfile,jobDomains,profileDomains,termsFor,cheapAffinity,norm,uniq,occurrences,titleFunction};
 });

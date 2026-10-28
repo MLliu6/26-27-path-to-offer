@@ -100,7 +100,7 @@
     oldRenderMarket();
     const q=(document.querySelector('#jobSearch')?.value||'').trim(); const rows=visibleMarketJobs(); const empty=document.querySelector('#jobMarketEmpty');
     if(q&&!rows.length&&marketJobs.length){
-      const portal=portalFor(q); empty.classList.remove('hidden'); empty.innerHTML=`<div class="empty-orbit">⌕</div><h3>缓存岗位暂未命中“${esc(q)}”</h3><p>关键词搜索已自动绕过匹配阈值和“30 天内”限制，因此这里的 0 表示当前静态聚合缓存确实没有这家公司/岗位，而不是被简历分数误过滤。后台正在通过多源与重点公司查询扩充目录。</p><div class="empty-search-actions"><button class="text-btn" id="emptySourcesBtnV4">查看岗位源状态 →</button>${portal?`<a class="btn ghost" href="${esc(portal)}" target="_blank" rel="noopener">打开官方招聘 ↗</a>`:''}</div>`; document.querySelector('#emptySourcesBtnV4').onclick=showSources;
+      const portal=portalFor(q); empty.classList.remove('hidden'); empty.innerHTML=`<div class="empty-orbit">⌕</div><h3>缓存岗位暂未命中“${esc(q)}”</h3><p>关键词搜索已自动绕过匹配阈值和“30 天内”限制，因此这里的 0 表示当前静态聚合缓存确实没有这家公司/岗位，而不是被简历分数误过滤。后台正在通过多源与重点公司查询扩充目录。</p><div class="empty-search-actions"><button class="text-btn" id="emptySourcesBtnV4">查看岗位源状态 →</button>${portal?`<a class="btn ghost" href="${esc(safeExternalUrl(portal)||'#')}" target="_blank" rel="noopener">打开官方招聘 ↗</a>`:''}</div>`; document.querySelector('#emptySourcesBtnV4').onclick=showSources;
     }
   };
 

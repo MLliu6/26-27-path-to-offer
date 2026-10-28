@@ -7,16 +7,10 @@
   function jobById(id){return (marketJobs||[]).find(j=>String(j.id)===String(id));}
   function enhanceAudit(id){
     const audit=$('.pto-v14-audit');const job=jobById(id);if(!audit||!job)return;
-    // Keep the stable semantic hook used by the long-running browser journey,
-    // but the visible content is the v1.4 Fit + Evidence model rather than the
-    // old additive eight-dimension score.
     audit.classList.add('pto-score-audit');
-    const h4=audit.querySelector('h4');
-    if(h4&&!h4.textContent.includes('匹配评分明细'))h4.textContent=`匹配评分明细 · ${h4.textContent}`;
-    const grid=audit.querySelector('.pto-v14-dims');
-    if(!grid||grid.querySelector('[data-v14-source-dim]'))return;
-    const match=scoreJob(job,currentProfile());const source=Number(match?.components?.source||0);
-    grid.insertAdjacentHTML('beforeend',`<div class="pto-v14-dim" data-v14-source-dim><span>来源可信度 / 7</span><strong>${source.toFixed(1).replace(/\.0$/,'')}</strong></div>`);
+    const match=scoreJob(job,currentProfile()),c=match.components||{};
+    const dimensions=[['职业方向',c.domainExact?'同领域':c.domainMismatch?'领域差异较大':'相邻方向或待确认'],['岗位技能',c.skillRequired?`${c.skillHits} / ${c.skillRequired} 项`:'待补充'],['届别与学历',(match.reasons||[]).filter(r=>/届符合|学历/.test(r)).join(' · ')||'待确认'],['来源可信度 / 7',`${Number(c.source||0)} / 7`]];
+    audit.innerHTML=`<div class="pto-v14-audit-head"><div><h4>匹配评分明细</h4><p>结合职业方向、岗位要求与求职偏好，判断当前简历的适配程度。</p></div><div class="pto-v14-scores"><div class="pto-v14-score"><small>匹配度</small><strong>${match.score??'—'}</strong><span>${esc(match.band||'待补充')}</span></div><div class="pto-v14-score"><small>信息充分度</small><strong>${match.evidenceConfidence??'—'}</strong><span>${esc(match.evidenceLabel||'待核验')}</span></div></div></div><div class="pto-v14-dims">${dimensions.map(([label,value])=>`<div class="pto-v14-dim"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('')}</div>${match.hits?.length?`<p><strong>已匹配</strong> ${match.hits.map(esc).join(' · ')}</p>`:''}${c.missingSkills?.length?`<p><strong>待补充证据</strong> ${c.missingSkills.map(esc).join(' · ')}</p>`:''}${c.calibrationCap<80?`<p>${(match.reasons||[]).filter(x=>/冲突|不满足|社会招聘/.test(x)||x===c.roleGap).map(esc).join(' · ')||'结合具体岗位要求评估后再投递'}</p>`:''}`;
   }
 
   openMarketJob=function(id){const out=baseOpen(id);enhanceAudit(id);return out;};

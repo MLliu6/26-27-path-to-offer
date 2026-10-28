@@ -4,6 +4,7 @@ const require=createRequire(import.meta.url),C=require('../workspace-core-v15.js
 const one={c:'快手',r:'推理工程师',l:'北京',z:'id1',s:'direct-official:test',u:'https://a.test/#/job/id1'};
 const two={...one,z:'id2',u:'https://a.test/#/job/id2'};
 assert.equal(C.mergeJobs([one,two]).length,2);
+assert.equal(C.mergeJobs([one,{...one,i:'another-index-id',z:'another-source-id'}]).length,1);
 assert.notEqual(C.canonicalUrl(one.u),C.canonicalUrl(two.u));
 const lead={...one,s:'curated-target:20260903',q:6,d:'pending'};
 assert.equal(C.mergeJobs([lead],[one])[0].s,'direct-official:test');
@@ -18,3 +19,6 @@ assert.equal(C.summary([next],'2026-09-11').due,1);
 assert.equal(C.summary([{...next,status:'rejected'}],'2026-09-11').due,0);
 assert.throws(()=>C.updateStatus(job,'interview1','bad'));
 console.log('v1.5 data/identity/status rules: PASS');
+
+assert.equal(C.dateValue(1763456900069),'2025-11-18');
+assert.deepEqual(C.cityNames('000000.110000 Beijing No.538 Road'),['北京']);

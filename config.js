@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
-  version: '1.5.2',
-  buildVersion: '1.5.2-account-recovery',
+  version: '1.6.0',
+  buildVersion: '1.6.0-reviewed-workspace',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -235,6 +235,7 @@ window.addEventListener('load', async () => {
     await loadPtoScript('score-explain-v14.js');
     await loadPtoScript('workspace-core-v15.js');
     await loadPtoScript('workspace-v15.js');
+    await loadPtoScript('resume-core-v16.js');
     window.PTO_ENHANCEMENTS_READY = true;
     if (typeof loadFeeds === 'function') await loadFeeds();
   } catch (err) {

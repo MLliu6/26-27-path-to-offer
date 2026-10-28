@@ -56,7 +56,7 @@
       if(el.matches('.market-card')){
         const foot=el.querySelector('.market-card-foot');if(!foot||foot.querySelector('.pto-card-actions'))return;
         const id=el.dataset.marketId,j=jobById(id);const actions=document.createElement('div');actions.className='pto-card-actions';
-        actions.innerHTML=`<button class="text-btn" data-action="detail" data-open-detail="${esc(id)}">查看详情</button>${j?.applyUrl?`<a class="btn tiny ghost" data-action="apply" data-open-apply="${esc(id)}" href="${esc(j.applyUrl)}" target="_blank" rel="noopener noreferrer">官网投递 ↗</a>`:''}`;
+        actions.innerHTML=`<button class="text-btn" data-action="detail" data-open-detail="${esc(id)}">查看详情</button>${j?.applyUrl?`<a class="btn tiny ghost" data-action="apply" data-open-apply="${esc(id)}" href="${esc(safeExternalUrl(j.applyUrl)||'#')}" target="_blank" rel="noopener noreferrer">官网投递 ↗</a>`:''}`;
         foot.appendChild(actions);
       }
     });

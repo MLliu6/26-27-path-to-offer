@@ -22,6 +22,7 @@
   const clone=v=>JSON.parse(JSON.stringify(v));
   const normalize=v=>typeof normalizeState==='function'?normalizeState(v||{}):(v||{});
   const localKey=id=>`${LOCAL_PREFIX}${id}`;
+  const withAccountLock=(id,fn)=>navigator.locks?navigator.locks.request(`pto-account-${id}`,fn):fn();
   const escaped=v=>typeof esc==='function'?esc(v):String(v||'');
 
   function injectSecurityStyles(){
@@ -87,12 +88,16 @@
       username:active.username,owner:active.owner||'',repo:active.repo||'',mode:active.mode,
       includeResumeText:!!active.includeResumeText,portableWrite:!!active.portableWrite,
       writeToken:active.portableWrite?(active.token||''):'',revision:Number(active.revision||0),
-      updatedAt:new Date().toISOString(),state:VAULT.sanitizeState(state,{includeResumeText:!!active.includeResumeText})
+      updatedAt:new Date().toISOString(),state:VAULT.sanitizeState(state,{includeResumeText:true})
     };
     pendingWrites++;
     const task=persistChain.catch(()=>{}).then(async()=>{
       const vault=await VAULT.encryptJson(payload,active.password,`local:${active.id}`);
-      localStorage.setItem(localKey(active.id),JSON.stringify(vault));
+      await withAccountLock(active.id,()=>{
+        const key=localKey(active.id),current=localStorage.getItem(key);
+        if(active.persistedVault!==undefined&&current!==active.persistedVault)throw new Error('另一标签页已更新此账户，请先导出当前数据，再重新登录');
+        const raw=JSON.stringify(vault);localStorage.setItem(key,raw);active.persistedVault=raw;
+      });
       active.localUpdatedAt=payload.updatedAt;
     });
     persistChain=task;
@@ -124,23 +129,27 @@
   async function createLocal(username,password,includeResumeText){
     const spec=await accountSpec(username);
     const key=localKey(spec.id);
-    if(localStorage.getItem(key)&&!confirm('该本机账户已存在。用当前页面数据覆盖？'))return;
-    const payload={username:spec.username,state:VAULT.sanitizeState(state,{includeResumeText}),includeResumeText,mode:'local',revision:1,updatedAt:new Date().toISOString()};
-    activate(payload,{...spec,mode:'local',password,includeResumeText});
-    // Do not expose a successful account session before its encrypted snapshot
-    // actually exists. This also closes the crash/reload window between UI
-    // activation and asynchronous localStorage encryption.
-    await persistEncryptedLocal();
+    if(localStorage.getItem(key))throw new Error('此设备已有该账户，请登录或使用其他用户名');
+    if(session)throw new Error('请先退出当前账户，再创建自己的账户');
+    const payload={username:spec.username,state:VAULT.sanitizeState(state,{includeResumeText:true}),includeResumeText:true,mode:'local',revision:1,updatedAt:new Date().toISOString()};
+    const raw=await withAccountLock(spec.id,async()=>{
+      if(localStorage.getItem(key))throw new Error('此设备已有该账户，请登录或使用其他用户名');
+      const vault=await VAULT.encryptJson(payload,password,`local:${spec.id}`);
+      if(localStorage.getItem(key))throw new Error('此设备已有该账户，请登录或使用其他用户名');
+      const serialized=JSON.stringify(vault);localStorage.setItem(key,serialized);return serialized;
+    });
+    activate(payload,{...spec,mode:'local',password,includeResumeText,persistedVault:raw});
     session.dirty=false;
     toast('本机加密账户已创建');closeModal();
   }
   async function unlockLocal(username,password){
     const spec=await accountSpec(username);
     const raw=localStorage.getItem(localKey(spec.id));
-    if(!raw)throw new Error('此设备没有该本机账户；跨设备数据请使用右侧 GitHub 加密仓库');
+    if(!raw)throw new Error('此设备还没有该账户，请创建账户或导入加密备份');
     const payload=await VAULT.decryptJson(JSON.parse(raw),password,`local:${spec.id}`);
-    activate(payload,{...spec,mode:'local',password,includeResumeText:!!payload.includeResumeText});
-    await persistEncryptedLocal();
+    if(VAULT.normalizeAccount(payload.username)!==spec.username)throw new Error('账户数据校验失败');
+    if(session)await flushLocal();
+    activate(payload,{...spec,mode:'local',password,includeResumeText:!!payload.includeResumeText,persistedVault:raw});
     session.dirty=false;
     toast('本机账户已解锁');closeModal();
   }
@@ -148,11 +157,17 @@
   async function fetchRemote(spec,token=''){
     return VAULT.fetchGithubVault({owner:spec.owner,repo:spec.repo,id:spec.id,token});
   }
+  async function requirePrivateRepository(spec,token){
+    const response=await fetch(`https://api.github.com/repos/${encodeURIComponent(spec.owner)}/${encodeURIComponent(spec.repo)}`,{headers:{Accept:'application/vnd.github+json',Authorization:`Bearer ${token}`},cache:'no-store'});
+    if(!response.ok)throw new Error('无法读取仓库，请检查名称和 Token 权限');
+    if(!(await response.json()).private)throw new Error('个人账户同步需要私有仓库，请在 GitHub 创建私有仓库后连接');
+  }
   async function initializeRemote({username,password,owner,repo,token,includeResumeText,portableWrite}){
     const spec=await accountSpec(username,owner,repo);
     if(isReservedAdminTarget(spec))throw new Error('主仓库中的该路径仅用于信源管理员验证，不是个人求职账户；请使用本机账户或独立私有仓库。');
     if(!token||token.length<20)throw new Error('首次初始化需要仅授权该仓库 Contents 读写的 Fine-grained Token');
     await VAULT.verifyGithubToken({token,expectedLogin:spec.owner});
+    await requirePrivateRepository(spec,token);
     const remote=await fetchRemote(spec,token);
     if(remote&&!confirm('远端已有同名加密账户。确定覆盖？'))return;
     const payload={
@@ -190,6 +205,7 @@
     const token=session.token;
     if(!token)throw new Error('当前设备没有写入 Token；读取不受影响，写回时请重新初始化或使用便携写入');
     await VAULT.verifyGithubToken({token,expectedLogin:session.owner});
+    await requirePrivateRepository(session,token);
     const remote=await fetchRemote(session,token);
     const remotePayload=remote?await VAULT.decryptJson(remote.vault,session.password,remoteContext(session)):null;
     if(session.dirty&&remotePayload?.updatedAt&&session.remoteUpdatedAt&&remotePayload.updatedAt!==session.remoteUpdatedAt&&!confirm('远端已被其他设备更新。仍用当前设备覆盖？'))return;
@@ -222,31 +238,43 @@
     setAccountButton();renderAll();closeModal();toast('已退出账户');
   }
 
-  function value(id){return $(id)?.value?.trim()||'';}
+  function value(id){const el=$(id);return el?.type==='password'?(el.value||''):(el?.value?.trim()||'');}
   function checked(id){return !!$(id)?.checked;}
   function accountHtml(){
-    const active=session?`${session.username} · ${session.mode==='github'?'跨设备加密仓库':'本机加密账户'}`:'访客模式 · 数据保存在当前浏览器';
-    const admin=session&&adminUnlocked?' · 管理员已验证':'';
-    return `<div class="account-modal"><div class="account-status"><div><strong>${escaped(active)}${admin}</strong><small>${session?.dirty?'有未保存/同步改动':'本机状态已保存'}；简历原文${session?.includeResumeText?'包含在加密数据中':'默认仅留在当前浏览器'}</small></div>${session?'<button class="text-btn quiet" id="secureLogout">退出</button>':''}</div>
-    ${session?`<div class="vault-session-actions">${session.mode==='github'?'<button class="btn primary" id="securePush">同步到 GitHub</button><button class="btn ghost" id="securePull">读取 GitHub</button>':''}<button class="btn ghost" id="secureExport">导出当前账户数据</button></div>`:''}
-    <div class="account-grid"><section class="account-panel"><h3>本机加密账户</h3><p>账号密码只在此浏览器派生 AES-GCM 密钥；不联网，不创建传统服务器账号。</p><label><span>自定义账号</span><input id="secureLocalUser" autocomplete="username"></label><label><span>密码（至少 10 位）</span><input id="secureLocalPass" type="password" autocomplete="current-password"></label><label class="vault-check"><input id="secureLocalResume" type="checkbox"><span>把简历解析原文也放入本机加密账户</span></label><div class="account-actions"><button class="btn primary" id="secureLocalUnlock">解锁</button><button class="btn ghost" id="secureLocalCreate">创建 / 覆盖</button></div></section>
-    <section class="account-panel"><h3>跨设备 GitHub 加密仓库</h3><p>账号默认等于 GitHub 用户名，默认仓库为 <code>path-to-offer-vault</code>；你本人可使用本项目仓库。公共仓库支持新设备仅凭账号密码读取，写入仍需 Token，除非明确开启便携写入凭据。</p><div class="vault-inline"><label><span>账号 / GitHub owner</span><input id="secureRemoteUser" autocomplete="username" value="${escaped(session?.username||'')}"></label><label><span>仓库</span><input id="secureRemoteRepo" value="${escaped(session?.repo||DEFAULT_USER_REPO)}"></label></div><label><span>加密密码</span><input id="secureRemotePass" type="password" autocomplete="current-password"></label><label><span>Fine-grained Token（首次写入 / 私有仓库读取）</span><input id="secureRemoteToken" type="password" autocomplete="off" placeholder="仅限该仓库 Contents 读写"></label><label class="vault-check"><input id="secureRemoteResume" type="checkbox"><span>把简历解析原文纳入远端加密包（默认关闭）</span></label><label class="vault-check"><input id="securePortableWrite" type="checkbox"><span>便携写入：把最小权限 Token 一并加密，使新设备只凭账号密码也可写回。安全性低于每台设备单独输入 Token。</span></label><div class="account-actions"><button class="btn primary" id="secureRemoteUnlock">跨设备读取</button><button class="btn ghost" id="secureRemoteInit">首次初始化 / 覆盖</button></div><div class="vault-security-note"><strong>零明文原则：</strong>仓库中只有 AES-GCM 密文；密码从不上传。Git 删除不能抹除历史，因此系统不会把明文简历“上传后再删”。</div></section></div></div>`;
+    const active=session?session.username:'你的求职账户';
+    return `<div class="account-modal"><div class="account-status"><div><strong>${escaped(active)}</strong><small>${session?state.jobs.length+' 条投递记录 · '+state.resumes.length+' 份简历':'在这台设备上，保存属于自己的求职进度。'}</small></div>${session?'<button class="text-btn quiet" id="secureLogout">退出账户</button>':''}</div>
+    ${session?`<div class="vault-session-actions">${session.mode==='github'?'<button class="btn primary" id="securePush">同步到私有仓库</button><button class="btn ghost" id="securePull">读取私有仓库</button>':''}<button class="btn primary" id="secureBackup">导出加密备份</button><button class="btn ghost" id="secureExport">导出完整数据</button></div>`:''}
+    <div class="account-grid">${session?'':`<section class="account-panel"><h3>登录本机账户</h3><p>新设备上的新用户，可以设置自己的用户名和密码。</p><form id="secureLocalForm"><label><span>用户名</span><input id="secureLocalUser" autocomplete="username" required maxlength="80" placeholder="设置或输入你的用户名"></label><label><span>密码</span><input id="secureLocalPass" type="password" autocomplete="current-password" minlength="10" required placeholder="至少 10 位"></label><input id="secureLocalResume" type="checkbox" checked hidden><div class="account-actions"><button class="btn primary" id="secureLocalUnlock" type="submit">登录</button><button class="btn ghost" id="secureLocalCreate" type="button">创建新账户</button></div></form><p class="v15-note">账户保存在当前浏览器。换设备时，导入加密备份并使用原密码登录。</p></section>`}
+    <details class="account-panel account-advanced"><summary>高级：私有仓库同步</summary><p>连接自己的 GitHub 私有仓库，在多台设备间同步。</p><div class="vault-inline"><label><span>GitHub 用户名</span><input id="secureRemoteUser" autocomplete="username" value="${escaped(session?.username||'')}"></label><label><span>私有仓库名称</span><input id="secureRemoteRepo" value="${escaped(session?.repo||DEFAULT_USER_REPO)}"></label></div><label><span>加密密码</span><input id="secureRemotePass" type="password" autocomplete="current-password"></label><label><span>仓库访问 Token</span><input id="secureRemoteToken" type="password" autocomplete="off" placeholder="仅授权该私有仓库 Contents 读写"></label><label class="vault-check"><input id="secureRemoteResume" type="checkbox"><span>同步简历原文</span></label><input id="securePortableWrite" type="checkbox" hidden><div class="account-actions"><button class="btn primary" id="secureRemoteUnlock">读取账户</button><button class="btn ghost" id="secureRemoteInit">连接并同步</button></div></details></div><p id="secureAccountError" role="alert"></p><div class="account-actions"><button class="text-btn" id="secureRestore">导入加密备份</button><a class="text-btn" href="./recovery.html">恢复历史记录</a></div></div>`;
   }
   function bindAccountActions(){
     $('#secureLogout')?.addEventListener('click',()=>logout().catch(err=>toast('退出前保存失败：'+err.message)));
-    $('#secureExport')?.addEventListener('click',()=>{const blob=new Blob([JSON.stringify(VAULT.sanitizeState(state,{includeResumeText:!!session?.includeResumeText}),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`path-to-offer-account-${today()}.json`;a.click();URL.revokeObjectURL(a.href);});
+    $('#secureExport')?.addEventListener('click',()=>{const blob=new Blob([JSON.stringify(VAULT.sanitizeState(state,{includeResumeText:true}),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`path-to-offer-account-${today()}.json`;a.click();URL.revokeObjectURL(a.href);});
     $('#securePush')?.addEventListener('click',()=>pushRemote().catch(err=>toast(err.message)));
     $('#securePull')?.addEventListener('click',()=>pullRemote().catch(err=>toast(err.message)));
-    $('#secureLocalCreate')?.addEventListener('click',()=>createLocal(value('#secureLocalUser'),value('#secureLocalPass'),checked('#secureLocalResume')).catch(err=>toast(err.message)));
-    $('#secureLocalUnlock')?.addEventListener('click',()=>unlockLocal(value('#secureLocalUser'),value('#secureLocalPass')).catch(err=>toast(err.message)));
+    let busy=false;
+    async function runLocal(create){
+      if(busy)return;
+      const form=$('#secureLocalForm');if(!form?.reportValidity())return;
+      const username=value('#secureLocalUser'),password=value('#secureLocalPass');
+      if(create&&VAULT.normalizeAccount(username)!==username.trim().toLowerCase()){$('#secureAccountError').textContent='用户名请使用英文字母、数字或 . _ @ + -';return;}
+      busy=true;const buttons=[...form.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);
+      $('#secureAccountError').textContent='';
+      try{await (create?createLocal(username,password,true):unlockLocal(username,password));}
+      catch(err){if($('#secureAccountError'))$('#secureAccountError').textContent=err.message;toast(err.message);}
+      finally{busy=false;buttons.forEach(b=>b.disabled=false);}
+    }
+    $('#secureLocalForm')?.addEventListener('submit',e=>{e.preventDefault();runLocal(false);});
+    $('#secureLocalCreate')?.addEventListener('click',()=>runLocal(true));
+    $('#secureBackup')?.addEventListener('click',()=>window.PTO_WORKSPACE_V15?.backup());
+    $('#secureRestore')?.addEventListener('click',()=>$('#v15Restore')?.click());
     const remoteArgs=()=>({username:value('#secureRemoteUser'),owner:value('#secureRemoteUser'),repo:value('#secureRemoteRepo'),password:value('#secureRemotePass'),token:value('#secureRemoteToken'),includeResumeText:checked('#secureRemoteResume'),portableWrite:checked('#securePortableWrite')});
     $('#secureRemoteInit')?.addEventListener('click',()=>initializeRemote(remoteArgs()).catch(err=>toast(err.message)));
     $('#secureRemoteUnlock')?.addEventListener('click',()=>unlockRemote(remoteArgs()).catch(err=>toast(err.message)));
   }
   function openSecureAccountModal(){
     openModal('账户、隐私与同步',accountHtml());bindAccountActions();
-    const grid=$('.account-grid');
-    if(grid&&!$('#ptoRecoveryBanner'))grid.insertAdjacentHTML('beforebegin','<div id="ptoRecoveryBanner" class="vault-security-note"><strong>账户或记录异常？</strong> 不要覆盖账户。先打开 <a href="./recovery.html">本机数据恢复</a>，检查主密文、自动快照和旧版缓存。</div>');
+
   }
   function installRecoveryEntry(){
     if($('#ptoRecoveryTop'))return;
@@ -279,7 +307,7 @@
 
   injectSecurityStyles();
   setAccountButton();
-  installRecoveryEntry();
+
   const sourceButton=$('#openSourcePanel');if(sourceButton)sourceButton.onclick=showAdminSources;
   window.PTO_SECURE_ACCOUNT_V2={openAccount:openSecureAccountModal,showSources:showAdminSources,companyInitial,flushLocal,pending:()=>!!saveTimer||pendingWrites>0};
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&session&&(saveTimer||pendingWrites))flushLocal().catch(err=>console.warn('vault flush failed',err));});

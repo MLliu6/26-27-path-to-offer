@@ -27,6 +27,8 @@ OVERSEAS = re.compile(r"海外|美国|加拿大|英国|德国|法国|欧洲|新�
 CAMPUS = re.compile(r"2027|27届|校招|校园招聘|应届|毕业生|实习|实习生|new\s*grad|graduate|campus|intern", re.I)
 TECH = re.compile(r"ai|llm|vlm|vla|大模型|多模态|推理|cuda|gpu|kernel|算子|量化|ptq|编译器|compiler|runtime|npu|芯片|hpc|高性能|分布式|后端|算法|机器学习|深度学习|计算机视觉|嵌入式|机器人|软件|信息科技|金融科技|网络安全|云计算", re.I)
 FIELDS = [("i","id"),("c","company"),("r","role"),("l","location"),("u","apply_url"),("n","notice_url"),("d","jd"),("t","updated_at"),("b","batch"),("g","graduation"),("e","education"),("p","salary"),("y","company_type"),("h","industry"),("m","department")]
+FIELDS += [("s", "source"), ("z", "position_id")]
+EVIDENCE_FIELDS = ("observed_at", "observed_via", "source_url", "verification", "deadline", "status", "record_kind", "jd_full")
 
 
 def compact_text(value: Any, limit: int = MAX_PREVIEW) -> str:
@@ -75,6 +77,16 @@ def encode_job(job: dict[str, Any]) -> dict[str, Any] | None:
         if long == "jd": value = compact_text(value)
         if isinstance(value, str): value = clean(value)
         if value not in (None, "", [], {}): out[short] = value
+    for field in EVIDENCE_FIELDS:
+        if job.get(field) not in (None, "", [], {}):
+            out[field] = job[field]
+    # Retain useful requirements for domestic early-career matching while the
+    # global discovery feed keeps a small card preview.
+    campus_text = " ".join(clean(job.get(k)) for k in ("role", "batch", "graduation"))
+    if is_domestic(job) and CAMPUS.search(campus_text) and source_tier(job) >= 6:
+        full = compact_text(job.get("jd_full") or job.get("jd"), 8000)
+        if len(full) > len(out.get("d", "")):
+            out["jd_full"] = full
     out["x"] = source_class(job); out["q"] = source_tier(job)
     return out
 

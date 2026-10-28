@@ -47,7 +47,7 @@
 
     const ingest=(signals,weight,label)=>{
       for(const d of signals?.directionScores||[]){
-        const row=aggregate.get(d.name)||{name:d.name,score:0,evidence:[]};
+        const row=aggregate.get(d.name)||{name:d.name,id:d.id,roles:d.roles,anchors:d.anchors,score:0,evidence:[]};
         row.score+=(Number(d.rawScore)||0)*weight;
         for(const ev of d.evidence||[]){
           const tagged=label?`${label}:${ev}`:ev;
@@ -71,6 +71,9 @@
     const max=ranked[0]?.score||1;
     const directionScores=ranked.slice(0,6).map((x,i)=>({
       name:x.name,
+      id:x.id,
+      roles:x.roles,
+      anchors:x.anchors,
       rawScore:Math.round(x.score*10)/10,
       confidence:Math.max(20,Math.min(97,Math.round(36+61*(x.score/max)*(i?0.94:1)))),
       evidence:x.evidence.slice(0,10),

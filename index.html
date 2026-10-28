@@ -3,30 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Path to Offer — resume-first job discovery, application tracking and interview memory." />
-  <meta name="theme-color" content="#f7f7f3" />
+  <meta name="description" content="Path to Offer 求职工作台：发现 2027 届校招机会，理解简历匹配，管理每一次投递与面试。" />
+  <meta name="theme-color" content="#f7f8f5" />
   <title>Path to Offer · 求职工作台</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect rx=%2216%22 width=%2264%22 height=%2264%22 fill=%22%2397B4A7%22/><path d=%22M18 20h28M18 32h20M18 44h14%22 stroke=%22white%22 stroke-width=%225%22 stroke-linecap=%22round%22/></svg>">
-  <link rel="stylesheet" href="styles.css?v=1.5.2" />
-  <link rel="stylesheet" href="workspace-v15.css?v=1.5.2">
+  <link rel="icon" type="image/svg+xml" href="assets/brand-mark.svg">
+  <link rel="stylesheet" href="styles.css?v=1.6.0" />
+  <link rel="stylesheet" href="workspace-v15.css?v=1.6.0">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand plain-btn" data-view-go="discover" aria-label="Path to Offer 首页">
-        <span class="brand-mark">P</span>
-        <span><strong>Path to Offer</strong><small>candidate operating system</small></span>
+        <span class="brand-mark"><svg aria-hidden="true" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="18" fill="#176454"/>
+  <path d="M19 46V19h16a10 10 0 0 1 0 20H25" stroke="#F7F8F5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m30 45 14-14m-9 0h9v9" stroke="#CDE8B4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg></span>
+        <span><strong>Path to Offer</strong><small>每一步，更近一步</small></span>
       </button>
       <nav class="main-nav" aria-label="主导航">
-        <button class="nav-item active" data-view="discover">发现</button>
-        <button class="nav-item" data-view="pipeline">流程</button>
-        <button class="nav-item" data-view="library">准备</button>
-        <button class="nav-item" data-view="reviews">面经</button>
-        <button class="nav-item" data-view="insights">洞察</button>
+        <button class="nav-item active" data-view="discover"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg><span>发现岗位</span></button>
+        <button class="nav-item" data-view="pipeline"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16M6 8v4M12 8v7M18 8v3"/></svg><span>投递流程</span></button>
+        <button class="nav-item" data-view="library"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5"/></svg><span>简历与准备</span></button>
+        <button class="nav-item" data-view="reviews"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6A8.4 8.4 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8v.5Z"/><path d="M8 10h8M8 14h5"/></svg><span>面试复盘</span></button>
+        <button class="nav-item" data-view="insights"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M8 15v-4M13 15V7M18 15V4"/></svg><span>求职洞察</span></button>
       </nav>
       <div class="top-actions">
-        <button class="icon-btn" id="themeBtn" title="主题色" aria-label="切换主题色">◐</button>
-        <button class="btn ghost github-btn" id="githubLoginBtn" title="GitHub 登录与同步"><span aria-hidden="true">⌘</span><span id="githubLoginText">GitHub 登录</span></button>
+        <button class="icon-btn" id="themeBtn" title="外观设置" aria-label="外观设置"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span class="appearance-label">外观设置</span></button>
+        <button class="btn ghost github-btn" id="githubLoginBtn" title="登录与账户"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg><span id="githubLoginText">登录 / 创建账户</span></button>
         <button class="btn primary" id="addJobBtn">＋ 记录岗位</button>
       </div>
     </header>
@@ -35,24 +39,24 @@
       <section class="view active" id="discoverView">
         <div class="page-head discover-head">
           <div>
-            <p class="eyebrow">RESUME-FIRST DISCOVERY</p>
-            <h1>先理解你，再筛岗位。</h1>
-            <p>上传简历后在浏览器本地解析，提取方向与技能，再对聚合职位进行可解释匹配。没有简历时不假装“猜你喜欢”。</p>
+            <p class="eyebrow">YOUR NEXT CHAPTER · 2027</p>
+            <h1>发现你的下一站</h1>
+            <p>从匹配岗位到每一次面试，让求职有序向前。</p>
           </div>
           <div class="feed-health" id="feedHealth"><span class="pulse-dot"></span><span>正在读取岗位源状态…</span></div>
         </div>
 
         <div class="resume-onboarding" id="resumeOnboarding">
           <div class="upload-copy">
-            <span class="upload-kicker">01 · Candidate Profile</span>
-            <h2>上传你的简历，建立候选人画像</h2>
-            <p>支持 PDF / DOCX / TXT。解析默认在当前浏览器完成，原文件不会被提交到公开 GitHub 仓库。</p>
+            <span class="upload-kicker">从你擅长的事开始</span>
+            <h2>好机会，从了解你开始</h2>
+            <p>上传简历，查看与你的经历、技能和求职方向相匹配的岗位。</p>
             <div class="upload-actions">
-              <label class="btn primary file-label">上传简历<input id="resumeImport" type="file" accept=".pdf,.docx,.txt" hidden></label>
+              <label class="btn primary file-label" tabindex="0" role="button">上传简历<input id="resumeImport" type="file" accept=".pdf,.docx,.txt" hidden></label>
               <button class="btn ghost" id="pasteResumeBtn">粘贴简历文本</button>
             </div>
           </div>
-          <div class="privacy-note"><strong>Local parsing</strong><p>只保存解析文本、关键词和你选择保留的简历版本；可随时清空。</p></div>
+          <div class="privacy-note"><div class="resume-path" aria-hidden="true"><svg viewBox="0 0 240 42"><path class="path-base" d="M10 30h56c10 0 10-20 20-20h68c10 0 10 20 20 20h56"/><circle cx="10" cy="30" r="4"/><circle cx="120" cy="10" r="4"/><path d="m222 24 8 6-8 6"/></svg><div><span>认识你</span><span>发现机会</span><span>追踪进展</span></div></div><strong>你的简历，由你掌握</strong><p>PDF / DOCX / TXT · 浏览器本地解析</p></div>
         </div>
 
         <div class="profile-strip hidden" id="profileStrip">
@@ -62,16 +66,16 @@
         </div>
 
         <div class="discovery-toolbar">
-          <div class="search-wrap"><span>⌕</span><input id="jobSearch" placeholder="搜索公司 / 岗位 / 技能 / 城市…" /></div>
-          <select id="jobLocationFilter"><option value="all">全部地点</option></select>
-          <select id="jobTypeFilter"><option value="all">全部企业性质</option></select>
-          <select id="jobBatchFilter"><option value="all">全部批次</option></select>
+          <div class="search-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="jobSearch" type="search" aria-label="搜索公司、岗位、技能或城市" placeholder="搜索公司、岗位、技能…" /></div>
+          <select id="jobLocationFilter" aria-label="工作地点"><option value="all">全部地点</option></select>
+          <select id="jobTypeFilter" aria-label="企业性质"><option value="all">全部企业性质</option></select>
+          <select id="jobBatchFilter" aria-label="招聘批次"><option value="all">全部批次</option></select>
           <button class="btn ghost" id="refreshFeedBtn">刷新职位</button>
         </div>
 
         <div class="discovery-layout">
-          <aside class="match-rail">
-            <div class="rail-head"><p class="eyebrow">MATCH CONTROL</p><h3>匹配偏好</h3></div>
+          <details class="match-rail" open>
+            <summary class="rail-head"><p class="eyebrow">MAKE IT YOURS</p><h3>匹配与排序</h3></summary>
             <label class="control-row"><span>最低匹配度</span><strong id="scoreThresholdLabel">55</strong></label>
             <input id="scoreThreshold" type="range" min="0" max="95" value="55" step="5" />
             <label class="check-row"><input type="checkbox" id="freshOnly" checked><span>优先 30 天内</span></label>
@@ -86,12 +90,12 @@
             </div>
             <div class="rail-divider"></div>
             <button class="text-btn" id="openSourcePanel">岗位源与刷新状态 →</button>
-          </aside>
+          </details>
 
           <section class="job-market">
             <div class="market-head">
-              <div><p class="eyebrow">JOB MARKET</p><h2><span id="marketCount">0</span> 个岗位</h2></div>
-              <div class="market-actions"><button class="view-icon active" data-job-view="cards" aria-label="卡片视图">▦</button><button class="view-icon" data-job-view="table" aria-label="表格视图">☷</button></div>
+              <div><p class="eyebrow">EXPLORE OPPORTUNITIES</p><h2><span id="marketCount">0</span> 个岗位</h2></div>
+              <div class="market-actions"><button class="view-icon active" data-job-view="cards" aria-label="卡片视图"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button><button class="view-icon" data-job-view="table" aria-label="表格视图"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div>
             </div>
             <div id="jobMarketEmpty" class="market-empty hidden"></div>
             <div id="jobMarketCards" class="job-market-cards"></div>
@@ -101,20 +105,20 @@
       </section>
 
       <section class="view" id="pipelineView">
-        <div class="page-head compact"><div><p class="eyebrow">APPLICATION PIPELINE</p><h1>投递流程</h1><p>只有你主动加入流程的岗位才会出现在这里。拖动卡片会记录状态与日期。</p></div><div class="view-switch"><button class="seg active" data-pipeline-mode="board">看板</button><button class="seg" data-pipeline-mode="table">表格</button></div></div>
-        <div class="filter-row"><input id="pipelineSearch" class="search" placeholder="搜索公司 / 岗位 / 城市…"><select id="priorityFilter"><option value="all">全部优先级</option><option value="A">A · 必投</option><option value="B">B · 重点</option><option value="C">C · 观察</option></select><select id="directionFilter"><option value="all">全部方向</option></select></div>
+        <div class="page-head compact"><div><p class="eyebrow">MAKE YOUR NEXT MOVE</p><h1>每一步，都有进展</h1><p>管理投递、安排跟进，记录从第一次联系到 Offer 的每一步。</p></div><div class="view-switch"><button class="seg active" data-pipeline-mode="board">看板</button><button class="seg" data-pipeline-mode="table">表格</button></div></div>
+        <div class="filter-row"><input id="pipelineSearch" class="search" type="search" aria-label="搜索投递记录" placeholder="搜索公司、岗位、城市…"><select id="priorityFilter" aria-label="投递优先级"><option value="all">全部优先级</option><option value="A">A · 必投</option><option value="B">B · 重点</option><option value="C">C · 观察</option></select><select id="directionFilter" aria-label="投递方向"><option value="all">全部方向</option></select></div>
         <div id="pipelineEmpty" class="large-empty hidden"></div>
         <div id="kanban" class="kanban"></div>
         <div id="jobTableWrap" class="table-wrap hidden"></div>
       </section>
 
       <section class="view" id="libraryView">
-        <div class="page-head compact"><div><p class="eyebrow">PREPARATION LIBRARY</p><h1>简历与面试准备</h1><p>每份简历保留解析画像；每个岗位可绑定实际投递版本与面试准备资产。</p></div><div class="head-actions"><label class="btn ghost file-label">＋ 上传简历<input id="libraryResumeImport" type="file" accept=".pdf,.docx,.txt" hidden></label><button class="btn ghost" id="addAssetBtn">＋ 添加资料</button></div></div>
+        <div class="page-head compact"><div><p class="eyebrow">PREPARATION LIBRARY</p><h1>简历与面试准备</h1><p>每份简历保留解析画像；每个岗位可绑定实际投递版本与面试准备资产。</p></div><div class="head-actions"><label class="btn ghost file-label" tabindex="0" role="button">＋ 上传简历<input id="libraryResumeImport" type="file" accept=".pdf,.docx,.txt" hidden></label><button class="btn ghost" id="addAssetBtn">＋ 添加资料</button></div></div>
         <div class="library-grid"><article class="panel"><div class="panel-head"><div><p class="eyebrow">RESUME VERSIONS</p><h2>简历版本</h2></div></div><div id="resumeList" class="asset-list"></div></article><article class="panel span-2"><div class="panel-head"><div><p class="eyebrow">INTERVIEW ASSETS</p><h2>面试知识库</h2></div><a class="text-btn" href="https://github.com/MLliu6/26-27-interview" target="_blank" rel="noopener">26-27-interview ↗</a></div><div id="assetList" class="asset-list"></div></article></div>
       </section>
 
       <section class="view" id="reviewsView">
-        <div class="page-head compact"><div><p class="eyebrow">INTERVIEW MEMORY</p><h1>面经与复盘</h1><p>把一次面试沉淀成题目、回答、失误、改进，并与具体岗位和候选人画像连接。</p></div><label class="btn primary file-label">导入 TXT / DOCX<input id="reviewImport" type="file" accept=".txt,.docx" hidden></label></div>
+        <div class="page-head compact"><div><p class="eyebrow">INTERVIEW MEMORY</p><h1>面经与复盘</h1><p>把一次面试沉淀成题目、回答、失误、改进，并与具体岗位和候选人画像连接。</p></div><label class="btn primary file-label" tabindex="0" role="button">导入 TXT / DOCX<input id="reviewImport" type="file" accept=".txt,.docx" hidden></label></div>
         <div class="review-layout"><div id="reviewList" class="review-list"></div><article class="panel review-editor"><div class="empty-state" id="reviewEmpty"><strong>还没有面经</strong><p>完成一次面试后导入 TXT / DOCX，或从岗位详情中新建复盘。</p></div><div id="reviewContent" class="hidden"></div></article></div>
       </section>
 
@@ -127,7 +131,7 @@
   </div>
 
   <div class="drawer-backdrop" id="drawerBackdrop"></div>
-  <aside class="drawer wide-drawer" id="jobDrawer" aria-hidden="true">
+  <aside class="drawer wide-drawer" id="jobDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" aria-hidden="true" inert>
     <div class="drawer-head"><div><p class="eyebrow" id="drawerEyebrow">JOB RECORD</p><h2 id="drawerTitle">岗位详情</h2></div><button class="icon-btn" id="closeDrawer" aria-label="关闭">×</button></div>
     <div id="marketJobDetail" class="hidden"></div>
     <form id="jobForm" class="job-form hidden">
@@ -138,15 +142,15 @@
   </aside>
 
   <div class="modal-backdrop" id="modalBackdrop"></div>
-  <div class="modal" id="quickModal" role="dialog" aria-modal="true" aria-hidden="true"><div class="modal-head"><h2 id="modalTitle">Path to Offer</h2><button class="icon-btn" id="closeModal">×</button></div><div id="modalBody"></div></div>
+  <div class="modal" id="quickModal" hidden inert role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true"><div class="modal-head"><h2 id="modalTitle">Path to Offer</h2><button class="icon-btn" id="closeModal" aria-label="关闭对话框">×</button></div><div id="modalBody"></div></div>
 
   <div class="theme-popover" id="themePopover"><p>主题色</p><div class="swatches" id="swatches"></div><small>主题选择保存在本机</small></div>
   <div class="toast" id="toast"></div>
   <input id="replaceResumeInput" type="file" accept=".pdf,.docx,.txt" hidden>
 
-  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js" defer></script>
-  <script src="config.js?v=1.5.2" defer></script>
-  <script src="app.js?v=1.5.2" defer></script>
+  <script src="vendor/mammoth.browser.min.js" defer></script>
+  <script src="vendor/pdf.min.js" defer></script>
+  <script src="config.js?v=1.6.0" defer></script>
+  <script src="app.js?v=1.6.0" defer></script>
 </body>
 </html>

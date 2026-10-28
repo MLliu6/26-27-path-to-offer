@@ -104,7 +104,7 @@
 
   function neutralizeCopy(){
     const search=$('#jobSearch');if(search)search.placeholder='搜公司 / 岗位 / 专业方向 / 城市…';
-    const policy=$('#searchPolicy');if(policy)policy.innerHTML='<b>搜索优先：</b>明确搜索不受 Match 阈值限制；空搜索才依据当前简历的职业领域、JD 证据、届别与用户自选城市排序。';
+    const policy=$('#searchPolicy');if(policy)policy.textContent='输入公司或岗位直接搜索；上传简历后按匹配度推荐。';
     const first=$('#ptoFlow .pto-flow-step:nth-child(2) small');
     const profile=typeof currentProfile==='function'?currentProfile():null;
     if(first&&profile)first.textContent=profile.signals?.primaryCareerDomain||`${profile.signals?.skills?.length||0} 个简历信号`;

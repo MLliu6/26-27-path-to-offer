@@ -73,7 +73,9 @@
   function domainScore(job,profile,preferences={}){
     const p=TAX.profileDomains(profile),j=TAX.jobDomains(job);const pp=p.primary,jp=j.primary;
     if(!pp||!jp)return {score:0,label:'职业方向证据不足',profile:p,job:j,exact:false,related:false,mismatch:false};
-    const pTop=p.scores.slice(0,4),jTop=j.scores.slice(0,4);
+    const withId=row=>({...row,id:row.id||TAX.DOMAIN_MAP[row.name]?.id});
+    const pTop=p.scores.slice(0,4).filter(row=>Number(row.rawScore||1)>=Number(p.scores[0]?.rawScore||1)*.25).map(withId);
+    const jTop=j.scores.slice(0,jp.titleAnchor?1:4).filter(row=>Number(row.rawScore||1)>=Number(j.scores[0]?.rawScore||1)*.35).map(withId);
     let best=0,bestPair=null;
     for(let pi=0;pi<pTop.length;pi++)for(let ji=0;ji<jTop.length;ji++){
       const a=pTop[pi],b=jTop[ji];let value=0;
@@ -85,37 +87,65 @@
     if(targets.length&&targets.some(t=>jTop.some(row=>norm(row.name).includes(norm(t))||norm(t).includes(norm(row.name)))))best=Math.min(30,best+2);
     const exact=!!bestPair&&bestPair[0]?.id===bestPair[1]?.id;
     const rel=!!bestPair&&related(bestPair[0]?.id,bestPair[1]?.id);
-    const mismatch=!!(pp.id&&jp.id&&!rel&&Number(p.confidence||0)>=65&&Number(j.confidence||0)>=55);
-    return {score:Math.max(0,Math.min(30,best)),label:exact?`${pp.name} · 岗位领域直接匹配`:rel?`${pp.name} · 相邻职业领域`:mismatch?`${pp.name} ↔ ${jp.name} 领域冲突`:'职业领域证据较弱',profile:p,job:j,exact,related:rel,mismatch};
+    const primaryId=pp.id||TAX.DOMAIN_MAP[pp.name]?.id;
+    const mismatch=!!(primaryId&&jp.id&&(!rel||jp.titleAnchor&&!related(primaryId,jp.id))&&Number(p.confidence||0)>=65&&Number(j.confidence||0)>=55);
+    return {score:Math.max(0,Math.min(30,best)),label:mismatch?`${pp.name} ↔ ${jp.name} 领域冲突`:exact?`${bestPair[0].name} · 岗位领域匹配`:rel?`${pp.name} · 相邻职业领域`:'职业领域证据较弱',profile:p,job:j,exact:exact&&!mismatch,related:rel,mismatch};
   }
 
+  const SKILL_ALIASES=[
+    ['c++','cpp'],['golang','go语言'],['kubernetes','k8s'],['javascript','js'],['typescript','ts'],
+    ['postgresql','postgres'],['machine learning','机器学习'],['deep learning','深度学习'],
+    ['computer vision','计算机视觉'],['natural language processing','自然语言处理','nlp'],
+    ['large language model','大语言模型','大模型','llm'],['distributed training','分布式训练'],
+    ['distributed inference','分布式推理'],['ai infra','ai基础设施','ai 基础设施'],
+    ['financial accounting','财务会计'],['audit','审计'],['contract review','合同审查'],
+    ['user research','用户研究'],['product requirements','需求分析'],['cell culture','细胞培养'],
+    ['finite element','有限元'],['supply chain','供应链'],['human resources','人力资源']
+  ];
+  const skillNorm=v=>norm(v).normalize('NFKC').replace(/\s+/g,' ');
+  const canonicalSkill=value=>{
+    const key=skillNorm(value),group=SKILL_ALIASES.find(xs=>xs.includes(key));return group?group[0]:key;
+  };
+  function containsSkill(text,value){
+    const group=SKILL_ALIASES.find(xs=>xs[0]===value)||[value];
+    return group.some(term=>TAX.occurrences(text,term)>0);
+  }
+  const SKILL_VOCAB=uniq([
+    ...TAX.DOMAINS.flatMap(d=>Object.keys(d.terms||{})),
+    ...(CORE.DIRECTIONS||[]).flatMap(d=>Object.keys(d.terms||{})),
+    ...SKILL_ALIASES.map(xs=>xs[0])
+  ].map(canonicalSkill)).filter(x=>x.length>=2);
   function skillScore(job,profile){
-    const title=norm(job.role),body=norm([job.jd,job.department,job.industry].join(' '));
-    const skills=uniq(profile?.signals?.skills||[]).filter(x=>norm(x).length>=2).slice(0,64);
-    const primary=profile?.signals?.primaryCareerDomain||profile?.signals?.primaryDirection||'';
-    const primaryTerms=new Set((TAX.termsFor(primary)||[]).map(norm));
-    let total=0,hit=0;const titleHits=[],bodyHits=[];
-    for(const skill of skills){
-      const key=norm(skill);if(!key)continue;let w=GENERIC.has(key)?.35:(primaryTerms.has(key)?1.7:(key.length>=7?1.25:1));
-      total+=w;
-      if(title.includes(key)){hit+=w*1.65;titleHits.push(skill);}else if(body.includes(key)){hit+=w;bodyHits.push(skill);}
+    const title=skillNorm(job.role),body=skillNorm([job.jd,job.department,job.industry].join(' '));
+    const candidate=skillNorm(profile?.rawText?.trim()||[...(profile?.signals?.skills||[])].join(' '));
+    const vocabulary=uniq([...SKILL_VOCAB,...(profile?.signals?.skills||[]).map(canonicalSkill)]);
+    const required=vocabulary.filter(term=>containsSkill(title+' '+body,term));
+    const titleHits=[],bodyHits=[],missing=[];let total=0,matched=0;
+    for(const term of required){
+      const weight=GENERIC.has(term)?.5:1;
+      total+=weight;
+      if(containsSkill(candidate,term)){
+        matched+=weight;(containsSkill(title,term)?titleHits:bodyHits).push(term);
+      }else missing.push(term);
     }
-    // Resume keywords are useful for unmodelled majors, but intentionally have
-    // low weight so generic prose cannot overpower a clear career-domain clash.
-    const keywordHits=[];
-    for(const raw of (profile?.signals?.keywords||[]).slice(0,40)){
-      const key=norm(raw);if(key.length<3||GENERIC.has(key))continue;
-      if(title.includes(key)||body.includes(key)){hit+=0.28;keywordHits.push(raw);}
-    }
-    const denom=Math.max(5,Math.min(18,total));const coverage=Math.min(1,hit/denom);const score=Math.min(24,24*Math.pow(coverage,.88));
-    return {score,titleHits:titleHits.slice(0,5),bodyHits:bodyHits.slice(0,7),keywordHits:keywordHits.slice(0,5),hitCount:titleHits.length+bodyHits.length+keywordHits.length,label:titleHits.length?`标题技能 ${titleHits.slice(0,2).join(' · ')}`:bodyHits.length?`简历/JD ${bodyHits.slice(0,3).join(' · ')}`:''};
+    // Coverage uses the job's observed requirements, so extra resume skills do
+    // not dilute a match. Unknown requirements remain an evidence gap.
+    const coverage=total?matched/total:0;
+    return {score:24*Math.pow(coverage,.9),titleHits:titleHits.slice(0,5),bodyHits:bodyHits.slice(0,9),keywordHits:[],
+      hitCount:titleHits.length+bodyHits.length,required:required.length,coverage,missing:missing.slice(0,8),
+      label:required.length?'岗位技能 '+(titleHits.length+bodyHits.length)+'/'+required.length+' 项匹配':'岗位技能待补充'};
   }
   function careerScore(job,profile){
-    const blob=norm([job.role,job.batch,job.graduation,job.jd].join(' '));const grad=String(profile?.signals?.graduationYear||'');let score=0,penalty=0,label='';
+    const blob=norm([job.role,job.batch,job.graduation,job.jd].join(' '));const grad=String(profile?.signals?.graduationYear||''),cohort=CORE.jobCohort(job);let score=0,penalty=0,label='',roleGap='';
     if(CAMPUS.test(blob)){score+=8;label='校招 / 应届';}else if(INTERN.test(blob)){score+=5;label='实习';}else if(grad){score+=1;}
-    if(grad&&blob.includes(grad)){score+=5;label=`${grad}届符合`;}
-    if(SENIOR.test(blob)){penalty+=20;label='资深/经验要求冲突';}else if(SOCIAL.test(blob)&&!CAMPUS.test(blob)){penalty+=8;label='社会招聘';}
-    return {score:Math.min(13,score),penalty,label,campus:CAMPUS.test(blob)||INTERN.test(blob)};
+    if(grad&&cohort.years.includes(grad)){score+=5;label=`${grad}届符合`;}
+    else if(grad&&cohort.years.length){penalty+=25;label=`届别冲突：岗位面向 ${cohort.years.join('/')} 届`;}
+    const senior=SENIOR.test(norm(job.role))||/[3-9]\s*(?:[-~至]\s*\d+)?\s*年(?:以上|及以上)?(?:相关|工作|研发|开发|行业|项目|实际)?(?:工作)?经验|至少\s*[3-9]\s*年/.test(blob);
+    if(senior){penalty+=20;label='资深/经验要求冲突';}else if(SOCIAL.test(blob)&&!CAMPUS.test(blob)){penalty+=8;label='社会招聘';}
+    const candidate=norm([profile?.rawText,...(profile?.signals?.skills||[])].join(' '));
+    if(/操作[员工]|生产工人|普工|装配工|流水线工/.test(job.role||'')&&degreeRank(profile?.signals?.degree)>=3)roleGap='岗位以生产操作为主，与研究生研发方向存在差异';
+    if(/计算生物|生物信息|计算化学|computational biology|bioinformatics/i.test(job.role||'')&&!/python|matlab|编程|计算生物|计算化学|生物信息|分子动力学|分子模拟|gromacs|amber|namd|cadd|r语言/.test(candidate))roleGap='计算研究岗位需要编程、分子模拟或计算分析经历';
+    return {score:Math.min(13,score),penalty,label,roleGap,experienceConflict:!!(grad&&senior),campus:CAMPUS.test(blob)||INTERN.test(blob)};
   }
   function locationScore(job,preferences={}){
     const targets=(preferences.targetLocations||[]).filter(Boolean);if(!targets.length)return {score:0,label:'未设置目标城市'};
@@ -123,15 +153,19 @@
     return {score:0,label:'非目标城市'};
   }
   function eligibilityScore(job,profile,domain){
-    const wanted=degreeRank(job.education),have=degreeRank(profile?.signals?.degree||'');let score=0,label='';
+    const explicit=Object.entries(DEGREE_RANK).filter(([name])=>norm(job.education).includes(name)).map(([,rank])=>rank);
+    const requirement=String(job.jd||'').split(/[\n。；;]/).filter(line=>/(?:博士|硕士|本科|专科).{0,12}(?:学历|学位|及以上)|(?:学历要求|最低学历|学位要求).{0,12}(?:博士|硕士|本科|专科)/.test(line)&&!/(?:博士|硕士|本科|专科).{0,5}优先/.test(line)).join(' ');
+    const inferred=Object.entries(DEGREE_RANK).filter(([name])=>norm(requirement).includes(name)).map(([,rank])=>rank);
+    const wanted=Math.max(explicit.length?Math.min(...explicit):0,inferred.length?Math.min(...inferred):0),have=degreeRank(profile?.signals?.degree||'');let score=0,label='';
     if(wanted&&have){if(have>=wanted){score+=4;label='学历满足';}else label='学历可能不满足';}else if(!wanted)score+=1.5;
-    const grad=String(profile?.signals?.graduationYear||''),jobGrad=String(job.graduation||'');
-    if(grad&&jobGrad)score+=jobGrad.includes(grad)?3:0;else if(!jobGrad)score+=1;
+    const grad=String(profile?.signals?.graduationYear||''),years=CORE.jobCohort(job).years;
+    if(grad&&years.length)score+=years.includes(grad)?3:0;else if(!years.length)score+=1;
     if(domain.exact)score+=2;
     return {score:Math.min(8,score),label};
   }
 
   function scoreJobV13(job,profile,opts={}){
+    if(!CORE.isPosition(job))return {score:null,reasons:['这是招聘入口或活动信息'],hits:[],components:{},evidenceConfidence:0,calibration:'non-position'};
     if(!profile)return {score:null,reasons:[],hits:[],components:{},calibration:'no-profile'};
     const domain=domainScore(job,profile,opts),skills=skillScore(job,profile),career=careerScore(job,profile),location=locationScore(job,opts),eligibility=eligibilityScore(job,profile,domain),source=sourceScore(job),fresh=freshnessScore(opts.ageDays),complete=completenessScore(job);
     let penalty=career.penalty;
@@ -152,11 +186,11 @@
     if(!perfect)cap=Math.min(cap,98);
     const score=Math.max(0,Math.min(cap,round(raw)));
     const reasons=[];
-    for(const item of [domain.label,skills.label,career.label,location.score?location.label:'',eligibility.label,source.label])if(item)reasons.push(item);
+    for(const item of [domain.label,skills.label,career.label,career.roleGap,location.score?location.label:'',eligibility.label,source.label])if(item)reasons.push(item);
     const hits=uniq([...skills.titleHits,...skills.bodyHits,...skills.keywordHits]).slice(0,9);
     return {score,reasons:uniq(reasons).slice(0,7),hits,direction:domain.job?.primary?.name||'',components:{
       direction:round(domain.score),skills:round(skills.score),career:round(career.score),location:round(location.score),eligibility:round(eligibility.score),source:round(source.score),freshness:round(fresh),completeness:round(complete.score),penalty:round(penalty),raw:round(raw),cap,
-      profileDomain:domain.profile?.primary?.name||'',jobDomain:domain.job?.primary?.name||'',profileDomainConfidence:pConf,jobDomainConfidence:jConf,domainMismatch:domain.mismatch,domainExact:domain.exact,skillHits:skills.hitCount,sourceTier:Number(job.sourceTier||0)
+      profileDomain:domain.profile?.primary?.name||'',jobDomain:domain.job?.primary?.name||'',profileDomainConfidence:pConf,jobDomainConfidence:jConf,domainMismatch:domain.mismatch,domainExact:domain.exact,roleGap:career.roleGap,experienceConflict:career.experienceConflict,skillHits:skills.hitCount,skillRequired:skills.required,skillCoverage:round(skills.coverage*100),missingSkills:skills.missing,sourceTier:Number(job.sourceTier||0)
     },calibration:'v13-resume-domain-general'};
   }
 
@@ -202,6 +236,7 @@
 
   CORE.scoreJob=scoreJobV13;
   CORE.filterAndRank=filterAndRankV13;
+  CORE.skillEvidence=text=>SKILL_VOCAB.filter(term=>containsSkill(skillNorm(text),term));
   CORE.version='13.0.0';
   window.PTO_MATCHING_V13={scoreJob:scoreJobV13,filterAndRank:filterAndRankV13};
 })();

@@ -186,7 +186,7 @@
       if(card.matches('.market-card')){
         const actions=card.querySelector('.pto-card-actions');
         if(actions&&!actions.querySelector('.pto-source-open')&&!job.applyUrl&&job.noticeUrl){
-          actions.insertAdjacentHTML('beforeend',`<a class="btn tiny ghost pto-source-open" data-action="source" href="${esc(job.noticeUrl)}" target="_blank" rel="noopener noreferrer">打开招聘源 ↗</a>`);
+          actions.insertAdjacentHTML('beforeend',`<a class="btn tiny ghost pto-source-open" data-action="source" href="${esc(safeExternalUrl(job.noticeUrl)||'#')}" target="_blank" rel="noopener noreferrer">打开招聘源 ↗</a>`);
         }
       }
     });

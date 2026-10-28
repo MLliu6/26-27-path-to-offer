@@ -58,7 +58,7 @@
     const message=verified
       ? '该企业官方招聘源已检测到 2027 招聘信号，但当前标准化岗位池尚未提取出与你筛选条件一致的岗位。系统会继续在两小时刷新中解析岗位详情。'
       : '系统已经持续监测该企业的官方招聘入口，但当前刷新尚未取得可验证的 2027 岗位明细。这里不会用旧岗位或第三方猜测冒充当前校招。';
-    empty.insertAdjacentHTML('beforeend',`<div class="pto-source-fallback" id="ptoSourceFallback"><div class="pto-source-fallback-top"><div class="pto-source-fallback-icon">源</div><div><h4>${esc(company)} · 官方招聘源已纳入雷达</h4><p>${message}</p><span class="pto-source-state ${ok?'':'warn'}">${verified?'发现 2027 招聘信号':ok?'官方入口可访问 · 等待岗位解析':'官方入口本轮访问异常 · 保留监测'}</span></div></div><div class="pto-source-fallback-actions"><a class="btn ghost" href="${esc(src.url)}" target="_blank" rel="noopener noreferrer">打开官方招聘 ↗</a><button class="btn primary" id="ptoRetrySource">重新刷新岗位</button></div></div>`);
+    empty.insertAdjacentHTML('beforeend',`<div class="pto-source-fallback" id="ptoSourceFallback"><div class="pto-source-fallback-top"><div class="pto-source-fallback-icon">源</div><div><h4>${esc(company)} · 官方招聘源已纳入雷达</h4><p>${message}</p><span class="pto-source-state ${ok?'':'warn'}">${verified?'发现 2027 招聘信号':ok?'官方入口可访问 · 等待岗位解析':'官方入口本轮访问异常 · 保留监测'}</span></div></div><div class="pto-source-fallback-actions"><a class="btn ghost" href="${esc(safeExternalUrl(src.url)||'#')}" target="_blank" rel="noopener noreferrer">打开官方招聘 ↗</a><button class="btn primary" id="ptoRetrySource">重新刷新岗位</button></div></div>`);
     $('#ptoRetrySource')?.addEventListener('click',()=>$('#refreshFeedBtn')?.click());
   }
   async function loadPrioritySources(){

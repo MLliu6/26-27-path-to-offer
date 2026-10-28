@@ -60,7 +60,7 @@
     const strong=$('.account-status strong');
     const small=$('.account-status small');
     if(strong)strong.textContent=`${hint.username} · 已锁定（仅本机记住）`;
-    if(small)small.textContent='密码和 Token 均未保存；输入密码后解锁本机密文，或从 GitHub 读取远端账户。';
+    if(small)small.textContent='输入密码，继续这台设备上的求职记录。';
   }
   function openRememberedAccount(){
     if(originalAccountOpen)originalAccountOpen();

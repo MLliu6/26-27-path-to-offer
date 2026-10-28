@@ -27,6 +27,7 @@ MAP = {
     "u":"apply_url", "n":"notice_url", "d":"jd", "t":"updated_at",
     "b":"batch", "g":"graduation", "e":"education", "p":"salary",
     "y":"company_type", "h":"industry", "m":"department",
+    "s":"source", "z":"position_id",
 }
 
 
@@ -36,11 +37,15 @@ def expand_job(job: dict[str, Any]) -> dict[str, Any] | None:
     if not clean(job.get("c")) or not clean(job.get("r")):
         return None
     out = {long: job.get(short, "") for short, long in MAP.items()}
-    out["source"] = "previous-compact"
+    out["source"] = clean(job.get("s")) or "previous-compact"
     out["source_label"] = clean(job.get("x")) or "上一轮公开招聘缓存"
-    out["source_url"] = clean(job.get("u") or job.get("n"))
+    out["source_url"] = clean(job.get("source_url") or job.get("u") or job.get("n"))
     out["tags"] = []
-    out["observed_via"] = "previous-compact-cache"
+    out["observed_via"] = clean(job.get("observed_via")) or "previous-compact-cache"
+    for field in ("observed_at", "verification", "deadline", "status", "record_kind", "jd_full", "q"):
+        if field in job:
+            out[field] = job[field]
+    out["jd"] = job.get("jd_full") or out["jd"]
     return out
 
 

@@ -15,7 +15,7 @@ class WorkspaceTests(unittest.TestCase):
         self.assertTrue(all(x['start_url'].startswith('https://') for x in sources))
     def test_supplemental_rotation(self):
         sources=s.load(s.REGISTRY)['sources']
-        seen={e['id'] for i in range(4) for e in s.select(sources,i*7200)}
+        seen={e['id'] for i in range((len(sources)+5)//6) for e in s.select(sources,i*7200)}
         self.assertEqual(seen,{e['id'] for e in sources})
     def test_existing_sweep_even_shards(self):
         entries=[dict(id=str(i),company=str(i),start_url=f'https://{i}.test/jobs') for i in range(16)]

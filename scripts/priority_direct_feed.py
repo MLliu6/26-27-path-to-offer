@@ -109,9 +109,18 @@ def encode(job: dict[str, Any]) -> dict[str, Any] | None:
     jd = short(job.get("jd"))
     if jd:
         out["d"] = jd
+        full_jd = short(job.get("jd_full") or job.get("jd"), 8000)
+        if len(full_jd) > len(jd):
+            out["jd_full"] = full_jd
     position_id = clean(job.get("position_id"))
     if position_id:
         out["z"] = position_id
+    out["observed_at"] = clean(job.get("observed_at")) or now()
+    out["observed_via"] = clean(job.get("observed_via")) or "official-public-api"
+    out["record_kind"] = "position"
+    for field in ("source_url", "deadline", "status", "verification"):
+        if job.get(field):
+            out[field] = job[field]
     return out
 
 
@@ -155,11 +164,11 @@ def record_special_source(*, source_id: str, name: str, label: str, url: str, co
             validator(jobs, diagnostics)
         rows = [encoded for job in jobs for encoded in [encode(job)] if encoded]
         fresh_by_source[source_id] = rows
-        source_runs.append({"name": name, "label": label, "url": url, "ok": True, "count": len(rows), "preserved_previous": False, "diagnostics": diagnostics, "error": ""})
+        source_runs.append({"name": name, "label": label, "url": url, "ok": True, "count": len(rows), "fresh_count": len(rows), "checked_at": now(), "preserved_previous": False, "diagnostics": diagnostics, "error": ""})
     except Exception as exc:
         kept = old_by_source.get(source_id, [])
         fresh_by_source[source_id] = kept
-        source_runs.append({"name": name, "label": label, "url": url, "ok": bool(kept), "count": len(kept), "preserved_previous": bool(kept), "diagnostics": {}, "error": f"{type(exc).__name__}: {short(exc, 260)}"})
+        source_runs.append({"name": name, "label": label, "url": url, "ok": False, "count": len(kept), "fresh_count": 0, "checked_at": now(), "preserved_previous": bool(kept), "diagnostics": {}, "error": f"{type(exc).__name__}: {short(exc, 260)}"})
 
 
 def main() -> int:
@@ -223,11 +232,11 @@ def main() -> int:
             if not rows:
                 raise RuntimeError("zero concrete jobs")
             fresh_by_source[source_id] = rows
-            source_runs.append({"name": source_id.replace("direct-official:", "") + "-direct-official", "label": f"{company}招聘官网 · 自主直连", "url": clean(config.get("official_url")), "ok": True, "count": len(rows), "preserved_previous": False, "diagnostics": diagnostics, "error": ""})
+            source_runs.append({"name": source_id.replace("direct-official:", "") + "-direct-official", "label": f"{company}招聘官网 · 自主直连", "url": clean(config.get("official_url")), "ok": True, "count": len(rows), "fresh_count": len(rows), "checked_at": now(), "preserved_previous": False, "diagnostics": diagnostics, "error": ""})
         except Exception as exc:
             kept = old_by_source.get(source_id, [])
             fresh_by_source[source_id] = kept
-            source_runs.append({"name": source_id.replace("direct-official:", "") + "-direct-official", "label": f"{company}招聘官网 · 自主直连", "url": clean(config.get("official_url")), "ok": bool(kept), "count": len(kept), "preserved_previous": bool(kept), "diagnostics": {}, "error": f"{type(exc).__name__}: {short(exc, 260)}"})
+            source_runs.append({"name": source_id.replace("direct-official:", "") + "-direct-official", "label": f"{company}招聘官网 · 自主直连", "url": clean(config.get("official_url")), "ok": False, "count": len(kept), "fresh_count": 0, "checked_at": now(), "preserved_previous": bool(kept), "diagnostics": {}, "error": f"{type(exc).__name__}: {short(exc, 260)}"})
 
     # DiDi and future specialist browser sources are carried forward untouched;
     # their dedicated browser stage runs immediately afterwards.

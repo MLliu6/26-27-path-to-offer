@@ -1,5 +1,22 @@
 # Third-party notices
 
+## Browser document parsers
+
+The frontend bundles Mammoth 1.8.0 (BSD-2-Clause, Michael Williamson) and
+PDF.js 3.11.174 (Apache-2.0, Mozilla Foundation) under `vendor/` for local
+DOCX/PDF text extraction. The pinned distributions are published at
+`https://www.npmjs.com/package/mammoth/v/1.8.0` and
+`https://www.npmjs.com/package/pdfjs-dist/v/3.11.174`.
+Their license texts are included as `vendor/LICENSE-mammoth` and
+`vendor/LICENSE-pdfjs`. PDF.js runs with `isEvalSupported: false`.
+
+## Manrope font
+
+The bundled Manrope variable font is from
+`https://github.com/google/fonts/tree/main/ofl/manrope`, licensed under the
+SIL Open Font License 1.1. Its license is included at
+`assets/fonts/OFL-Manrope.txt`.
+
 Path to Offer v0.6 uses the following project **at refresh time** as a pinned adapter library. Its source is not bundled into the GitHub Pages frontend.
 
 ## Hiring-Radar
