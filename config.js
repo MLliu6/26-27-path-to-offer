@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '1.6.0',
-  buildVersion: '1.6.0-theme-aware-brand',
+  buildVersion: '1.6.0-logo-pipeline-stages2',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',
@@ -172,11 +172,12 @@ window.addEventListener('load', () => {
         if (form.elements[k] && typeof v !== 'object') form.elements[k].value = v ?? '';
       });
     } else {
-      form.status.value = 'discovered';
+      form.status.value = 'wishlist';
       form.statusDate.value = today();
       form.priority.value = 'B';
       if (currentProfile()) form.resumeVersion.value = currentProfile().name;
     }
+    if(job)form.status.value=pipelineStage(job.status);
     renderTimeline(job);
     document.querySelector('#deleteJobBtn').classList.toggle('hidden', !job);
     openDrawer();
