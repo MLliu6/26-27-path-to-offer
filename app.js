@@ -5,9 +5,9 @@ const STORAGE_KEY = 'pathToOffer.v0.2';
 const LEGACY_KEY = 'pathToOffer.v0.1';
 const THEME_KEY = 'pathToOffer.theme';
 const stages = [
-  ['discovered','发现'],['wishlist','待投递'],['preparing','准备中'],['applied','已投递'],
+  ['wishlist','待投递'],['applied','已投递'],['written','笔试'],
   ['assessment','测评'],['interview1','一面'],['interview2','二面'],['interview3','三面/终面'],
-  ['hr','HR 面'],['offer','Offer'],['signed','已签约'],['rejected','结束']
+  ['hr','HR面'],['offer','Offer'],['signed','签约'],['rejected','结束']
 ];
 const palettes = [
   ['Sage','#97b4a7','#668d7b','#e8f0ec'],['Mist Blue','#9db4c5','#66879d','#e9f0f5'],
@@ -80,7 +80,8 @@ function normalizeState(s){
 function saveState(render=true){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); if(render) renderAll(); }
 function uid(prefix='id'){ return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`; }
 function today(){ return new Date().toISOString().slice(0,10); }
-function stageName(id){ return stages.find(s=>s[0]===id)?.[1] || id; }
+function pipelineStage(id){return ['discovered','preparing'].includes(id)?'wishlist':id;}
+function stageName(id){ return stages.find(s=>s[0]===pipelineStage(id))?.[1] || id; }
 function esc(s=''){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function safeExternalUrl(value){ try{const url=new URL(String(value||'').trim());return /^https?:$/.test(url.protocol)?url.href:'';}catch(_){return '';} }
 function fmt(date){ if(!date) return '未记录'; const d=new Date(`${String(date).slice(0,10)}T00:00:00`); return Number.isNaN(d.getTime())?date:d.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}); }
@@ -317,7 +318,7 @@ function promoteMarketJob(id,close=false){
   const j=marketJobs.find(x=>x.id===id); if(!j)return;
   if(state.jobs.some(x=>x.sourceJobId===j.id)){toast('这个岗位已经在流程里');return;}
   const match=scoreJob(j,currentProfile()); const p=currentProfile();
-  state.jobs.unshift({id:uid('job'),sourceJobId:j.id,source:j.source,company:j.company,department:j.department,role:j.role,location:j.location,salary:j.salary,direction:match.reasons.find(x=>DIRECTION_RULES.some(r=>r[0]===x))||'',priority:match.score!==null&&match.score>=78?'A':'B',status:'discovered',statusDate:today(),url:j.applyUrl||j.noticeUrl,jd:j.jd,resumeVersion:p?.name||'',prepUrl:'',notes:'',matchAtSave:match.score,timeline:[{status:'discovered',date:today()}]});
+  state.jobs.unshift({id:uid('job'),sourceJobId:j.id,source:j.source,company:j.company,department:j.department,role:j.role,location:j.location,salary:j.salary,direction:match.reasons.find(x=>DIRECTION_RULES.some(r=>r[0]===x))||'',priority:match.score!==null&&match.score>=78?'A':'B',status:'wishlist',statusDate:today(),url:j.applyUrl||j.noticeUrl,jd:j.jd,resumeVersion:p?.name||'',prepUrl:'',notes:'',matchAtSave:match.score,timeline:[{status:'discovered',date:today()}]});
   state.decisions[id]='saved'; saveState(false); renderAll(); if(close)closeDrawer(); toast('已加入投递流程');
 }
 
@@ -332,11 +333,11 @@ function renderPipeline(){
   empty.classList.toggle('hidden',state.jobs.length>0); if(!state.jobs.length) empty.innerHTML='<div class="empty-orbit">→</div><h3>还没有岗位进入流程</h3><p>去“发现”页上传简历并选择岗位，或点击右上角“记录岗位”手工添加。</p><button class="btn primary" data-empty-go="discover">开始发现岗位</button>';
   empty.querySelector('[data-empty-go]')?.addEventListener('click',()=>switchView('discover'));
   const kanban=document.querySelector('#kanban'); kanban.classList.toggle('hidden',pipelineMode!=='board'||!state.jobs.length);
-  kanban.innerHTML=stages.map(([id,name])=>{const list=jobs.filter(j=>j.status===id);return `<section class="kanban-col" data-stage="${id}"><div class="kanban-head"><strong>${name}</strong><span class="count">${list.length}</span></div><div class="job-stack">${list.map(pipelineCard).join('')}</div></section>`}).join('');
+  kanban.innerHTML=stages.map(([id,name])=>{const list=jobs.filter(j=>pipelineStage(j.status)===id);return `<section class="kanban-col" data-stage="${id}"><div class="kanban-head"><strong>${name}</strong><span class="count">${list.length}</span></div><div class="job-stack">${list.map(pipelineCard).join('')}</div></section>`}).join('');
   const table=document.querySelector('#jobTableWrap'); table.classList.toggle('hidden',pipelineMode!=='table'||!state.jobs.length); table.innerHTML=`<table class="job-table"><thead><tr><th>公司</th><th>岗位</th><th>方向</th><th>状态</th><th>日期</th><th>优先级</th><th>初始匹配</th></tr></thead><tbody>${jobs.map(j=>`<tr data-job-id="${j.id}"><td>${esc(j.company)}</td><td>${esc(j.role)}</td><td>${esc(j.direction)}</td><td>${stageName(j.status)}</td><td>${fmt(j.statusDate)}</td><td>${esc(j.priority)}</td><td>${j.matchAtSave??'—'}</td></tr>`).join('')}</tbody></table>`;
   bindDnD(); document.querySelectorAll('[data-job-id]').forEach(el=>el.addEventListener('click',e=>{if(!e.defaultPrevented)openJob(el.dataset.jobId)}));
 }
-function bindDnD(){ let dragging=null; document.querySelectorAll('.job-card').forEach(card=>{card.addEventListener('dragstart',e=>{dragging=card.dataset.jobId;card.classList.add('dragging');e.dataTransfer.effectAllowed='move'});card.addEventListener('dragend',()=>card.classList.remove('dragging'))}); document.querySelectorAll('.kanban-col').forEach(col=>{col.addEventListener('dragover',e=>e.preventDefault());col.addEventListener('drop',e=>{e.preventDefault();const job=state.jobs.find(j=>j.id===dragging);const next=col.dataset.stage;if(job&&job.status!==next){job.status=next;job.statusDate=today();job.timeline=job.timeline||[];job.timeline.push({status:next,date:today()});saveState();toast(`已更新为「${stageName(next)}」`)}})}); }
+function bindDnD(){ let dragging=null; document.querySelectorAll('.job-card').forEach(card=>{card.addEventListener('dragstart',e=>{dragging=card.dataset.jobId;card.classList.add('dragging');e.dataTransfer.effectAllowed='move'});card.addEventListener('dragend',()=>card.classList.remove('dragging'))}); document.querySelectorAll('.kanban-col').forEach(col=>{col.addEventListener('dragover',e=>e.preventDefault());col.addEventListener('drop',e=>{e.preventDefault();const job=state.jobs.find(j=>j.id===dragging);const next=col.dataset.stage;if(job&&pipelineStage(job.status)!==next){job.status=next;job.statusDate=today();job.timeline=job.timeline||[];job.timeline.push({status:next,date:today()});saveState();toast(`已更新为「${stageName(next)}」`)}})}); }
 
 function openDrawer(){
   const drawer=document.querySelector('#jobDrawer');if(!drawer.classList.contains('open'))drawerReturnFocus=document.activeElement;
@@ -356,11 +357,12 @@ function openJob(id=null){
   document.querySelector('#statusSelect').innerHTML=stages.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
   const resumeSelect=document.querySelector('#jobResumeSelect'); resumeSelect.innerHTML='<option value="">未绑定</option>'+state.resumes.map(r=>`<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('');
   const job=state.jobs.find(j=>j.id===id); if(job){ Object.entries(job).forEach(([k,v])=>{if(form.elements[k]&&typeof v!=='object')form.elements[k].value=v??'';}); }
-  else {form.status.value='discovered';form.statusDate.value=today();form.priority.value='B';if(currentProfile())form.resumeVersion.value=currentProfile().name;}
+  else {form.status.value='wishlist';form.statusDate.value=today();form.priority.value='B';if(currentProfile())form.resumeVersion.value=currentProfile().name;}
+  if(job)form.status.value=pipelineStage(job.status);
   renderTimeline(job); document.querySelector('#deleteJobBtn').classList.toggle('hidden',!job); openDrawer();
 }
 function renderTimeline(job){ const el=document.querySelector('#statusTimeline'); const tl=job?.timeline||[]; el.innerHTML=tl.length?tl.slice().reverse().map(x=>`<div class="timeline-row"><span></span><strong>${stageName(x.status)}</strong><small>${fmt(x.date)}</small></div>`).join(''):'<div class="empty-state compact-empty"><p>保存后开始记录状态时间线。</p></div>'; }
-function submitJob(e){ e.preventDefault(); const fd=new FormData(e.currentTarget); const data=Object.fromEntries(fd.entries()); let job=state.jobs.find(j=>j.id===data.id); if(job){const prev=job.status;Object.assign(job,data);if(prev!==data.status){job.timeline=job.timeline||[];job.timeline.push({status:data.status,date:data.statusDate||today()});}}else{job={...data,id:uid('job'),timeline:[{status:data.status,date:data.statusDate||today()}]};state.jobs.unshift(job);}saveState();closeDrawer();toast('岗位已保存'); }
+function submitJob(e){ e.preventDefault(); const fd=new FormData(e.currentTarget); const data=Object.fromEntries(fd.entries()); let job=state.jobs.find(j=>j.id===data.id); if(job){const prev=job.status;if(data.status===pipelineStage(prev))data.status=prev;Object.assign(job,data);if(prev!==data.status){job.timeline=job.timeline||[];job.timeline.push({status:data.status,date:data.statusDate||today()});}}else{job={...data,id:uid('job'),timeline:[{status:data.status,date:data.statusDate||today()}]};state.jobs.unshift(job);}saveState();closeDrawer();toast('岗位已保存'); }
 
 function renderLibrary(){
   const p=currentProfile(); const list=document.querySelector('#resumeList');

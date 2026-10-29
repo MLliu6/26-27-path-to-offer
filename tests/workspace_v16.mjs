@@ -50,6 +50,25 @@ try{
   assert.deepEqual(await page.evaluate(()=>state.jobs),seed.jobs);
   assert.equal(await page.evaluate(()=>state.resumes[0].rawText),seed.resumes[0].rawText);
   await page.locator('[data-view="pipeline"]').click();
+  assert.deepEqual(await page.locator('#kanban .kanban-head strong').allTextContents(),['待投递','已投递','笔试','测评','一面','二面','三面/终面','HR面','Offer','签约','结束']);
+  await page.evaluate(()=>{
+    for(const status of ['discovered','preparing','wishlist'])state.jobs.push({id:'legacy-'+status,company:'旧记录',role:'研发',status,statusDate:'2026-09-01',notes:'保留原文',timeline:[{status,date:'2026-09-01'}]});
+    renderPipeline();
+  });
+  assert.equal(await page.locator('#kanban [data-stage="wishlist"] [data-job-id]').count(),3);
+  await page.locator('#kanban [data-quick-update="legacy-preparing"]').click();
+  assert.equal(await page.locator('#v15Update [name="status"]').inputValue(),'wishlist');
+  await page.locator('#closeModal').click();
+  await page.evaluate(()=>openJob('legacy-discovered'));
+  assert.equal(await page.locator('#statusSelect').inputValue(),'wishlist');
+  await page.locator('#closeDrawer').click();
+  assert.deepEqual(await page.evaluate(()=>state.jobs.filter(j=>j.id.startsWith('legacy-')).map(j=>[j.status,j.timeline[0].status,j.notes])),['discovered','preparing','wishlist'].map(s=>[s,s,'保留原文']));
+  await page.locator('#kanban [data-quick-update="legacy-preparing"]').click();
+  await page.locator('#v15Update [name="status"]').selectOption('written');
+  await page.locator('#v15Update button[type="submit"],#v15Update .btn.primary').click();
+  assert.equal(await page.locator('#kanban [data-stage="written"] [data-job-id]').count(),1);
+  assert.equal(await page.evaluate(()=>state.jobs.find(j=>j.id==='legacy-preparing').timeline[0].status),'preparing');
+  await page.evaluate(()=>{state.jobs=state.jobs.filter(j=>!j.id.startsWith('legacy-'));renderPipeline();});
   await page.locator('[data-quick-update="kept"]').first().click();
   await page.locator('#v15Update [name="status"]').selectOption('interview1');
   await page.locator('#v15Update [name="note"]').fill('准备一面');
@@ -95,10 +114,10 @@ try{
       const brand=await page.evaluate(()=>{
         const logo=document.querySelector('.brand-mark svg'),path=logo.querySelector('path');
         const icon=new DOMParser().parseFromString(decodeURIComponent(document.querySelector('link[rel="icon"]').href.split(',').slice(1).join(',')),'image/svg+xml');
-        return {tile:getComputedStyle(logo).color,ink:getComputedStyle(path).stroke,iconTile:icon.documentElement.getAttribute('color'),iconInk:icon.querySelector('path')?.getAttribute('stroke'),path:path.getAttribute('d'),iconPath:icon.querySelector('path')?.getAttribute('d'),appearance:document.documentElement.dataset.appearance};
+        return {tile:getComputedStyle(logo.querySelector('rect')).fill,ink:getComputedStyle(path).stroke,iconTile:icon.querySelector('rect')?.getAttribute('fill'),iconInk:icon.querySelector('path')?.getAttribute('stroke'),path:path.getAttribute('d'),iconPath:icon.querySelector('path')?.getAttribute('d'),appearance:document.documentElement.dataset.appearance};
       });
       assert.equal(brand.appearance,appearance);
-      assert.equal(brand.iconTile,brand.tile,'tab icon must follow the selected palette');
+      assert.equal(brand.tile,'rgb('+brand.iconTile.slice(1).match(/../g).map(v=>parseInt(v,16)).join(', ')+')','actual logo fill must follow the selected palette');
       assert.equal(brand.iconInk,brand.ink,'tab icon must follow light/dark appearance');
       assert.equal(brand.iconPath,brand.path,'tab and page must use the same logo');
       assert.notEqual(brand.tile,brand.ink);colors.add(brand.tile);
