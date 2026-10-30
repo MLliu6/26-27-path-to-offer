@@ -61,6 +61,9 @@ try{
   assert.ok(await page.locator('#kanban').evaluate(el=>el.scrollLeft)>900);
   await page.locator('#kanban').evaluate(el=>{el.scrollLeft=0;});
   await page.waitForFunction(()=>Math.abs(Number(document.querySelector('.pipeline-scroll-dock input').value)-document.querySelector('#kanban').scrollLeft)<2&&document.querySelector('#kanban').scrollLeft<4);
+  await page.locator('.pipeline-scroll-dock input').press('ArrowRight');
+  assert.ok(await page.locator('#kanban').evaluate(el=>el.scrollLeft)>200);
+  await page.locator('.pipeline-scroll-dock input').press('Home');
   await page.evaluate(()=>window.scrollTo(0,0));
   await page.evaluate(()=>{
     for(const status of ['discovered','preparing','wishlist'])state.jobs.push({id:'legacy-'+status,company:'旧记录',role:'研发',status,statusDate:'2026-09-01',notes:'保留原文',timeline:[{status,date:'2026-09-01'}]});

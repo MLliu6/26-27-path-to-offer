@@ -189,6 +189,7 @@
     slider.max=max;syncScroll();
   });}
   slider.oninput=()=>{board.scrollLeft=Number(slider.value);syncScroll();};
+  slider.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();board.scrollBy({left:(['ArrowRight','ArrowUp'].includes(e.key)?1:-1)*300,behavior:'instant'});syncScroll();};
   buttons.forEach((button,i)=>button.onclick=()=>board.scrollBy({left:(i?1:-1)*Math.max(240,board.clientWidth*.7),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
   board.addEventListener('scroll',syncScroll,{passive:true});window.addEventListener('resize',layoutScroll);
   new ResizeObserver(layoutScroll).observe(board);
