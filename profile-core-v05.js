@@ -6,11 +6,11 @@
   'use strict';
 
   const SECTION_RULES=[
-    ['skills',/^(专业技能|技能|技能栈|技术栈|skills?|technical skills?)\s*[:：]?$/i,1.45],
+    ['skills',/^(专业技能|技能|技能栈|技术栈|核心技能|职业技能|skills?|technical skills?)\s*[:：]?$/i,1.45],
     ['experience',/^(实习经历|工作经历|项目实习|实践经历|experience|work experience|internship)\s*[:：]?$/i,1.35],
     ['projects',/^(项目经历|项目经验|projects?|project experience)\s*[:：]?$/i,1.25],
     ['research',/^(科研经历|研究经历|论文|论文发表|研究成果|科研项目|research|publications?)\s*[:：]?$/i,1.2],
-    ['education',/^(教育经历|教育背景|学历|education)\s*[:：]?$/i,0.55],
+    ['education',/^(教育经历|教育背景|学历|education|educational background)\s*[:：]?$/i,0.55],
     ['awards',/^(奖项|荣誉|获奖经历|竞赛经历|awards?|honors?)\s*[:：]?$/i,0.7],
     ['summary',/^(个人总结|个人简介|自我评价|求职意向|summary|profile|objective)\s*[:：]?$/i,1.0],
   ];
@@ -18,7 +18,7 @@
 
   function clean(v){return String(v||'').replace(/\u0000/g,' ').replace(/[\t\r]+/g,' ').replace(/[ ]{2,}/g,' ').trim();}
   function detectHeader(line){
-    const value=clean(line).replace(/[【】\[\]#*]/g,'').trim();
+    const value=clean(line).replace(/[【】\[\]#*]/g,'').replace(/^\s*(?:\d+|[一二三四五六七八九十]+)[.、．)）]\s*/,'').replace(/(?<=[\u3400-\u9fff])\s+(?=[\u3400-\u9fff])/g,'').trim();
     if(value.length>32)return null;
     for(const [name,re,weight] of SECTION_RULES){if(re.test(value))return {name,weight};}
     return null;
@@ -30,6 +30,8 @@
     for(const raw of lines){
       const h=detectHeader(raw);
       if(h){flush();current={name:h.name,weight:h.weight,lines:[]};continue;}
+      const inline=raw.match(/^(.{1,32}?)[：:]\s*(.+)$/),heading=inline&&detectHeader(inline[1]);
+      if(heading){flush();current={name:heading.name,weight:heading.weight,lines:[inline[2]]};continue;}
       current.lines.push(raw);
     }
     flush();
