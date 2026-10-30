@@ -46,6 +46,8 @@ try{
   await page.locator('#quickModal.show #resumePreviewSave').waitFor({state:'visible'});
   assert.equal(await page.evaluate(()=>state.resumes.length),0,'upload must wait for confirmation');
   assert.equal(await page.locator('#resumePreviewYear').inputValue(),'2027');
+  assert.ok(await page.locator('#resumeParsedSections .resume-section').count()>=2);
+  assert.match(await page.locator('#resumeParsedSummary').innerText(),/技能/);
   await page.locator('#resumePreviewSave').click();
   await page.waitForFunction(()=>state.resumes.length===1);
   await page.waitForFunction(()=>document.querySelector('#quickModal').getAttribute('aria-hidden')==='true');

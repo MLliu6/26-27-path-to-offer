@@ -1,6 +1,6 @@
 window.PTO_CONFIG = Object.freeze({
   version: '1.6.0',
-  buildVersion: '1.6.0-logo-pipeline-stages2',
+  buildVersion: '1.6.0-interaction-refinement',
   jobsFeed: './data/jobs.json',
   domesticJobsFeed: './data/jobs_cn.json',
   globalJobsFeed: './data/jobs.json',

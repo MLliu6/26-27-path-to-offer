@@ -175,6 +175,24 @@
   }
   window.PTO_WORKSPACE_V15={quickUpdate,backup,restoreBackup,sourcesPanel,version:'1.5.0'};
   setup();
+  // One viewport control mirrors the board; long columns never hide navigation.
+  const board=$('#kanban'),dock=document.createElement('div');
+  dock.className='pipeline-scroll-dock';dock.hidden=true;
+  dock.innerHTML='<button type="button" aria-label="向左浏览阶段">←</button><label>横向浏览<input type="range" min="0" max="0" value="0" step="1" aria-label="投递看板横向位置" aria-controls="kanban"></label><button type="button" aria-label="向右浏览阶段">→</button>';
+  document.body.appendChild(dock);const slider=dock.querySelector('input'),buttons=dock.querySelectorAll('button');
+  function syncScroll(){slider.value=board.scrollLeft;buttons[0].disabled=board.scrollLeft<=1;buttons[1].disabled=board.scrollLeft>=Number(slider.max)-1;}
+  let scrollFrame;
+  function layoutScroll(){cancelAnimationFrame(scrollFrame);scrollFrame=requestAnimationFrame(()=>{
+    const rect=board.getBoundingClientRect(),max=Math.max(0,board.scrollWidth-board.clientWidth);
+    dock.hidden=!$('#pipelineView').classList.contains('active')||board.classList.contains('hidden')||max<2;
+    dock.style.left=Math.max(12,rect.left)+'px';dock.style.width=Math.max(0,Math.min(rect.width,innerWidth-rect.left-16)-(innerWidth<=760?56:0))+'px';
+    slider.max=max;syncScroll();
+  });}
+  slider.oninput=()=>{board.scrollLeft=Number(slider.value);syncScroll();};
+  buttons.forEach((button,i)=>button.onclick=()=>board.scrollBy({left:(i?1:-1)*Math.max(240,board.clientWidth*.7),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
+  board.addEventListener('scroll',syncScroll,{passive:true});window.addEventListener('resize',layoutScroll);
+  new ResizeObserver(layoutScroll).observe(board);
+  new MutationObserver(layoutScroll).observe($('#pipelineView'),{attributes:true,attributeFilter:['class'],childList:true,subtree:true});layoutScroll();
 })();
 
 

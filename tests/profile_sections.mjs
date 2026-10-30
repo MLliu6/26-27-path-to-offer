@@ -26,3 +26,6 @@ const split=PROFILE.splitSections(`教育经历\nA大学\n专业技能\nCUDA C++
 assert.deepEqual(split.map(x=>x.name),['education','skills','projects']);
 
 console.log('v0.5 section-aware profile tests passed');
+const numbered=PTO_PROFILE_V05.splitSections('1. 教 育 背 景\n甲大学 本科\n二、项目经历\n完整项目内容\n专业技能：Python Java\n补充技能');
+assert.deepEqual(numbered.map(s=>s.name),['education','projects','skills']);
+assert.equal(numbered[2].text,'Python Java\n补充技能');

@@ -51,6 +51,17 @@ try{
   assert.equal(await page.evaluate(()=>state.resumes[0].rawText),seed.resumes[0].rawText);
   await page.locator('[data-view="pipeline"]').click();
   assert.deepEqual(await page.locator('#kanban .kanban-head strong').allTextContents(),['待投递','已投递','笔试','测评','一面','二面','三面/终面','HR面','Offer','签约','结束']);
+  await page.locator('#v15HideEmpty').uncheck();
+  await page.locator('.pipeline-scroll-dock').waitFor({state:'visible'});
+  const bottomBefore=await page.locator('.pipeline-scroll-dock').evaluate(el=>innerHeight-el.getBoundingClientRect().bottom);
+  await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
+  assert.equal(await page.locator('.pipeline-scroll-dock').evaluate(el=>innerHeight-el.getBoundingClientRect().bottom),bottomBefore);
+  await page.locator('.pipeline-scroll-dock input').focus();
+  await page.locator('.pipeline-scroll-dock input').press('End');
+  assert.ok(await page.locator('#kanban').evaluate(el=>el.scrollLeft)>900);
+  await page.locator('#kanban').evaluate(el=>{el.scrollLeft=0;});
+  await page.waitForFunction(()=>Math.abs(Number(document.querySelector('.pipeline-scroll-dock input').value)-document.querySelector('#kanban').scrollLeft)<2&&document.querySelector('#kanban').scrollLeft<4);
+  await page.evaluate(()=>window.scrollTo(0,0));
   await page.evaluate(()=>{
     for(const status of ['discovered','preparing','wishlist'])state.jobs.push({id:'legacy-'+status,company:'旧记录',role:'研发',status,statusDate:'2026-09-01',notes:'保留原文',timeline:[{status,date:'2026-09-01'}]});
     renderPipeline();
@@ -106,6 +117,9 @@ try{
   assert.ok(await page.locator('#v16SourceDirectory .v15-source-row').count()>0);
   await page.locator('#closeModal').click();
   await page.locator('#themeBtn').click();
+  assert.equal(await page.locator('.nav-item.active').evaluate(el=>getComputedStyle(el,'::after').content),'none');
+  assert.ok(await page.locator('#themePopover').evaluate(el=>el.getBoundingClientRect().width)>=300);
+  for(const dot of await page.locator('.v151-swatch i').all())assert.equal(await dot.evaluate(el=>el.getBoundingClientRect().width),await dot.evaluate(el=>el.getBoundingClientRect().height));
   for(const appearance of ['light','dark']){
     await page.locator(`[data-v151-appearance="${appearance}"]`).click();
     const colors=new Set();

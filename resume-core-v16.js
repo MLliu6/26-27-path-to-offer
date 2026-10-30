@@ -32,7 +32,7 @@
     const needsReview=chars<80||replacement>chars*.02||readable<chars*.55;
     return {chars,sections,needsReview,label:chars<30?'文本待补充':needsReview?'请核对文本':sections>=2?'结构清晰':'文本已提取'};
   }
-  async function extract(file){
+  async function extract(file,onProgress=()=>{}){
     const ext=String(file.name||'').split('.').pop().toLowerCase();
     if(!['pdf','docx','txt'].includes(ext))throw new Error('请选择 PDF、DOCX 或 TXT 文件');
     if(file.size>20*1024*1024)throw new Error('文件超过 20 MB，请压缩后重试');
@@ -51,6 +51,7 @@
       if(pdf.numPages>30)throw new Error('简历超过 30 页，请选择简历正文后重新导入');
       const pages=[];let blank=0;
       for(let i=1;i<=pdf.numPages;i++){
+        onProgress(`正在读取第 ${i} / ${pdf.numPages} 页…`);
         const page=await pdf.getPage(i),content=await page.getTextContent(),text=pdfText(content.items);
         if(text.replace(/\s/g,'').length<15)blank++;pages.push(text);page.cleanup();
       }
@@ -70,8 +71,17 @@
       const inferred=window.PTO_MATCHING.buildProfile(text,fileName).signals||{};
       $('#resumePreviewDegree').value=existing?.signals?.degree||inferred.degree||'';
       $('#resumePreviewYear').value=existing?.signals?.graduationYear||inferred.graduationYear||'';
-      const update=()=>{const q=quality($('#resumePreviewText').value);$('#resumePreviewQuality').textContent=`${q.label} · ${q.chars} 字 · ${q.sections} 个章节`;$('#resumePreviewSave').disabled=q.chars<30;};
-      $('#resumePreviewText').addEventListener('input',update);update();
+      const summary=document.createElement('div');summary.id='resumeParsedSummary';summary.className='resume-parse-summary';$('#resumePreviewQuality').after(summary);
+      const sections=document.createElement('div');sections.id='resumeParsedSections';summary.after(sections);
+      function update(){
+        const raw=$('#resumePreviewText').value,q=quality(raw),parts=window.PTO_PROFILE_V05.splitSections(raw),profile=window.PTO_MATCHING.buildProfile(raw,fileName).signals||{};
+        const recognized=parts.filter(p=>p.name!=='other');
+        $('#resumePreviewQuality').textContent=`${q.label} · ${q.chars} 字 · ${recognized.length} 个已识别章节`;$('#resumePreviewSave').disabled=q.chars<30;
+        const skills=[...new Set([...(profile.skills||[]),...(window.PTO_MATCHING.skillEvidence?.(raw)||[])])];
+        summary.innerHTML=`<h3>解析概览</h3><p>${esc(profile.primaryCareerDomain||profile.primaryDirection||'补充经历后识别求职方向')}</p><div class="resume-preview-skills">${skills.map(s=>`<span>${esc(s)}</span>`).join('')}</div><p>${skills.length?'识别到 '+skills.length+' 项技能，可在下方原文中核对。':'暂未识别到明确技能，请核对技能章节。'}</p>${!profile.graduationYear?'<p>毕业年份待确认，请填写上方毕业届别。</p>':''}${!recognized.length?'<p>尚未识别章节标题，已保留全部文字。可补充“教育背景”“项目经历”等标题。</p>':''}`;
+        sections.innerHTML=parts.map((p,i)=>`<details class="resume-section" ${i===0?'open':''}><summary><span>${esc(p.name==='other'?'基本信息 / 未分组内容':p.label)}</span><small>${p.text.length} 字</small></summary><pre>${esc(p.text)}</pre></details>`).join('');
+      }
+      let previewTimer;$('#resumePreviewText').addEventListener('input',()=>{const q=quality($('#resumePreviewText').value);$('#resumePreviewSave').disabled=q.chars<30;clearTimeout(previewTimer);previewTimer=setTimeout(()=>{if($('#resumeParsedSummary')===summary)update();},200);});update();
       $('#resumePreviewCancel').onclick=closeModal;
       $('#resumePreviewSave').onclick=async()=>{
         if(state!==owner||(window.PTO_ACCOUNT_SESSION?.id||'guest')!==ownerId){toast('账户已切换，请重新导入简历');closeModal();return;}
@@ -93,7 +103,7 @@
     handleResumeFile=async function(file){
       if(!file)return;const sequence=++importSequence,owner=state;
       toast('正在解析简历…');
-      try{const result=await extract(file);if(sequence!==importSequence||state!==owner)return;preview(result.text,file.name,result.warnings);}
+      try{const result=await extract(file,message=>{if(sequence===importSequence&&state===owner)toast(message);});if(sequence!==importSequence||state!==owner)return;preview(result.text,file.name,result.warnings);}
       catch(error){toast(error.message||'文件解析失败，请尝试粘贴文字');}
       finally{for(const selector of ['#resumeImport','#libraryResumeImport','#replaceResumeInput']){const input=$(selector);if(input)input.value='';}}
     };
@@ -109,6 +119,9 @@
     const baseInspect=inspectProfile;
     inspectProfile=function(){
       baseInspect();const current=currentProfile();if(!current)return;
+      const parsed=document.createElement('details');parsed.className='resume-section';
+      parsed.innerHTML='<summary>按章节查看完整解析</summary>'+window.PTO_PROFILE_V05.splitSections(current.rawText||'').map(p=>`<section class="resume-section"><h3>${esc(p.name==='other'?'基本信息 / 未分组内容':p.label)}</h3><pre>${esc(p.text)}</pre></section>`).join('');
+      $('#modalBody').prepend(parsed);
       const actions=$('#modalBody .modal-actions');if(!actions)return;
       const button=document.createElement('button');button.type='button';button.className='btn primary';button.id='editResumeProfile';button.textContent='编辑解析结果';button.onclick=()=>preview(current.rawText||'',current.fileName||current.name+'.txt',[],current);actions.prepend(button);
     };
