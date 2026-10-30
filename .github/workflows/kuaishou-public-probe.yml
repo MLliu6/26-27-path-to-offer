@@ -1,0 +1,27 @@
+name: kuaishou-public-probe
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/kuaishou_public_api_harvester.py'
+      - 'tests/kuaishou_public_api_probe.py'
+      - 'sources/recruit_domain_overrides.json'
+      - '.github/workflows/kuaishou-public-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install probe dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.5 playwright
+      - name: Observe Kuaishou anonymous public recruitment transports
+        run: PYTHONPATH=. python tests/kuaishou_public_api_probe.py
