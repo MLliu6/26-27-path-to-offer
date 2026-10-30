@@ -58,27 +58,27 @@
       html[data-appearance="dark"]{--bg:#101512;--surface:#171d1a;--surface-2:#202823;--text:#edf2ee;--muted:#99a69e;--line:#2c3630;--danger:#df9999;--shadow:0 18px 46px rgba(0,0,0,.32)}
       html[data-appearance="dark"] body{background:radial-gradient(900px 480px at 12% -5%,var(--accent-wash),transparent 62%),var(--bg);color:var(--text)}
       html[data-appearance="dark"] .topbar{background:color-mix(in srgb,var(--bg) 86%,var(--accent) 14%);border-bottom-color:var(--line)}
-      html[data-appearance="dark"] .main-nav,html[data-appearance="dark"] .view-switch,html[data-appearance="dark"] .segmented{background:#202722}
+      html[data-appearance="dark"] .main-nav,html[data-appearance="dark"] .view-switch,html[data-appearance="dark"] .segmented{background:var(--surface-2)}
       html[data-appearance="dark"] .nav-item.active,html[data-appearance="dark"] .seg.active{background:color-mix(in srgb,var(--surface) 78%,var(--accent) 22%);color:var(--text);box-shadow:none}
       html[data-appearance="dark"] .btn,html[data-appearance="dark"] .icon-btn,html[data-appearance="dark"] .view-icon,html[data-appearance="dark"] .panel,html[data-appearance="dark"] .market-card,html[data-appearance="dark"] .metric,html[data-appearance="dark"] .profile-strip,html[data-appearance="dark"] .intel-card,html[data-appearance="dark"] .review-card,html[data-appearance="dark"] .theme-popover,html[data-appearance="dark"] .modal,html[data-appearance="dark"] .drawer,html[data-appearance="dark"] .table-wrap{background:var(--surface);border-color:var(--line)}
-      html[data-appearance="dark"] .btn.ghost{background:#1b221e}html[data-appearance="dark"] .btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1410;font-weight:700}
-      html[data-appearance="dark"] .resume-onboarding{background:linear-gradient(130deg,color-mix(in srgb,var(--surface) 88%,var(--accent) 12%),var(--surface));border-color:#34423a}
+      html[data-appearance="dark"] .btn.ghost{background:var(--surface-2)}html[data-appearance="dark"] .btn.primary{background:var(--accent);border-color:var(--accent);color:#000000;font-weight:700}
+      html[data-appearance="dark"] .resume-onboarding{background:linear-gradient(130deg,color-mix(in srgb,var(--surface) 88%,var(--accent) 12%),var(--surface));border-color:var(--line)}
       html[data-appearance="dark"] .privacy-note,html[data-appearance="dark"] .match-rail{background:color-mix(in srgb,var(--surface) 90%,var(--accent) 10%);border-color:var(--line)}
-      html[data-appearance="dark"] .search-wrap,html[data-appearance="dark"] .search,html[data-appearance="dark"] select,html[data-appearance="dark"] input,html[data-appearance="dark"] textarea{background:#141a17!important;color:var(--text);border-color:var(--line)!important}
-      html[data-appearance="dark"] input::placeholder,html[data-appearance="dark"] textarea::placeholder{color:#718078}
-      html[data-appearance="dark"] .kanban-col{background:#141a17;border-color:var(--line)}html[data-appearance="dark"] .job-card{background:#1a211d;border-color:var(--line)}
-      html[data-appearance="dark"] .job-table th{background:#1d2520;color:var(--muted)}html[data-appearance="dark"] .job-table tbody tr:hover{background:var(--accent-wash)}
-      html[data-appearance="dark"] .job-facts span,html[data-appearance="dark"] .source-tag,html[data-appearance="dark"] .role-cloud span,html[data-appearance="dark"] .skill-cloud-v4 span,html[data-appearance="dark"] .section-chip{background:#1c241f!important;border-color:#344038!important;color:var(--muted)!important}
+      html[data-appearance="dark"] .search-wrap,html[data-appearance="dark"] .search,html[data-appearance="dark"] select,html[data-appearance="dark"] input,html[data-appearance="dark"] textarea{background:var(--surface)!important;color:var(--text);border-color:var(--line)!important}
+      html[data-appearance="dark"] input::placeholder,html[data-appearance="dark"] textarea::placeholder{color:var(--muted)}
+      html[data-appearance="dark"] .kanban-col{background:var(--surface);border-color:var(--line)}html[data-appearance="dark"] .job-card{background:var(--surface);border-color:var(--line)}
+      html[data-appearance="dark"] .job-table th{background:var(--surface-2);color:var(--muted)}html[data-appearance="dark"] .job-table tbody tr:hover{background:var(--accent-wash)}
+      html[data-appearance="dark"] .job-facts span,html[data-appearance="dark"] .source-tag,html[data-appearance="dark"] .role-cloud span,html[data-appearance="dark"] .skill-cloud-v4 span,html[data-appearance="dark"] .section-chip{background:var(--surface-2)!important;border-color:var(--line)!important;color:var(--muted)!important}
       html[data-appearance="dark"] .signal-chip,html[data-appearance="dark"] .match-reasons span,html[data-appearance="dark"] .signal-cloud span,html[data-appearance="dark"] .reason-grid span,html[data-appearance="dark"] .priority,html[data-appearance="dark"] .quality-badge{background:var(--accent-soft);color:var(--accent)}
       html[data-appearance="dark"] .market-card:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));box-shadow:0 18px 44px rgba(0,0,0,.28),0 0 0 1px var(--accent-wash)}
-      html[data-appearance="dark"] .match-score{background:#121815;border-color:var(--line)}html[data-appearance="dark"] .match-score.high{background:var(--accent-soft);color:var(--accent)}
-      html[data-appearance="dark"] .drawer-head{background:rgba(23,29,26,.94);border-color:var(--line)}html[data-appearance="dark"] .timeline-box,html[data-appearance="dark"] .detail-facts div,html[data-appearance="dark"] .profile-summary,html[data-appearance="dark"] .profile-inspector .section-audit{background:var(--surface-2)}
-      html[data-appearance="dark"] .modal-backdrop,html[data-appearance="dark"] .drawer-backdrop{background:rgba(3,7,5,.64)}
-      html[data-appearance="dark"] .market-empty,html[data-appearance="dark"] .large-empty{background:#121815;border-color:#344038}html[data-appearance="dark"] .funnel-track{background:#263029}
+      html[data-appearance="dark"] .match-score{background:var(--surface);border-color:var(--line)}html[data-appearance="dark"] .match-score.high{background:var(--accent-soft);color:var(--accent)}
+      html[data-appearance="dark"] .drawer-head{background:rgba(18,18,18,.96);border-color:var(--line)}html[data-appearance="dark"] .timeline-box,html[data-appearance="dark"] .detail-facts div,html[data-appearance="dark"] .profile-summary,html[data-appearance="dark"] .profile-inspector .section-audit{background:var(--surface-2)}
+      html[data-appearance="dark"] .modal-backdrop,html[data-appearance="dark"] .drawer-backdrop{background:rgba(0,0,0,.64)}
+      html[data-appearance="dark"] .market-empty,html[data-appearance="dark"] .large-empty{background:var(--surface);border-color:var(--line)}html[data-appearance="dark"] .funnel-track{background:var(--surface-2)}
       html[data-appearance="dark"] .company-logo,html[data-appearance="dark"] .detail-score{background:var(--accent-soft);color:var(--accent)}
       html[data-appearance="dark"] .eyebrow,html[data-appearance="dark"] .text-btn,html[data-appearance="dark"] .market-table td:nth-child(1) strong{color:var(--accent)!important}
-      html[data-appearance="dark"] ::selection{background:var(--accent);color:#0e1511}
-      @media(max-width:760px){html[data-appearance="dark"] .main-nav{background:rgba(25,32,28,.95)}}
+      html[data-appearance="dark"] ::selection{background:var(--accent);color:#000000}
+      @media(max-width:760px){html[data-appearance="dark"] .main-nav{background:rgba(18,18,18,.96)}}
     `;document.head.appendChild(style);
   }
 
