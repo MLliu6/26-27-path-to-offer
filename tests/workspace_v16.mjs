@@ -125,6 +125,11 @@ try{
   for(const dot of await page.locator('.v151-swatch i').all())assert.equal(await dot.evaluate(el=>el.getBoundingClientRect().width),await dot.evaluate(el=>el.getBoundingClientRect().height));
   for(const appearance of ['light','dark']){
     await page.locator(`[data-v151-appearance="${appearance}"]`).click();
+    if(appearance==='dark'){
+      const colors=await page.evaluate(()=>['body','.topbar','#jobSearch','select','.btn.ghost','.segmented','.job-facts span','.source-tag'].flatMap(s=>[...document.querySelectorAll(s)].map(el=>getComputedStyle(el).backgroundColor)));
+      for(const color of colors){const rgb=color.match(/[\d.]+/g).map(Number);if(rgb[3]===0)continue;assert.equal(rgb[0],rgb[1],color);assert.equal(rgb[1],rgb[2],color);}
+      assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(0, 0, 0)');
+    }
     const colors=new Set();
     for(const palette of ['blue','violet','slate','rose','amber','sage']){
       await page.locator(`[data-v151-palette="${palette}"]`).click();

@@ -170,7 +170,7 @@
     $('#pipelineView .filter-row').insertAdjacentElement('afterend',actions);$('#v15Scope').onchange=e=>{prefs.scope=e.target.value;storePrefs();renderPipeline();};$('#v15HideEmpty').checked=prefs.hideEmpty;$('#v15HideEmpty').onchange=e=>{prefs.hideEmpty=e.target.checked;storePrefs();renderPipeline();};$('#v15Backup').onclick=backup;$('#v15Restore').onchange=e=>restoreBackup(e.target.files[0]);
     $('#toast').setAttribute('role','status');$('#toast').setAttribute('aria-live','polite');$('#jobSearch').setAttribute('aria-label','搜索公司、岗位、技能或城市');$('#closeModal').setAttribute('aria-label','关闭对话框');
 
-    const fixMeta=()=>{$('meta[name="theme-color"]')?.setAttribute('content',document.documentElement.dataset.appearance==='dark'?'#111113':'#f7f8f5');};fixMeta();new MutationObserver(fixMeta).observe(document.documentElement,{attributes:true,attributeFilter:['data-appearance']});
+    const fixMeta=()=>{$('meta[name="theme-color"]')?.setAttribute('content',document.documentElement.dataset.appearance==='dark'?'#000000':'#f7f8f5');};fixMeta();new MutationObserver(fixMeta).observe(document.documentElement,{attributes:true,attributeFilter:['data-appearance']});
     renderAll();
   }
   window.PTO_WORKSPACE_V15={quickUpdate,backup,restoreBackup,sourcesPanel,version:'1.5.0'};
@@ -219,14 +219,14 @@
     if(logo&&icon){
       const dark=root.dataset.appearance==='dark';
       logo.querySelector('rect').setAttribute('fill',dark?p.accent:p.strong);
-      logo.querySelector('path').setAttribute('stroke',dark?'#111113':'#ffffff');
+      logo.querySelector('path').setAttribute('stroke',dark?'#000000':'#ffffff');
       const svg=logo.cloneNode(true);
       svg.setAttribute('color',getComputedStyle(logo).color);
       svg.querySelector('path').setAttribute('stroke',getComputedStyle(logo.querySelector('path')).stroke);
       icon.href='data:image/svg+xml,'+encodeURIComponent(new XMLSerializer().serializeToString(svg));
     }
     try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(_){}
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content',root.dataset.appearance==='dark'?'#111113':'#f7f8f5');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content',root.dataset.appearance==='dark'?'#000000':'#f7f8f5');
   }
   function render(){
     const pop=document.querySelector('#themePopover');if(!pop)return;

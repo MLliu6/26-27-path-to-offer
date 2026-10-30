@@ -79,7 +79,7 @@ jobs:
           target_workflow=Path('.github/workflows/refresh-user-target-coverage.yml').read_text(encoding='utf-8')
 
           assert "version: '1.6.0'" in config
-          assert "buildVersion: '1.6.0-interaction-refinement'" in config
+          assert "buildVersion: '1.6.0-neutral-black'" in config
           assert 'domesticJobsFeed' in config and 'priorityJobsFeed' in config and 'PTO_NATIVE_FETCH' in config
           assert config.index('ranking-v13.js') < config.index('ranking-v14.js') < config.index('market-v06.js')
           assert config.index('enhancements-v13.js') < config.index('enhancements-v14.js') < config.index('enhancements-v141.js')
