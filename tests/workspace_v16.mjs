@@ -53,6 +53,16 @@ try{
   assert.deepEqual(await page.locator('#kanban .kanban-head strong').allTextContents(),['待投递','已投递','笔试','测评','一面','二面','三面/终面','HR面','Offer','签约','结束']);
   await page.locator('#v15HideEmpty').uncheck();
   await page.locator('.pipeline-scroll-dock').waitFor({state:'visible'});
+  for(const offset of [127,128,129,433,434]){
+    await page.locator('.pipeline-scroll-dock input').evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));},offset);
+    assert.equal(await page.locator('#kanban').evaluate(el=>el.scrollLeft),offset,'drag must not snap to a column');
+  }
+  await page.evaluate(()=>{state.jobs.push({id:'ended-test',company:'测试',role:'研发',status:'rejected',timeline:[]});renderPipeline();});
+  assert.equal(await page.locator('[data-scope="ended"] strong').innerText(),'1');
+  await page.locator('[data-scope="ended"]').click();
+  assert.deepEqual(await page.evaluate(()=>filteredPipelineJobs().map(j=>j.id)),['ended-test']);
+  await page.locator('[data-scope="all"]').click();
+  await page.evaluate(()=>{state.jobs=state.jobs.filter(j=>j.id!=='ended-test');renderPipeline();});
   const bottomBefore=await page.locator('.pipeline-scroll-dock').evaluate(el=>innerHeight-el.getBoundingClientRect().bottom);
   await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
   assert.equal(await page.locator('.pipeline-scroll-dock').evaluate(el=>innerHeight-el.getBoundingClientRect().bottom),bottomBefore);

@@ -19,6 +19,7 @@ assert.equal(C.summary([next],'2026-09-11').due,1);
 assert.equal(C.summary([{...next,status:'rejected'}],'2026-09-11').due,0);
 assert.throws(()=>C.updateStatus(job,'interview1','bad'));
 console.log('v1.5 data/identity/status rules: PASS');
+assert.equal(C.summary([{status:'rejected'},{status:'signed'},{status:'applied'}]).ended,1);
 
 assert.equal(C.dateValue(1763456900069),'2025-11-18');
 assert.deepEqual(C.cityNames('000000.110000 Beijing No.538 Road'),['北京']);
